@@ -40,8 +40,9 @@ void Config::setMaxBodySize(int max_body_size) { this->max_body_size = max_body_
 void Config::setDefaultFile(std::string default_file) { this->default_file = default_file; }
 void Config::setErrorPage(int error_status, std::string error_page) { error_pages[error_status] = error_page; }
 void Config::setAllowedMethods(const std::vector<std::string> &allowed_methods) { this->allowed_methods = allowed_methods; }
-void Config::addRoute(Route *route) { routes.push_back(route); }
-
+void Config::addRoute(std::unique_ptr<Route> route) {
+    routes.push_back(std::move(route)); // Transfer ownership
+}
 // Getters
 int Config::getPort() const { return server_port; }
 std::string Config::getName() const { return server_name; }

@@ -33,7 +33,7 @@ public:
     void setDefaultFile(std::string default_file);
     void setErrorPage(int error_status, std::string error_page);
     void setAllowedMethods(const std::vector<std::string> &allowed_methods);
-    void addRoute(Route *route);
+    void addRoute(std::unique_ptr<Route> route);
 
     // Getters
     int getPort() const;

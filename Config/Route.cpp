@@ -85,3 +85,6 @@ void Route::printRoute() {
               << "Redirect Status: " << redirect_status << "\n"
               << "Redirect URL: " << redirect_url << "\n";
 }
+std::string Route::getPath() const {
+    return path;
+}
