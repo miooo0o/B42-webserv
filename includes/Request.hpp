@@ -1,3 +1,4 @@
+
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
@@ -12,7 +13,6 @@
 
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
-
 #include "./core_def.hpp"
 #include "../damianServer/Config.hpp"
 #include "./TestClasses/testUtils.hpp"
