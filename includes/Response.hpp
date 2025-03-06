@@ -14,15 +14,21 @@ private:
 
 public:
 	Response();
+	Response(int code);
 	~Response();
+
+	/* update var with ResponseState */
+
+	/* to_string*/
+	std::string	to_string();
 
 	/* setter */
 	void		setState(ResponseState* newState);
 	void		setBody(const std::string& content);
 
 	/* getter */
-	std::string	getBody() const;
-	std::string getStatus() const;
+	std::string							getBody() const;
+	std::string							getStatus() const;
 	std::map<std::string, std::string>	getHeaders() const;
 
 	/* add methods */
