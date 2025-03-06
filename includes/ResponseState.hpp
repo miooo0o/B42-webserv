@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/06 18:16:02 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/06 18:16:39 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ public:
 		SUCCESSFUL,
 		REDIRECTION,
 		CLIENT_ERROR,
-		SERVER_ERROR,
+		SERVER_ERROR
 	};
 	enum e_flag {
         STATUS_OK					= 0,	// default
