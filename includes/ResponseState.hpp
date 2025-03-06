@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/06 12:21:43 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/06 12:50:10 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ class ResponseState
 {
 public:
 	typedef enum e_classes {
-		_NON = 0,
+		_OUT_OF_RANGE = 0,
 		INFORMATIONAL,
 		SUCCESSFUL,
 		REDIRECTION,
@@ -32,28 +32,29 @@ public:
 	};
 protected:
 	int			_status;
-	e_classes	_class;
+	e_classes	_statusClass;
 
 	static std::map<int, std::string> _scenarios;
 public:
 	ResponseState(int code);
 	virtual ~ResponseState() {}
 
-	virtual std::string getStatus() const = 0;
-	virtual std::string getDefaultBody() const = 0;
+	// virtual std::string getStatus() const = 0;
+	// virtual std::string getDefaultBody() const = 0;
 
 	void						setStatusCode(int code);
-	void						setStatusSClass(int code);
+	
 	std::pair<int, std::string> getScenario();
 	int							getStatusCode();
 	e_classes					getStatusClasses();
-
+	
 	static std::map<int, std::string>&	getScenarios();
 	static std::pair<int, std::string>	getScenario(int code);
 	static void 						addNewScenario(int key, const std::string& value);
-
-protected:
-	static void _initDefaultScenario();
+	
+	protected:
+	void			_setStatusClass(int code);
+	static void		_initDefaultScenario();
 };
 
 /* Static member initialization */
@@ -64,46 +65,48 @@ ResponseState::ResponseState(int code) : _status(code) {
 	if (_scenarios.empty()) {
 		_initDefaultScenario();
 	}
+	_setStatusClass(_status);
 }
 
 /* Non-static Methods */
 
 std::pair<int, std::string> ResponseState::getScenario() {
 	if (_scenarios.find(_status) != _scenarios.end()) {
-		return std::make_pair(_status, _scenarios[_status]);
+		return (std::make_pair(_status, _scenarios[_status]));
 	}
-	return std::make_pair(STATUS_UNKNOWN, "Unknown Status Code");
+	return (std::make_pair(STATUS_UNKNOWN, "Unknown Status Code"));
 }
 
 int ResponseState::getStatusCode() {
 	if (_scenarios.find(_status) != _scenarios.end()) {
-		return _status;
+		return (_status);
 	}
-	return STATUS_UNKNOWN;
+	return (STATUS_UNKNOWN);
 }
 
 void	ResponseState::setStatusCode(int code) {
 	_status = code;
+	_setStatusClass(_status);
 }
 
-void	ResponseState::setStatusClass(int code) {
+void	ResponseState::_setStatusClass(int code) {
     if (code >= 100 && code < 200) {
-        _class = INFORMATIONAL;
+        _statusClass = INFORMATIONAL;
     } else if (code >= 200 && code < 300) {
-        _class = SUCCESSFUL;
+        _statusClass = SUCCESSFUL;
     } else if (code >= 300 && code < 400) {
-        _class = REDIRECTION;
+        _statusClass = REDIRECTION;
     } else if (code >= 400 && code < 500) {
-        _class = CLIENT_ERROR;
+        _statusClass = CLIENT_ERROR;
     } else if (code >= 500 && code < 600) {
-        _class = SERVER_ERROR;
+        _statusClass = SERVER_ERROR;
     } else {
-        _class = _NON;
+        _statusClass = _OUT_OF_RANGE;
     }
 }
 
 ResponseState::e_classes	ResponseState::getStatusClasses () {
-	
+	return (_statusClass);	
 }
 
 /* Static Methods */
@@ -128,6 +131,7 @@ void ResponseState::addNewScenario(int key, const std::string& value) {
 /* Protected Method: Initialize Default Scenarios */
 
 void ResponseState::_initDefaultScenario() {
+	_scenarios[100] = "Continue";
 	_scenarios[200] = "OK";
 	_scenarios[301] = "Moved Permanently";
 	_scenarios[302] = "Found";
@@ -143,6 +147,10 @@ void ResponseState::_initDefaultScenario() {
 
 /* ************************************************************************** */
 
+/* informational */
+class InformationalState: public ResponseState {
+	InformationalState(int code);
+};
 
 /* Successs */
 class SuccessState : public ResponseState {
