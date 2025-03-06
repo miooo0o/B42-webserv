@@ -14,14 +14,14 @@ Response::~Response() {
 }
 
 /* Set State Dynamically */
-void Response::setState(int statusCode) {
+void    Response::setState(int statusCode) {
     if (_state) {
         delete _state;
     }
     _state = createState(statusCode);
 }
 
-ResponseState* Response::createState(int statusCode) {
+ResponseState*  Response::createState(int statusCode) {
     ResponseState::e_classes statusClass = ResponseState(statusCode).getStatusClasses();
 
     switch (statusClass) {
