@@ -1,8 +1,8 @@
 #pragma once
 
-#include "ResponseState.hpp"
 #include <string>
 #include <map>
+#include <iostream>
 
 class ResponseState;
 
@@ -17,14 +17,13 @@ public:
 	Response(int code);
 	~Response();
 
-	/* update var with ResponseState */
-
 	/* to_string*/
-	std::string	to_string();
+	std::string		to_string();
 
 	/* setter */
-	void		setState(ResponseState* newState);
-	void		setBody(const std::string& content);
+	void			setState(int code);
+	ResponseState*	createState(int code);
+	void			setBody(const std::string& content);
 
 	/* getter */
 	std::string							getBody() const;
