@@ -1,45 +1,155 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ResponseState.hpp                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
+/*   Updated: 2025/03/06 12:21:43 by minakim          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #pragma once
 
 #include <string>
 #include <map>
 
+#define STATUS_UNKNOWN	-1
+
 class Response;
 
 class ResponseState
 {
-protected:
-	int                        			_status;
-	static std::map<int, std::string>	_defaultScenario;
 public:
-	ResponseState(int code) : _status(code) { _initDefaultScenario(); }
+	typedef enum e_classes {
+		_NON = 0,
+		INFORMATIONAL,
+		SUCCESSFUL,
+		REDIRECTION,
+		CLIENT_ERROR,
+		SERVER_ERROR
+	};
+protected:
+	int			_status;
+	e_classes	_class;
+
+	static std::map<int, std::string> _scenarios;
+public:
+	ResponseState(int code);
 	virtual ~ResponseState() {}
+
 	virtual std::string getStatus() const = 0;
 	virtual std::string getDefaultBody() const = 0;
-	static void addNewScenario(int key, const std::string& value) {
-		if (_defaultScenario.find(key) == _defaultScenario.end()) {
-			_defaultScenario[key] = value;
-		}
-	}
+
+	void						setStatusCode(int code);
+	void						setStatusSClass(int code);
+	std::pair<int, std::string> getScenario();
+	int							getStatusCode();
+	e_classes					getStatusClasses();
+
+	static std::map<int, std::string>&	getScenarios();
+	static std::pair<int, std::string>	getScenario(int code);
+	static void 						addNewScenario(int key, const std::string& value);
 
 protected:
-	static void _initDefaultScenario() {
-		_defaultScenario[200] = "OK";
-		_defaultScenario[301] = "Moved Permanently";
-		_defaultScenario[302] = "Found";
-		_defaultScenario[303] = "See Other";
-		_defaultScenario[307] = "Temporary Redirect";
-		_defaultScenario[308] = "Permanent Redirect";
-		_defaultScenario[400] = "Bad Request";
-		_defaultScenario[401] = "Unauthorized";
-		_defaultScenario[403] = "Forbidden";
-		_defaultScenario[404] = "Not Found";
-		_defaultScenario[500] = "Internal Server Error";
-	}
+	static void _initDefaultScenario();
 };
+
+/* Static member initialization */
+std::map<int, std::string> ResponseState::_scenarios;
+
+/* Constructor */
+ResponseState::ResponseState(int code) : _status(code) {
+	if (_scenarios.empty()) {
+		_initDefaultScenario();
+	}
+}
+
+/* Non-static Methods */
+
+std::pair<int, std::string> ResponseState::getScenario() {
+	if (_scenarios.find(_status) != _scenarios.end()) {
+		return std::make_pair(_status, _scenarios[_status]);
+	}
+	return std::make_pair(STATUS_UNKNOWN, "Unknown Status Code");
+}
+
+int ResponseState::getStatusCode() {
+	if (_scenarios.find(_status) != _scenarios.end()) {
+		return _status;
+	}
+	return STATUS_UNKNOWN;
+}
+
+void	ResponseState::setStatusCode(int code) {
+	_status = code;
+}
+
+void	ResponseState::setStatusClass(int code) {
+    if (code >= 100 && code < 200) {
+        _class = INFORMATIONAL;
+    } else if (code >= 200 && code < 300) {
+        _class = SUCCESSFUL;
+    } else if (code >= 300 && code < 400) {
+        _class = REDIRECTION;
+    } else if (code >= 400 && code < 500) {
+        _class = CLIENT_ERROR;
+    } else if (code >= 500 && code < 600) {
+        _class = SERVER_ERROR;
+    } else {
+        _class = _NON;
+    }
+}
+
+ResponseState::e_classes	ResponseState::getStatusClasses () {
+	
+}
+
+/* Static Methods */
+
+std::map<int, std::string>& ResponseState::getScenarios() {
+	return _scenarios;
+}
+
+std::pair<int, std::string> ResponseState::getScenario(int code) {
+	if (_scenarios.find(code) != _scenarios.end()) {
+		return std::make_pair(code, _scenarios[code]);
+	}
+	return std::make_pair(STATUS_UNKNOWN, "Unknown Status Code");
+}
+
+void ResponseState::addNewScenario(int key, const std::string& value) {
+	if (_scenarios.find(key) == _scenarios.end()) {
+		_scenarios[key] = value;
+	}
+}
+
+/* Protected Method: Initialize Default Scenarios */
+
+void ResponseState::_initDefaultScenario() {
+	_scenarios[200] = "OK";
+	_scenarios[301] = "Moved Permanently";
+	_scenarios[302] = "Found";
+	_scenarios[303] = "See Other";
+	_scenarios[307] = "Temporary Redirect";
+	_scenarios[308] = "Permanent Redirect";
+	_scenarios[400] = "Bad Request";
+	_scenarios[401] = "Unauthorized";
+	_scenarios[403] = "Forbidden";
+	_scenarios[404] = "Not Found";
+	_scenarios[500] = "Internal Server Error";
+}
+
+/* ************************************************************************** */
+
 
 /* Successs */
 class SuccessState : public ResponseState {
 public:
+	SuccessState(int code);
+	SuccessState();
+
 	std::string getStatus() const;
 	std::string getDefaultBody() const;
 };
