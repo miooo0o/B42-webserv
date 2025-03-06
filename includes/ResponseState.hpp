@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/06 16:36:13 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/06 18:16:02 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,26 @@ class Response;
 class ResponseState
 {
 public:
-	enum e_classes {
-		_CAN_NOT_CLASSIFY = 0,
-		INFORMATIONAL = 1,
+	enum e_class {
+		INFORMATIONAL	= 1,
 		SUCCESSFUL,
 		REDIRECTION,
 		CLIENT_ERROR,
-		SERVER_ERROR
+		SERVER_ERROR,
 	};
-	enum e_statusFlags {
-        STATUS_OK = 0,      		// default
-        _STATUS_UNKNOWN = -1,		// in the range, but status not registed
-        _STATUS_OUT_OF_RANGE = -2	// out of the range
+	enum e_flag {
+        STATUS_OK					= 0,	// default
+        _STATUS_UNKNOWN 			= -1,	// in the range, but status not registed
+        _STATUS_OUT_OF_RANGE 		= -2,	// out of the range
     };
 protected:
-	int				_statusCode;
-	e_classes		_statusClass;
-	e_statusFlags	_statusFlag;
+	struct Status {
+    	int		_code;
+		e_flag	_flag;
+		e_class	_class;
+	};
+protected:
+	Status			_status;
 	bool			_responseExposed;
 
 	static std::map<int, std::string> _scenarios;
@@ -47,21 +50,20 @@ public:
 
 	// virtual std::string getStatus() const = 0;
 	// virtual std::string getDefaultBody() const = 0;
+
 	virtual bool				isWithinRange() const = 0;
 	void						setStatusCode(int code);
 	
-	std::pair<int, std::string> getScenario();
 	int							getStatusCode();
-	e_classes					getStatusClasses();
+	e_class						getStatusClass();
+	e_flag						getStatusFlag();
 	bool						isExposed();
 	
 	static std::map<int, std::string>&	getScenarios();
-	static std::pair<int, std::string>	getScenario(int code);
 	static void 						addNewScenario(int key, const std::string& value);
 
 protected:
-	void			_updateStatusFlag();
-	void			_evaluateStatusCode();
+	void			_evaluateStatus();
 	static void		_initDefaultScenario();
 };
 
@@ -74,48 +76,27 @@ ResponseState::ResponseState(int code) {
 		_initDefaultScenario();
 	}
 	setStatusCode(code);
-	
 }
 
 /* Non-static Methods */
 
-std::pair<int, std::string> ResponseState::getScenario() {
-	if (_scenarios.find(_statusCode) != _scenarios.end()) {
-		return (std::make_pair(_statusCode, _scenarios[_statusCode]));
-	} else if (_statusCode >= 100 && _statusCode < 600) { 
-		return std::make_pair(_STATUS_UNKNOWN, "Unknown status code");
-	} else {
-		return std::make_pair(_STATUS_OUT_OF_RANGE, "Not in the range");
-	}
-}
-
 int ResponseState::getStatusCode() {
-	return (_statusCode);
+	return (_status._code);
 }
 
 void	ResponseState::setStatusCode(int code) {
-	_statusCode = code;
-	_evaluateStatusCode();
+	_status._code = code;
+	_evaluateStatus();
 }
 
-ResponseState::e_classes	ResponseState::getStatusClasses () {
-	return (_statusClass);
+ResponseState::e_class	ResponseState::getStatusClass () {
+	return (_status._class);
 }
 
 /* Static Methods */
 
 std::map<int, std::string>& ResponseState::getScenarios() {
 	return (_scenarios);
-}
-
-std::pair<int, std::string> ResponseState::getScenario(int code) {
-	if (_scenarios.find(code) != _scenarios.end()) {
-		return std::make_pair(code, _scenarios[code]);
-	} else if (code >= 100 && code < 600) {
-		return std::make_pair(_STATUS_UNKNOWN, "Unknown status code");
-	} else {
-		return std::make_pair(_STATUS_OUT_OF_RANGE, "Not in the range");
-	}
 }
 
 void	ResponseState::addNewScenario(int key, const std::string& value) {
@@ -130,31 +111,20 @@ bool	ResponseState::isExposed()
 }
 
 /* Protected Method: Initialize Default Scenarios */
-void	ResponseState::_updateStatusFlag() {
-	_statusFlag = STATUS_OK;
 
-	if (_statusCode >= 100 && _statusCode < 600) {
-		if (_scenarios.find(_statusCode) == _scenarios.end()) {
-			_statusFlag = _STATUS_UNKNOWN;
-		}
-	} else {
-		_statusFlag = _STATUS_OUT_OF_RANGE;
+void	ResponseState::_evaluateStatus() {
+
+	bool	isInRange = _status._code >= 100 && _status._code < 600;
+	if (!isInRange) {
+		_status._flag = _STATUS_OUT_OF_RANGE;
+		return ;
 	}
-}
-
-void	ResponseState::_evaluateStatusCode() {
-    _responseExposed = true;
-
-	if (_statusCode >= 100 && _statusCode < 600) {
-		_statusClass = static_cast<e_classes>(_statusCode / 100);
-        if (_statusClass == INFORMATIONAL) {
-            _responseExposed = false;
-        }
-    } else {
-        _statusClass = _CAN_NOT_CLASSIFY;
-        _responseExposed = false;
-    }
-	_updateStatusFlag();
+	if (_scenarios.find(_status._code) == _scenarios.end()) {
+		_status._flag = _STATUS_UNKNOWN;
+		return ;
+	}
+	_status._flag = STATUS_OK;
+	_status._class = static_cast<e_class>(_status._code / 100);
 }
 
 void	ResponseState::_initDefaultScenario() {
@@ -178,12 +148,16 @@ void	ResponseState::_initDefaultScenario() {
 class InformationalState: public ResponseState {
 public:
 	InformationalState(int code);
+	
+	bool				isWithinRange();
 };
 
 /* Successs */
 class SuccessState : public ResponseState {
 public:
 	SuccessState();
+
+	bool				isWithinRange();
 	// std::string getStatus() const;
 	// std::string getDefaultBody() const;
 };
@@ -193,6 +167,7 @@ class ErrorState : public ResponseState {
 public:
 	ErrorState();
 
+	bool				isWithinRange();
 	// std::string getStatus() const;
 	// std::string getDefaultBody() const;
 };
@@ -205,6 +180,7 @@ private:
 public:
 	RedirectState(const std::string& url);
 
+	bool				isWithinRange();
 	// std::string getStatus() const;
 	// std::string getDefaultBody() const;
 };

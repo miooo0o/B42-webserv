@@ -22,9 +22,9 @@ void    Response::setState(int statusCode) {
 }
 
 ResponseState*  Response::createState(int statusCode) {
-    ResponseState::e_classes statusClass = ResponseState(statusCode).getStatusClasses();
+    ResponseState::e_class _class = ResponseState(statusCode).getStatusClasses();
 
-    switch (statusClass) {
+    switch (_class) {
         case ResponseState::SUCCESSFUL:
             return new SuccessState(statusCode);
         case ResponseState::REDIRECTION:
