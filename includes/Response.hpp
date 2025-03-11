@@ -6,21 +6,25 @@
 
 class ResponseState;
 class ContentHandler;
-
-#include "HtmlHandler.hpp"
+class Request;
+#include "ContentHandler.hpp"
 
 class Response {
 private:
 	ResponseState*                      _state;
-	ContentHandler							_htmlHandler;
-	// ServerConfig*					_serverConfig;
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
 
 public:
-	Response();
-	Response(int code);
+	Response(Request& request);		/* with params */
+	Response(int code);				/* static */
 	~Response();
+
+	/*
+	Response	response(request);
+	return (response.to_response());
+	*/
+	Response		to_response();
 
 	/* to_string*/
 	std::string		to_string();
