@@ -5,10 +5,15 @@
 #include <iostream>
 
 class ResponseState;
+class ContentHandler;
+
+#include "HtmlHandler.hpp"
 
 class Response {
 private:
 	ResponseState*                      _state;
+	ContentHandler							_htmlHandler;
+	// ServerConfig*					_serverConfig;
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
 
