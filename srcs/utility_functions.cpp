@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/11 09:00:53 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/12 16:26:03 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,23 @@ long	hexToLong(const char *str) {
     
     return result;
 }
+
+unsigned char   hexCharToUnsignedChar(char c){
+	unsigned char x;
+
+	if (c >= '0' && c <= '9')
+		x = c - '0';
+	else if (c >= 'A' && c <= 'F') {
+		x = c - 'A' + 10;
+	}
+	else if (c >= 'a' && c <= 'f') {
+		x = c - 'a' + 10;
+	}
+	else
+		return -1;
+	return x;
+}
+
 
 bool	isValidUTF8(const std::string& str) {
 	if (str.empty()) return false;

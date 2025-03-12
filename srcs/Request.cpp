@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 14:53:07 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/12 16:41:38 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -250,7 +250,7 @@ bool	Request::validateMethod()
 	return false;
 }
 
-bool	Request::percentDecode( std::string& encoded )
+bool	Request::percentDecode( std::string& encoded, err_loc err_location )
 {
 	std::string	decoded;
 	size_t		len = encoded.length();
@@ -259,15 +259,19 @@ bool	Request::percentDecode( std::string& encoded )
 	decoded.reserve(len);
 	while ( i < len )
 	{
-		if ((encoded[i] == '%') && ((i + 2) < len))
+		if (encoded[i] == '%')
 		{
-			char hex[3] = {encoded[i + 1], encoded[i + 2], '\0'};
-			try {
-				unsigned char converted = static_cast<unsigned char>(hexToLong(hex));
+			if ((i + 2) < len && (isxdigit(encoded[i + 1]) && isxdigit(encoded[i + 2]))) {
+		
+				unsigned char converted = hexCharToUnsignedChar(encoded[i + 1]);
+				converted = converted << 4;
+				converted += hexCharToUnsignedChar(encoded[i + 2]);		
 				decoded += converted;
 				i += 3;
 			}
-			catch( std::exception &e) {				
+			else
+			{
+				setError("Bad Request", "Invalid Percent Encoding", 400, err_location);
 				return false;
 			}
 		}
@@ -369,16 +373,17 @@ bool	Request::validateURI()
 	bool outcome = true;
 	
 	if (!(uriCharValidation(SCHEME_CHARS, _uri.scheme, URI_SCHEME) && validateScheme())){ outcome = false; }
-	if (!(percentDecode( _uri.user ) && isValidUTF8( _uri.user ) && validateUser())) { outcome = false; }
-	if (!(percentDecode( _uri.pass ) && isValidUTF8( _uri.pass ) && validatePass())) { outcome = false; }
-	if (!(uriCharValidation( HOST_CHARS, _uri.host, URI_HOST) && validateHost())){ outcome = false; }
+	if (!(percentDecode( _uri.user, URI_USER ) && isValidUTF8( _uri.user ) && validateUser())) { outcome = false; }
+	if (!(percentDecode( _uri.pass, URI_PASS ) && isValidUTF8( _uri.pass ) && validatePass())) { outcome = false; }
+	if (!(percentDecode( _uri.host, URI_HOST ) && isValidUTF8( _uri.host ) && validateHost())) { outcome = false; }
+	//if (!(uriCharValidation( HOST_CHARS, _uri.host, URI_HOST) && validateHost())){ outcome = false; }
 	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT))) { outcome = false; }
 	else if (!_uri.port.empty()){
 		_uri.port_int = str_to_int(_uri.port);
 		validatePort();
 	}
-	if (!(percentDecode(_uri.query) && isValidUTF8( _uri.query ) && validateQuery())) { outcome = false; }
-	if (!(percentDecode(_uri.frag) && isValidUTF8( _uri.frag ) && validateFrag())) { outcome = false; }
+	if (!(percentDecode(_uri.query, URI_QUERY) && isValidUTF8( _uri.query ) && validateQuery())) { outcome = false; }
+	if (!(percentDecode(_uri.frag, URI_QUERY) && isValidUTF8( _uri.frag ) && validateFrag())) { outcome = false; }
 	
 	return outcome;
 }

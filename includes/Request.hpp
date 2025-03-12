@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 14:42:17 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/12 16:31:36 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ class	Request
 			bool			validateMethod( void );
 			
 							/*	URI NORMALISATION AND VALIDATION	*/
-			bool			percentDecode(std::string& encoded);
+			bool			percentDecode(std::string& encoded, err_loc err_location);
 			bool			uriCharValidation(const std::string set, const std::string& target, err_loc err_location);
 			bool			validateURI( void );
 			bool			validateScheme( void );
