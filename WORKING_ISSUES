@@ -1,0 +1,36 @@
+Testing Error Messages
+Testing percent coding conversion
+Testing unicode validation
+
+Make character sets accurate
+Make error numbers/messages accurate
+
+Need to remove unnecessary code - e.g. setting enums that have been replaced by errors
+Remove pass field?
+
+Finish validation of URI
+
+split query into pairs
+move UTF-8 check to after header parsing (as encoding should be confirmed in headers)?
+
+add header parsing
+add body parsing
+
+Clean up code - split into other classes/subclasses?
+
+design server parser order : 
+    read request line (check for \n or character limit)
+    instantiate request - parse and validate request line
+    if critical_error
+        return response
+    read headers
+    call Request::header_parsing function - parse and validate headers
+    if critical_error
+        return response
+    read body based on header: content-length
+    call Request::body_parsing function - parse and validate body
+    if critical_error
+        return response
+    requestHandler(request)
+    response(requestHandler)
+

@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/webserv",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set print object on to show full type information",
+                    "text": "-gdb-set print object on",
+                    "ignoreFailures": true
+                },
+                // {
+                //     "description": "Set print pretty on for better struct/class display",
+                //     "text": "-gdb-set print pretty on",
+                //     "ignoreFailures": true
+                // },
+				// {
+				// 	"description": "Load libstdc++ pretty-printers",
+				// 	"text": "python from libstdcxx.v6.printers import register_libstdcxx_printers; register_libstdcxx_printers(gdb.current_objfile())",
+				// 	"ignoreFailures": true
+				// },
+				// {
+				// 	"description": "Load libstdc++ symbol-files",
+				// 	"text" : "add-symbol-file /usr/lib/x86_64-linux-gnu/debug/libstdc++.so.6.0.30",
+				// 	"ignoreFailures": true
+				// }
+            ],
+            // "logging": {
+            //     "trace": true,
+            //     "traceResponse": true,
+            //     "engineLogging": true
+            // }
+        }
+    ]
+}
