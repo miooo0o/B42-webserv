@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 16:26:03 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 00:00:06 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,16 @@
 
 const std::set<std::string>& get_valid_methods() {
 	
-    static std::set<std::string> valid_methods;
+	static std::set<std::string> valid_methods;
+	static int i = 0;
 
-	valid_methods.insert(std::string("GET"));
-	valid_methods.insert(std::string("POST"));
-	valid_methods.insert(std::string("DELETE"));
+	if (i == 0)
+	{
+		valid_methods.insert(std::string("GET"));
+		valid_methods.insert(std::string("POST"));
+		valid_methods.insert(std::string("DELETE"));
+		i++;
+	}
 	
     return valid_methods;
 }
@@ -26,18 +31,133 @@ const std::set<std::string>& get_valid_methods() {
 const std::set<std::string>& get_unsupported_methods() {
 	
 	static std::set<std::string> unsupported_methods;
-	
-	unsupported_methods.insert(std::string("HEAD"));
-	unsupported_methods.insert(std::string("PUT"));
-	unsupported_methods.insert(std::string("CONNECT"));
-	unsupported_methods.insert(std::string("OPTIONS"));
-	unsupported_methods.insert(std::string("TRACE"));
-	unsupported_methods.insert(std::string("PATCH"));
-	unsupported_methods.insert(std::string("LINK"));
-	unsupported_methods.insert(std::string("UNLINK"));
-	unsupported_methods.insert(std::string("M-SEARCH"));
+	static int i = 0;
+
+	if (i == 0)
+	{
+		unsupported_methods.insert(std::string("HEAD"));
+		unsupported_methods.insert(std::string("PUT"));
+		unsupported_methods.insert(std::string("CONNECT"));
+		unsupported_methods.insert(std::string("OPTIONS"));
+		unsupported_methods.insert(std::string("TRACE"));
+		unsupported_methods.insert(std::string("PATCH"));
+		unsupported_methods.insert(std::string("LINK"));
+		unsupported_methods.insert(std::string("UNLINK"));
+		unsupported_methods.insert(std::string("M-SEARCH"));
+		i++;
+	}
 	
 	return unsupported_methods;
+}
+
+const std::set<std::string>& get_unsupported_schemes() {
+	
+	static std::set<std::string> unsupported_schemes;
+	static int i;
+
+	if (i == 0)
+	{
+		unsupported_schemes.insert(std::string("aaa"));
+		unsupported_schemes.insert(std::string("aaas"));
+		unsupported_schemes.insert(std::string("about"));
+		unsupported_schemes.insert(std::string("acap"));
+		unsupported_schemes.insert(std::string("acct"));
+		unsupported_schemes.insert(std::string("cap"));
+		unsupported_schemes.insert(std::string("cid"));
+		unsupported_schemes.insert(std::string("coap"));
+		unsupported_schemes.insert(std::string("coap"));
+		unsupported_schemes.insert(std::string("coap"));
+		unsupported_schemes.insert(std::string("coaps"));
+		unsupported_schemes.insert(std::string("coaps"));
+		unsupported_schemes.insert(std::string("coaps"));
+		unsupported_schemes.insert(std::string("crid"));
+		unsupported_schemes.insert(std::string("data"));
+		unsupported_schemes.insert(std::string("dav"));
+		unsupported_schemes.insert(std::string("dict"));
+		unsupported_schemes.insert(std::string("dns"));
+		unsupported_schemes.insert(std::string("doi"));
+		unsupported_schemes.insert(std::string("dtn"));
+		unsupported_schemes.insert(std::string("example"));
+		unsupported_schemes.insert(std::string("file"));
+		unsupported_schemes.insert(std::string("ftp"));
+		unsupported_schemes.insert(std::string("geo"));
+		unsupported_schemes.insert(std::string("go"));
+		unsupported_schemes.insert(std::string("gopher"));
+		unsupported_schemes.insert(std::string("h323"));
+		unsupported_schemes.insert(std::string("iax"));
+		unsupported_schemes.insert(std::string("icap"));
+		unsupported_schemes.insert(std::string("im"));
+		unsupported_schemes.insert(std::string("imap"));
+		unsupported_schemes.insert(std::string("info"));
+		unsupported_schemes.insert(std::string("ipn"));
+		unsupported_schemes.insert(std::string("ipp"));
+		unsupported_schemes.insert(std::string("ipps"));
+		unsupported_schemes.insert(std::string("iris"));
+		unsupported_schemes.insert(std::string("iris"));
+		unsupported_schemes.insert(std::string("iris"));
+		unsupported_schemes.insert(std::string("iris"));
+		unsupported_schemes.insert(std::string("iris"));
+		unsupported_schemes.insert(std::string("jabber"));
+		unsupported_schemes.insert(std::string("ldap"));
+		unsupported_schemes.insert(std::string("leaptofrogans"));
+		unsupported_schemes.insert(std::string("mailto"));
+		unsupported_schemes.insert(std::string("mid"));
+		unsupported_schemes.insert(std::string("msrp"));
+		unsupported_schemes.insert(std::string("msrps"));
+		unsupported_schemes.insert(std::string("mt"));
+		unsupported_schemes.insert(std::string("mtqp"));
+		unsupported_schemes.insert(std::string("mupdate"));
+		unsupported_schemes.insert(std::string("news"));
+		unsupported_schemes.insert(std::string("nfs"));
+		unsupported_schemes.insert(std::string("ni"));
+		unsupported_schemes.insert(std::string("nih"));
+		unsupported_schemes.insert(std::string("nntp"));
+		unsupported_schemes.insert(std::string("opaquelocktoken"));
+		unsupported_schemes.insert(std::string("pkcs11"));
+		unsupported_schemes.insert(std::string("pop"));
+		unsupported_schemes.insert(std::string("pres"));
+		unsupported_schemes.insert(std::string("reload"));
+		unsupported_schemes.insert(std::string("rtsp"));
+		unsupported_schemes.insert(std::string("rtsps"));
+		unsupported_schemes.insert(std::string("rtspu"));
+		unsupported_schemes.insert(std::string("service"));
+		unsupported_schemes.insert(std::string("session"));
+		unsupported_schemes.insert(std::string("shttp"));
+		unsupported_schemes.insert(std::string("sieve"));
+		unsupported_schemes.insert(std::string("sip"));
+		unsupported_schemes.insert(std::string("sips"));
+		unsupported_schemes.insert(std::string("sms"));
+		unsupported_schemes.insert(std::string("snmp"));
+		unsupported_schemes.insert(std::string("soap"));
+		unsupported_schemes.insert(std::string("soap"));
+		unsupported_schemes.insert(std::string("stun"));
+		unsupported_schemes.insert(std::string("stuns"));
+		unsupported_schemes.insert(std::string("tag"));
+		unsupported_schemes.insert(std::string("tel"));
+		unsupported_schemes.insert(std::string("telnet"));
+		unsupported_schemes.insert(std::string("tftp"));
+		unsupported_schemes.insert(std::string("thismessage"));
+		unsupported_schemes.insert(std::string("tip"));
+		unsupported_schemes.insert(std::string("tn3270"));
+		unsupported_schemes.insert(std::string("turn"));
+		unsupported_schemes.insert(std::string("turns"));
+		unsupported_schemes.insert(std::string("tv"));
+		unsupported_schemes.insert(std::string("urn"));
+		unsupported_schemes.insert(std::string("vemmi"));
+		unsupported_schemes.insert(std::string("vnc"));
+		unsupported_schemes.insert(std::string("ws"));
+		unsupported_schemes.insert(std::string("wss"));
+		unsupported_schemes.insert(std::string("xcon"));
+		unsupported_schemes.insert(std::string("xcon"));
+		unsupported_schemes.insert(std::string("xmlrpc"));
+		unsupported_schemes.insert(std::string("xmlrpc"));
+		unsupported_schemes.insert(std::string("xmpp"));
+		unsupported_schemes.insert(std::string("z39"));
+		unsupported_schemes.insert(std::string("z39"));
+		i++;
+	}
+		
+	return unsupported_schemes;
 }
 
 std::string	to_lower(std::string str) {

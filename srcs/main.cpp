@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:56:17 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 16:49:29 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 00:00:22 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,21 @@ int main()
 	// 				" ERROR IN URI SCHEME - INVALID CHARS %%~ ", "6");	
 	test_function( "GET https://user@example.%63om/path HTTP/1.1\r\n",
 					"GET https://user@example.%63om/path HTTP/1.1\\r\\n",
-					" URI PATH - PERCENT ENCODING REPLACEMENT TEST - %63 = c ", "7");	
+					" URI PATH - PERCENT ENCODING REPLACEMENT TEST - %63 = c ", "7");
+	test_function( "GET https://user@example.%2563om/path HTTP/1.1\r\n",
+					"GET https://user@example.%2563om/path HTTP/1.1\\r\\n",
+					" URI PATH - PERCENT ENCODING REPLACEMENT TEST - %25 = % ", "8");
+	test_function( "GET https://%EC%95%88%EB%85%95%20%EB%AF%B8%EB%82%98/path HTTP/1.1\r\n",
+					"GET https://%EC%95%88%EB%85%95%20%EB%AF%B8%EB%82%98/path HTTP/1.1\\r\\n",
+					" URI PATH - PERCENT ENCODING UTF8 TEST", "9");
+	test_function( "GET https://%EC%A3%BC%EC%9A%94%20%EC%ZZ%B8%EA%B5%90%ED%99%9C%EB%8F%99/path HTTP/1.1\r\n",
+					"GET https://%EC%A3%BC%EC%9A%94%20%EC%ZZ%B8%EA%B5%90%ED%99%9C%EB%8F%99/path HTTP/1.1\\r\\n",
+					" URI PATH - PERCENT ENCODING UTF8 FAILED MAJOR DIPLOMATIC ACTIVITIES", "10");
+
+	test_function( "GET ftp://example.com/path HTTP/1.1\r\n",
+					"GET ftp://user@example.com/path HTTP/1.1\\r\\n",
+					" URI SCHEME NOT SUPPORTED ", "11");
+					
 /* 	{
 		Request request("GET https://example.com HTTP/1.1\r\n");
 		mainHeading("REQUEST LINE TEST", false, false, RY);

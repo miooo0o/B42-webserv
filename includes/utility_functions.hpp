@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 16:26:00 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 00:00:04 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 
 const			std::set<std::string>& get_valid_methods();
 const			std::set<std::string>& get_unsupported_methods();
+const           std::set<std::string>& get_unsupported_schemes();
 
 long			hexToLong(const char *hex);
 unsigned char   hexCharToUnsignedChar(char c);

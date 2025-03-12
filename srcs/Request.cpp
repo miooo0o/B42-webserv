@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 16:41:38 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 00:05:42 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,7 +142,6 @@ void	Request::parseURIState(states& state, std::string& target, size_t& i)
 	static std::map<std::pair<char, Request::states>, Request::states> state_map = uriStateMap();
 	
 	while (i < _uri.len){
-		
 		c = _uri.str[i];
 
 		if (( c == '/' && state != PATH ) || c == '?' || c == '#' || c == ':' || c == '@')
@@ -311,9 +310,20 @@ bool	Request::uriCharValidation(const std::string set, const std::string& target
 bool	Request::validateScheme()
 {
 	//scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-	if (_uri.scheme.compare("https") || _uri.scheme.compare("http"))
+	const std::set<std::string> unsupported_schemes = get_unsupported_schemes();
+
+	to_lower_ref(_uri.scheme);
+	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
-	return true;
+	else if (unsupported_schemes.find(to_lower(_uri.scheme)) != unsupported_schemes.end()){
+		_uri.uri_type = UNSUPPORTED_SCHEME;
+		setError( "Bad Request", "Scheme not supported : " + _uri.scheme, 400, URI_SCHEME);
+	}
+	else {
+		_uri.uri_type = INVALID_SCHEME;
+		setError( "Bad Request", "URI Scheme not recognised", 400, URI_SCHEME);
+	}
+	return false;
 }
 
 bool	Request::validateUser() {
@@ -349,8 +359,10 @@ bool	Request::validateHost() {
 	return true;
 }
 
-bool	Request::validatePort() { 
-	return true;
+bool	Request::validatePort() {
+	if ( _uri.port_int >= 0 && _uri.port_int <= 65535)
+		return true;
+	return false;
 }
 
 bool	Request::validatePath() {
@@ -376,6 +388,8 @@ bool	Request::validateURI()
 	if (!(percentDecode( _uri.user, URI_USER ) && isValidUTF8( _uri.user ) && validateUser())) { outcome = false; }
 	if (!(percentDecode( _uri.pass, URI_PASS ) && isValidUTF8( _uri.pass ) && validatePass())) { outcome = false; }
 	if (!(percentDecode( _uri.host, URI_HOST ) && isValidUTF8( _uri.host ) && validateHost())) { outcome = false; }
+	if (isValidUTF8(_uri.host))
+		std::cout << _uri.host << "is a valid UTF-8 string" << std::endl;
 	//if (!(uriCharValidation( HOST_CHARS, _uri.host, URI_HOST) && validateHost())){ outcome = false; }
 	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT))) { outcome = false; }
 	else if (!_uri.port.empty()){

@@ -1,9 +1,10 @@
-Testing Error Messages
-Testing percent coding conversion
-Testing unicode validation
+FIGURE OUT HOST/USER ISSUE
+
+Testing Error Messages (OK but error numbers/messages are not accurate)
+Testing percent coding conversion (LOOKS OK BUT HOST APPEARING IN USER)
+Testing unicode validation (LOOKS OK BUT HOST APPEARING IN USER)
 
 Make character sets accurate
-Make error numbers/messages accurate
 
 Need to remove unnecessary code - e.g. setting enums that have been replaced by errors
 Remove pass field?
