@@ -1,0 +1,27 @@
+name: C++98 Web Server CI
+
+on:
+  push:
+    branches: [ kev ]
+  pull_request:
+    branches: [ kev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: sudo apt update && sudo apt install -y g++-8 valgrind
+
+      - name: Compile Web Server (C++98)
+        run: g++-8 -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp -I ./includes -o webserv
+
+      - name: Compile Unit Tests
+        run: g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp tests/test_parse_method.cpp -I ./includes -o test_parse_method
+
+      - name: Run Unit Tests
+        run: ./test_parse_method

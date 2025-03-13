@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 00:05:42 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 11:04:33 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 	- I PREFER NOT TO USE THIS APPROACH
 */
 Request::Request() : _body(""), _header_line(""), _request_line(""), 
-	_errors(), _headers(), _method(), _uri(), _version() {
+	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(0) {
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
@@ -28,7 +28,7 @@ Request::Request() : _body(""), _header_line(""), _request_line(""),
 	CAN CHECK REQUEST OBJECT FOR ERROR
 */
 Request::Request( const std::string& str ) : _body(""), _header_line(""), _request_line(str), 
-	_errors(), _headers(), _method(), _uri(), _version() {
+	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(0) {
 	parseRequestLine();
 }
 
@@ -37,7 +37,7 @@ Request::~Request( void ) {}
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
 Request::Request( const Request& other ) : _body(other._body),  _header_line(other._header_line),
 	_request_line(other._request_line), _errors(other._errors), _headers(other._headers),
-	 _method(other._method), _uri(other._uri), _version(other._version) {
+	 _method(other._method), _uri(other._uri), _version(other._version), _last_response_code(other._last_response_code) {
 }
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
@@ -61,6 +61,8 @@ bool	Request::parseRequestLine(const std::string& str)
 		outcome = false;
 	if (!(parseVersion(stream) && validateVersion()))
 		outcome = false;
+	if (outcome == true)
+		_last_response_code = 200;
 	return outcome;
 }
 
@@ -78,6 +80,8 @@ bool	Request::parseRequestLine()
 		outcome = false;
 	if (!(parseVersion(stream) && validateVersion()))
 		outcome = false;
+	if (outcome == true)
+		_last_response_code = 200;
 	return outcome;
 }
 
@@ -388,8 +392,8 @@ bool	Request::validateURI()
 	if (!(percentDecode( _uri.user, URI_USER ) && isValidUTF8( _uri.user ) && validateUser())) { outcome = false; }
 	if (!(percentDecode( _uri.pass, URI_PASS ) && isValidUTF8( _uri.pass ) && validatePass())) { outcome = false; }
 	if (!(percentDecode( _uri.host, URI_HOST ) && isValidUTF8( _uri.host ) && validateHost())) { outcome = false; }
-	if (isValidUTF8(_uri.host))
-		std::cout << _uri.host << "is a valid UTF-8 string" << std::endl;
+	// if (isValidUTF8(_uri.host))
+	// 	std::cout << _uri.host << " is a valid UTF-8 string" << std::endl;
 	//if (!(uriCharValidation( HOST_CHARS, _uri.host, URI_HOST) && validateHost())){ outcome = false; }
 	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT))) { outcome = false; }
 	else if (!_uri.port.empty()){
@@ -430,6 +434,8 @@ void	Request::setError(const std::string& str1, const std::string& str2, int num
 	error.err_location = err_location;
 	error.str1 = str1;	
 	error.str2 = str2;	
+	_last_response_code = num;
+	_last_error_loc = err_location;
 	_errors.push_back(error);
 }
 
@@ -508,6 +514,8 @@ std::string	Request::getURIpath() const			{ return _uri.path; }
 std::string	Request::getURIquery() const		{ return _uri.query; }
 std::string	Request::getURIfrag() const			{ return _uri.frag; }
 std::string	Request::getVersionString() const	{ return _version.str; }
+int			Request::getResponseCode()			{ return _last_response_code; }
+std::string	Request::getLastErrorLoc()			{ return getErrorLocation(_last_error_loc); }
 
 void	Request::printErrors(std::ostream& os) const {
 

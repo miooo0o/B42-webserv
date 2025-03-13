@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/12 16:31:36 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 10:43:21 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,9 @@ class	Request
 			method										_method;
 			uri											_uri;
 			version										_version;
-			
+			int											_last_response_code;
+			enum err_loc								_last_error_loc;
+
 							/* URI STATE MAP */
 			std::map<std::pair<char, states>, states>	uriStateMap( void );
 			
@@ -167,6 +169,8 @@ class	Request
 			std::string		getURIpass() const;
 			std::string		getVersionString() const;
 			std::string		getVersionType() const;
+			int				getResponseCode();
+			std::string		getLastErrorLoc();
 
 			void			printErrors(std::ostream& os) const;
 };

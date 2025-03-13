@@ -58,6 +58,7 @@
 		"fstream": "cpp",
 		"ranges": "cpp",
 		"span": "cpp",
-		"list": "cpp"
+		"list": "cpp",
+		"cassert": "cpp"
 	}
 }

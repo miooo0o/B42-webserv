@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 00:00:06 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 11:00:16 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,7 +252,7 @@ unsigned char   hexCharToUnsignedChar(char c){
 
 
 bool	isValidUTF8(const std::string& str) {
-	if (str.empty()) return false;
+	if (str.empty()) return true;
 
 	unsigned char	c;
 	int				expectedContinuationBytes = 0;
