@@ -28,7 +28,7 @@ bool	Status::isInRange() const {
 }
 
 void	Status::eval() {
-	/* check server side map for status coode */
+	/* TODO: check server side map for status coode */
 	// _ref = checkReference();
 	_valStatus = _validate();
 	if (_valStatus != STATUS_VALIDATED) {
@@ -49,7 +49,7 @@ Status::e_validate Status::_validate() {
 		if (referenceMap.find(_code) == referenceMap.end()) {
 			return (_STATUS_UNKNOWN);
 		}
-	} else { // REF_SERVER_CONFIG
+	} else { //  TODO: REF_SERVER_CONFIG
 		return (_STATUS_UNKNOWN);
 	}
 	return (STATUS_VALIDATED);
@@ -123,7 +123,7 @@ void	Entries::pop_back() {
 }
 
 Status	Entries::get_back() {
-	if (_state < QUEUE_EMPTY) {
+	if (_state <= QUEUE_EMPTY) {
 		return *(_entries.end());
 	}
 	return *(_entries.end() - 1);
