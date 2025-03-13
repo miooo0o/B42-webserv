@@ -7,17 +7,17 @@
 class ResponseState;
 class ContentHandler;
 class Request;
-#include "ContentHandler.hpp"
 
 class Response {
 private:
-	ResponseState*                      _state;
+	Request&							_request;
+	ResponseState*						_state;
+
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
 
 public:
 	Response(Request& request);		/* with params */
-	Response(int code);				/* static */
 	~Response();
 
 	/*
@@ -25,13 +25,16 @@ public:
 	return (response.to_response());
 	*/
 	Response		to_response();
+	
+	/* ... */
+	ResponseState*	createState();
+	bool			evaluateState();
 
 	/* to_string*/
 	std::string		to_string();
 
 	/* setter */
 	void			setState(int code);
-	ResponseState*	createState(int code);
 	void			setBody(const std::string& content);
 
 	/* getter */
