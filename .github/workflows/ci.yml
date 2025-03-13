@@ -18,7 +18,7 @@ jobs:
         run: sudo apt update && sudo apt install -y g++ valgrind
 
       - name: Compile Web Server (C++98)
-        run: g++ -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp -I ./includes -o webserv
+        run: g++ -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp srcs/TestClasses/testUtils.cpp -I ./includes -o webserv
 
       - name: Compile Unit Tests
         run: g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp tests/test_parse_method.cpp -I ./includes -o test_parse_method
