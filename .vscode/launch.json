@@ -5,7 +5,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test_parser",
+            "program": "${workspaceFolder}/webserv",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

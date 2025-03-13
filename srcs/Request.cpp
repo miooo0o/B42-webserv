@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 11:04:33 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 15:15:32 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 	- I PREFER NOT TO USE THIS APPROACH
 */
 Request::Request() : _body(""), _header_line(""), _request_line(""), 
-	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(0) {
+	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(200) {
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
@@ -28,7 +28,7 @@ Request::Request() : _body(""), _header_line(""), _request_line(""),
 	CAN CHECK REQUEST OBJECT FOR ERROR
 */
 Request::Request( const std::string& str ) : _body(""), _header_line(""), _request_line(str), 
-	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(0) {
+	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(200) {
 	parseRequestLine();
 }
 
@@ -61,8 +61,6 @@ bool	Request::parseRequestLine(const std::string& str)
 		outcome = false;
 	if (!(parseVersion(stream) && validateVersion()))
 		outcome = false;
-	if (outcome == true)
-		_last_response_code = 200;
 	return outcome;
 }
 
@@ -80,15 +78,13 @@ bool	Request::parseRequestLine()
 		outcome = false;
 	if (!(parseVersion(stream) && validateVersion()))
 		outcome = false;
-	if (outcome == true)
-		_last_response_code = 200;
 	return outcome;
 }
 
 bool	Request::parseHeaders(const std::string& str)
 {
 	std::istringstream stream(str);
-
+	/* INCOMPLETE */
 	bool outcome = true;
 	return outcome;
 }
@@ -96,7 +92,7 @@ bool	Request::parseHeaders(const std::string& str)
 bool	Request::parseBody(const std::string& str)
 {
 	std::istringstream stream(str);
-
+	/* INCOMPLETE */
 	bool outcome = true;
 	return outcome;
 }
@@ -147,22 +143,24 @@ void	Request::parseURIState(states& state, std::string& target, size_t& i)
 	
 	while (i < _uri.len){
 		c = _uri.str[i];
-
 		if (( c == '/' && state != PATH ) || c == '?' || c == '#' || c == ':' || c == '@')
 		{
 			std::pair< char, Request::states > test = std::make_pair(c, state);
 			std::map< std::pair <char, Request::states>, Request::states>::iterator it = state_map.find(test);
+
 			if (it != state_map.end() || i == _uri.len - 1)
 			{
 				if (state == SCHEME && _uri.str.substr(i + 1, 2) == "//")
 					i += 2;
+				if (state == AUTH && c == '/')
+					_uri.host = str;
+				else
+					target = str;
 				state = it->second;
-				target = str;
 				str.clear();
 				if (c == '/' || c == '?' || c == '#')
 					str += c;
 				i++;
-				
 				return ;
 			}
 		}
@@ -313,13 +311,15 @@ bool	Request::uriCharValidation(const std::string set, const std::string& target
 
 bool	Request::validateScheme()
 {
+	/* INCOMPLETE */
 	//scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 	const std::set<std::string> unsupported_schemes = get_unsupported_schemes();
 
 	to_lower_ref(_uri.scheme);
 	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
-	else if (unsupported_schemes.find(to_lower(_uri.scheme)) != unsupported_schemes.end()){
+	uriCharValidation(SCHEME_CHARS, _uri.scheme, URI_SCHEME);
+	if (unsupported_schemes.find(to_lower(_uri.scheme)) != unsupported_schemes.end()){
 		_uri.uri_type = UNSUPPORTED_SCHEME;
 		setError( "Bad Request", "Scheme not supported : " + _uri.scheme, 400, URI_SCHEME);
 	}
@@ -331,16 +331,31 @@ bool	Request::validateScheme()
 }
 
 bool	Request::validateUser() {
+	/* INCOMPLETE */
 		/* userinfo = *( unreserved / pct-encoded / sub-delims / ":" ) */
-	return true;
+	bool outcome = true;
+
+	if (!percentDecode( _uri.user, URI_USER )){ outcome = false; }
+	if (!isValidUTF8( _uri.user )){ outcome = false; }
+	return outcome;
 }
 
 bool	Request::validatePass() {
-
-	return true;
+	/* INCOMPLETE */
+	bool outcome = true;
+	if (!percentDecode( _uri.pass, URI_PASS )){ outcome = false;}
+	if (!isValidUTF8( _uri.pass )){ outcome = false; }
+	return outcome;
 }
 
 bool	Request::validateHost() {
+	bool outcome = true;
+	if (!percentDecode( _uri.host, URI_HOST ))
+		{ outcome = false;}
+	if (!isValidUTF8( _uri.host ))
+		{ outcome = false; }
+	return outcome;
+	/* INCOMPLETE */
 /* 	
 	1) IP literal in [],  
 
@@ -360,48 +375,59 @@ bool	Request::validateHost() {
 	If a URI containing an IP-literal that starts with "v" return ""address mechanism not supported" - i.e. error 501 Not Implemented
 	IPv5
 	*/
-	return true;
 }
 
 bool	Request::validatePort() {
-	if ( _uri.port_int >= 0 && _uri.port_int <= 65535)
-		return true;
-	return false;
+	bool outcome = true;
+
+	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT)))
+		{ outcome = false; }
+	if (!_uri.port.empty())
+		{_uri.port_int = str_to_int(_uri.port);}
+	else if (_uri.uri_type == HTTPS)
+		{_uri.port_int = 443;}
+	if (_uri.port_int >= 0 && _uri.port_int <= 65535)
+		{ outcome = false; }
+	
+	return outcome;
 }
 
 bool	Request::validatePath() {
- /* if authority i.e.[userinfo/host/port] either 
+ /* if authority i.e.[userinfo/host/port] either
  	1)  path starts '/'  
 	2)  must be empty */
 	return true;
 }
 
 bool	Request::validateQuery(){
-	return true;
+	bool outcome = true;
+	if (!percentDecode( _uri.query, URI_QUERY ))
+		{ outcome = false;}
+	if (!isValidUTF8( _uri.query ))
+		{ outcome = false; }
+	return outcome;
 }
 
 bool	Request::validateFrag(){
-	return true;
+	bool outcome = true;
+	if (!percentDecode( _uri.frag, URI_FRAG ))
+		{ outcome = false;}
+	if (!isValidUTF8( _uri.frag ))
+		{ outcome = false; }
+	return outcome;
 }
 
 bool	Request::validateURI()
 {
 	bool outcome = true;
 	
-	if (!(uriCharValidation(SCHEME_CHARS, _uri.scheme, URI_SCHEME) && validateScheme())){ outcome = false; }
-	if (!(percentDecode( _uri.user, URI_USER ) && isValidUTF8( _uri.user ) && validateUser())) { outcome = false; }
-	if (!(percentDecode( _uri.pass, URI_PASS ) && isValidUTF8( _uri.pass ) && validatePass())) { outcome = false; }
-	if (!(percentDecode( _uri.host, URI_HOST ) && isValidUTF8( _uri.host ) && validateHost())) { outcome = false; }
-	// if (isValidUTF8(_uri.host))
-	// 	std::cout << _uri.host << " is a valid UTF-8 string" << std::endl;
-	//if (!(uriCharValidation( HOST_CHARS, _uri.host, URI_HOST) && validateHost())){ outcome = false; }
-	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT))) { outcome = false; }
-	else if (!_uri.port.empty()){
-		_uri.port_int = str_to_int(_uri.port);
-		validatePort();
-	}
-	if (!(percentDecode(_uri.query, URI_QUERY) && isValidUTF8( _uri.query ) && validateQuery())) { outcome = false; }
-	if (!(percentDecode(_uri.frag, URI_QUERY) && isValidUTF8( _uri.frag ) && validateFrag())) { outcome = false; }
+	if (!validateScheme())	{ outcome = false; }
+	if (!validateUser())	{ outcome = false; }
+	if (!validatePass())	{ outcome = false; }
+	if (!validateHost()) 	{ outcome = false; }
+	if (!validatePort())	{ outcome = false; }
+	if (!validateQuery())	{ outcome = false; }
+	if (!validateFrag())	{ outcome = false; }
 	
 	return outcome;
 }
@@ -557,7 +583,7 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 	os << l14 << "Query" 			<< r3 << " : " 	<< request.getURIquery()		<< "\n";
 	os << l14 << "Fragment" 		<< r3 << " : " 	<< request.getURIfrag()			<< "\n\n";
 	os << l14 << "Version String" 	<< r3 << " : "	<< request.getVersionString()	<< "\n";
-	os << l14 << "Version" 			<< r3 << " : " 	<< request.getVersionType()		<< "\n\n";
+	os << l14 << "Last Response"	<< r3 << " : "	<< request.getResponseCode()	<< "\n\n";
 	request.printErrors(os);
 	os << std::setw(0) << std::left << std::endl;
 	return os;
