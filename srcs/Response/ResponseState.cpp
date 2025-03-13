@@ -1,5 +1,6 @@
 #include "ResponseState.hpp"
 #include "Reqeust.hpp"
+#include "Entries.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -10,7 +11,8 @@ bool	ResponseState::_isScenarioInitialized = false;
 ////////////////////////////////////////////////////////////////////////////////
 /* Constructor */
 
-ResponseState::ResponseState(Request& reqeust) : _request(reqeust) {
+ResponseState::ResponseState(Request& reqeust) 
+: _request(reqeust), _entries(_request) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +33,7 @@ void	ResponseState::_initDefaultScenario() {
 	if (_isScenarioInitialized) {
 		return ;
 	}
+
 	_scenarios[100] = "Continue";
 	_scenarios[200] = "OK";
 	_scenarios[301] = "Moved Permanently";
@@ -45,8 +48,6 @@ void	ResponseState::_initDefaultScenario() {
 	_scenarios[500] = "Internal Server Error";
 	_isScenarioInitialized = true;
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Informational

@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/13 00:59:53 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/13 12:07:52 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ protected:
  */
 
  /* informational */
-class InformationalState: public ResponseState {
+class InformationalState : public ResponseState {
 public:
 	InformationalState(Request& request);
 	~InformationalState();
