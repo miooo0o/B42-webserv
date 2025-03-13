@@ -3,7 +3,6 @@
 #include "../includes/Request.hpp"
 #include <cstring>
 
-
 void test_parse_method(std::string& str, const std::string& methodStr, int num, bool test){
 
 	Request req(str);
