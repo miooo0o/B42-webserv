@@ -6,11 +6,12 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:56:17 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 09:54:25 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/13 11:20:39 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Request.hpp"
+#include "../includes/TestClasses/testUtils.hpp"
 
 void	test_function(const std::string& requestLine, const std::string& testLine, const std::string& purpose, std::string num )
 {
