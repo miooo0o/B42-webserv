@@ -22,8 +22,10 @@ void    Response::setState(int code) {
 }
 
 ResponseState*  Response::createState() {
-    ResponseState::e_classes _class = _state->getStatusClass();
-    switch (_class) {
+
+
+    
+    switch (targetClass) {
         case ResponseState::SUCCESSFUL:
             return new SuccessState(_request);
         case ResponseState::REDIRECTION:

@@ -6,12 +6,12 @@ class Status {
 	/**
 	 * @brief Status validation flags for the Entries class.
 	 */
-	enum e_flags {
-		FLAG_PENDING         	= 0,	/* Default state, pending validation */
-		FLAG_VALIDATED       	= 1,	/* Status code is valid and registered */
-		_FLAG_UNKNOWN        	= -1,	/* Code is within valid range but not registered */
-		_FLAG_OUT_OF_RANGE   	= -2,	/* Code is outside the HTTP status code range (100-599) */
-		_FLAG_NOT_CODE_STATUS	= -3	/* Code is not a valid HTTP status (e.g., negative or too large) */
+	enum e_validate {
+		STATUS_PENDING         	= 0,	/* Default state, pending validation */
+		STATUS_VALIDATED       	= 1,	/* Status code is valid and registered */
+		_STATUS_UNKNOWN        	= -1,	/* Code is within valid range but not registered */
+		_STATUS_OUT_OF_RANGE   	= -2,	/* Code is outside the HTTP status code range (100-599) */
+		_STATUS_NOT				= -3	/* Code is not a valid HTTP status (e.g., negative or too large) */
 	};
 
 	/** 
@@ -26,12 +26,17 @@ class Status {
 		SERVER_ERROR			= 5 	/* 5xx: Server error responses */
 	};
 
+	enum e_reference {
+		REF_STATIC_MAP,
+		REF_SERVER_CONFIG
+	};
+
 private:
     int			_code;
-    e_flags		_flag;
+    e_validate	_valStatus;
     e_classes	_class;
     bool		_exposed;
-	bool		_validate;
+	e_reference	_ref;
 
 public:
     /* Constructor */
@@ -40,23 +45,20 @@ public:
 
     /* Getter methods */
     int			getCode() const;
-    e_flags		getFlag() const;
+    e_validate	getValStatus() const;
     e_classes	getClass() const;
     bool		isValidated() const;
-	bool		isEmpty() const;
+	bool		isExposed() const;
 
     /* Validation methods ( this.method() ) */
-	bool		isExposed() const;
-    bool		isStatusCode() const;
-    bool		isStatusCodeInClassRange() const;
-    e_flags		validateStatusCode();
-    e_classes	classifyStatusCode();
+	void		eval();
+	bool		isInRange() const;
+    bool		isInClassRange() const;
 
+private:
     /* Validation methods */
-    bool		isStatusCode(int code) const;
-    bool		isStatusCodeInClassRange(int code) const;
-    e_flags		validateStatusCode(int code);
-    e_classes	classifyStatusCode(int code);
+    e_validate	_validate();
+    e_classes	_classify();
 };
 
 
@@ -66,10 +68,10 @@ public:
 	 * @brief Queue status flags to track the current state of the status queue.
 	 */
 	enum e_state {
-		_QUEUE_OVERFLOW	= -3,		/* The queue has exceeded its maximum capacity */
+		_QUEUE_OVERFLOW		= -3,	/* The queue has exceeded its maximum capacity */
 		_QUEUE_UNDERFLOW	= -2,	/* An attempt was made to pop from an empty queue */
 		_QUEUE_ERROR		= -1,	/* An error occurred during status processing */
-		QUEUE_EMPTY		= 0,		/* The queue is empty */
+		QUEUE_EMPTY			= 0,	/* The queue is empty */
 		QUEUE_PENDING,				/* There are statuses waiting to be processed */
 		QUEUE_PROCESSING,			/* A status is currently being processed */
 		QUEUE_COMPLETE,				/* The processing of a status is completed */
@@ -79,15 +81,23 @@ public:
 private:
 	std::deque<Status>	_entries;
 	e_state				_state;
-
+	bool				_readFromRequest;
 public:
 	/* Constructor */
-	Entries();
+	Entries(Request& request);
+	~Entries();
 
 	/* Methods */
-	void	pushStatus(Status status);
-	void	popStatus();
-	Status&	getStatus();
+	void	replace(Status status);
+	void	push_back(Status status);
+	void	pop_back();
+	Status	get_back();
 
 	e_state getQueueStatus() const;
+
+	/* setter */
+	void	setState(e_state state);
+
+private:
+	void	_initEntry(Request& request);
 };
