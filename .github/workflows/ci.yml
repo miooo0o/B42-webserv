@@ -22,6 +22,8 @@ jobs:
 
       - name: Compile Unit Tests
         run: g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp tests/test_parse_method.cpp -I ./includes -o test_parse_method
+             g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp tests/test_parse_version.cpp -I ./includes -o test_parse_version
 
       - name: Run Unit Tests
         run: ./test_parse_method
+             ./test_parse_version
