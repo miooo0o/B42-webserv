@@ -15,10 +15,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run: sudo apt update && sudo apt install -y g++-8 valgrind
+        run: sudo apt update && sudo apt install -y g++ valgrind
 
       - name: Compile Web Server (C++98)
-        run: g++-8 -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp -I ./includes -o webserv
+        run: g++ -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp -I ./includes -o webserv
 
       - name: Compile Unit Tests
         run: g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp tests/test_parse_method.cpp -I ./includes -o test_parse_method
