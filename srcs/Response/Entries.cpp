@@ -126,5 +126,5 @@ Status	Entries::get_back() {
 	if (_state <= QUEUE_EMPTY) {
 		return *(_entries.end());
 	}
-	return *(_entries.end() - 1);
+	return *(_entries.begin());
 }
