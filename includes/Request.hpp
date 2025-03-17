@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/17 07:21:34 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 18:05:00 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ class	Request
 
 	enum err_loc { METHOD, URI_SCHEME, URI_USER, URI_PASS, URI_HOST, URI_PORT, URI_PATH, URI_QUERY, URI_FRAG, VERSION, HEADERS, BODY };
 	enum method_types { GET, POST, DELETE, UNSUPPORTED_METHOD, BAD_CASE, UNRECOGNISED_METHOD };
-	enum path_types{ ABSOLUTE, PARTIAL };
+	enum path_types{ PARTIAL, ABSOLUTE };
 	enum states { SCHEME, AUTH, USERINFO, HOST, PORT, PATH, QUERY, FRAG };
 	enum uri_types { HTTP, HTTPS, DOUBLE_ENCODING, HTTP_REDIRECT, IMPROPER_ENCODING, INVALID_HOST, INVALID_PORT, INVALID_SCHEME, UNSUPPORTED_SCHEME};
 	enum version_types { OPO, OPZ, BAD_REQUEST, UNSUPPORTED_VERSION, UNRECOGNISED_VERSION };
@@ -58,9 +58,8 @@ class	Request
 		method():type(), str(""){}
 	};
 	
-	struct uri {
-		std::map<std::string, std::string>				fragments;				
-		std::map<std::string, std::string>				query;				
+	struct uri {	
+		std::map<std::string, std::string>				query_map;
 		enum uri_types									uri_type;
 		enum path_types									path_type;
 		size_t											len;
@@ -72,11 +71,12 @@ class	Request
 		std::string 									query;
 		std::string 									scheme;
 		std::string 									str;
-		int												port_int;
+		std::string 									target;
 		std::string 									user;
+		int												port_int;
 		
-		uri(): uri_type(), path_type(), len(0), frag(""), host(""), path(""), port(""), query(""), 
-			scheme(""), str(""), user(""), pass(""), port_int(80){}
+		uri(): uri_type(), path_type(PARTIAL), len(0), frag(""), host(""), pass(""), path(""), port(""), query(""), 
+			scheme(""), str(""), user(""), port_int(80){}
 	};
 	
 	struct version{
@@ -88,8 +88,8 @@ class	Request
 	};
 	
 	private:
-			std::string									_header_line;
 			std::string									_request_line;
+			std::string									_header_line;
 			std::string									_body;
 			
 			method										_method;
@@ -114,6 +114,7 @@ class	Request
 			std::map<std::pair<char, states>, states> uriStateMap( void );
 			bool			parseFragment();
 			bool			parseQuery();
+			bool			split_stream_to_map(std::istringstream& iss, char delim1, char delim2);
 			bool			parseHeaders();
 			bool			parseBody();
 

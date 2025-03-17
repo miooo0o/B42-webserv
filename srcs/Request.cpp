@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/17 07:21:34 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 18:04:19 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,8 @@
 	CAN USE THE RETURN VALUE PARSE REQUEST LINE (BOOL) TO DETERMINE IF ERROR OR NOT
 	- I PREFER NOT TO USE THIS APPROACH
 */
-Request::Request() : _body(""), _header_line(""), _request_line(""), 
-	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(200) {
+Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(), _uri(), _version(),
+	_headers(), _errors(), _last_response_code(200) {
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
@@ -27,17 +27,17 @@ Request::Request() : _body(""), _header_line(""), _request_line(""),
 	PARSE REQUEST MUST THEN CALLED WITHOUT REQUEST LINE (OR COULD CALL PARSE)
 	CAN CHECK REQUEST OBJECT FOR ERROR
 */
-Request::Request( const std::string& str ) : _body(""), _header_line(""), _request_line(str), 
-	_errors(), _headers(), _method(), _uri(), _version(), _last_response_code(200) {
+Request::Request( const std::string& str ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
+	_headers(), _errors(), _last_response_code(200) {
 	parseRequestLine();
 }
 
 Request::~Request( void ) {}
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
-Request::Request( const Request& other ) : _body(other._body),  _header_line(other._header_line),
-	_request_line(other._request_line), _errors(other._errors), _headers(other._headers),
-	 _method(other._method), _uri(other._uri), _version(other._version), _last_response_code(other._last_response_code) {
+Request::Request( const Request& other ) : _request_line(other._request_line),_header_line(other._header_line),_body(other._body), 
+	_method(other._method), _uri(other._uri), _version(other._version), _headers(other._headers), _errors(other._errors),
+	  _last_response_code(other._last_response_code) {
 }
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
@@ -199,15 +199,16 @@ void	Request::parseURIState(states& state, std::string& target, size_t& i)
 	
 	while (i < _uri.len){
 		c = _uri.str[i];
-		if (( c == '/' && state != PATH ) || c == '?' || c == '#' || c == ':' || c == '@')
-		{
+		if (( c == '/' && state != PATH ) || c == '?' || c == '#' || c == ':' || c == '@'){
 			std::pair< char, Request::states > test = std::make_pair(c, state);
 			std::map< std::pair <char, Request::states>, Request::states>::iterator it = state_map.find(test);
 
-			if (it != state_map.end() || i == _uri.len - 1)
-			{
-				if (state == SCHEME && _uri.str.substr(i + 1, 2) == "//")
+			if (it != state_map.end() || i == _uri.len - 1)	{
+				if (state == SCHEME && _uri.str.substr(i + 1, 2) == "//") {
 					i += 2;
+					if (_uri.str[i + 3] == ':')
+						_uri.path_type = ABSOLUTE;
+				}
 				if (state == AUTH && c == '/')
 					_uri.host = str;
 				else
@@ -228,22 +229,72 @@ void	Request::parseURIState(states& state, std::string& target, size_t& i)
 	str.clear();
 }
 
-/*  URI FRAGMENT PARSE  */
-
-bool	Request::parseFragment(){}
-
 /*  URI QUERY PARSE  */
 
-bool	Request::parseQuery(){}
+bool	Request::parseQuery(){
+/*
+	fragment    = *( pchar / "/" / "?" )
+	pchar         = unreserved / pct-encoded / sub-delims /	
+
+	Locate the ? in the URI to extract the query part.
+	Split the query string at & to separate key-value pairs.
+	Split each pair at = to extract the key and value.
+	Perform URL decoding if necessary (e.g., %20 → space, + → space).
+*/	
+	if (_uri.query[0] != '?')
+		return false;
+
+	std::istringstream iss(_uri.query);
+	iss.ignore(1);
+	split_stream_to_map(iss, '=', '&');
+	return true;
+}
+
+bool	Request::split_stream_to_map(std::istringstream& iss, char delim1, char delim2) {
+	
+	std::string	key;
+	std::string	value;
+	
+	while (iss.eof()) {
+		std::getline(iss, key, delim1);
+		std::getline(iss, value, delim2);
+		_uri.query_map.insert(key, value);
+    }
+    return true;
+}
 
 /*  HEADER PARSING  */
 
 bool	Request::parseHeaders(const std::string& str)
 {
-	std::istringstream stream(str);
-	/* INCOMPLETE */ 
-	bool outcome = true;
-	return outcome;
+	std::istringstream iss(str);
+	std::string line;
+	std::string key;
+	std::string value;
+
+	while (std::getline(iss, line)){
+		std::getline(iss, value, '\r');
+		if (!line.empty() && line[line.length() - 1] == '\r')
+			line.erase(line.length() - 1);
+		if (line.empty()) {
+				setError("Invalid header syntax", "Headers must end with /\r/\n/\r/\n", 400, HEADERS); // Change this to correct values
+				return false;
+			}
+		size_t colonPos = line.find(':');
+		if (colonPos == std::string::npos) {
+			setError("Invalid header syntax", "Header entries must be separated by /\r/\n", 400, HEADERS); // Change this to correct values
+			return false;
+        }
+		std::string key = line.substr(0, colonPos);
+		std::string value = line.substr(colonPos + 1);
+
+		for (size_t i = 0; i < key.length(); ++i) {
+			key[i] = std::tolower(key[i]);
+		}
+		
+		_headers[key] = value;
+	}
+	return true;
 }
 
 /*  BODY PARSING  */
@@ -430,11 +481,19 @@ bool	Request::validatePort() {
 /*  URI PATH VALIDATION  */
 
 bool	Request::validatePath() {
- /* if authority i.e.[userinfo/host/port] either
- 	1)  path starts '/'  
-	2)  must be empty */
 
-	// NEED TO REMOVE PATH TRAVERSAL ELEMENTS
+	// if (_uri.path_type == ABSOLUTE && (!_uri.path.empty() && _uri.path[0] != '//')){
+	// 	setError( "Bad Request", "Path must start \'/\' or path must be empty", 400, URI_PATH ); //ERROR MESSAGE NEEDS TO CHANGE
+	// 	return false;
+	// }
+	// else if (_uri.path.empty())
+	// 	_uri.path[0] = '//';
+	// else if (_uri.path_type == ABSOLUTE)
+	// 	remove_dot_segments(_uri.path);
+	// 	else if (_uri.path[0] == '//') {
+	// //	merge_path(base_path); // need to get base path from Server Config */
+	// 	remove_dot_segments(_uri.path);
+	// }
 	return true;
 }
 

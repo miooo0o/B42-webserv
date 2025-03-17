@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 00:00:04 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 18:06:41 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,19 +27,21 @@
 #include <unistd.h>
 #include <vector>
 
-const			std::set<std::string>& get_valid_methods();
-const			std::set<std::string>& get_unsupported_methods();
-const           std::set<std::string>& get_unsupported_schemes();
+const								std::set<std::string>& get_valid_methods();
+const								std::set<std::string>& get_unsupported_methods();
+const           					std::set<std::string>& get_unsupported_schemes();
 
-long			hexToLong(const char *hex);
-unsigned char   hexCharToUnsignedChar(char c);
-bool			isValidUTF8(const std::string& str);
-int				str_to_int( const std::string str);
-int				substring_to_int(const std::string str, int start, int end);
+void								remove_dot_segments(std::string&);
 
-std::string		to_lower(std::string str);
-std::string		to_upper(std::string str);
-void			to_lower_ref(std::string& str);
-void			to_upper_ref(std::string& str);
+std::string							to_lower(std::string str);
+std::string							to_upper(std::string str);
+void								to_lower_ref(std::string& str);
+void								to_upper_ref(std::string& str);
+
+int									str_to_int( const std::string str);
+int									substring_to_int(const std::string str, int start, int end);
+long								hexToLong(const char *hex);
+unsigned char   					hexCharToUnsignedChar(char c);
+bool								isValidUTF8(const std::string& str);
 
 #endif

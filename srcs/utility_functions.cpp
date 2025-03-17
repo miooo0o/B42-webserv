@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 11:00:16 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 18:05:59 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,6 +160,12 @@ const std::set<std::string>& get_unsupported_schemes() {
 	return unsupported_schemes;
 }
 
+void	remove_dot_segments(std::string&){
+
+	
+	return ;
+}
+
 std::string	to_lower(std::string str) {
 
     for (size_t i = 0; i < str.size(); ++i) {
@@ -249,7 +255,6 @@ unsigned char   hexCharToUnsignedChar(char c){
 		return -1;
 	return x;
 }
-
 
 bool	isValidUTF8(const std::string& str) {
 	if (str.empty()) return true;
