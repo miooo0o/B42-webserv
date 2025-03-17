@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 23:42:56 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 07:21:34 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +47,14 @@ Request& Request::operator=( const Request& other ) {
 	return ( *this );
 }
 
-/* PARAMETERISED VERSION - TAKES REQUEST LINE AS INPUT 
-	- I PREFER NOT TO USE THIS APPROACH, BUT CAN BE USED WITH IF STATEMENT IN CALLING FUNCTION
+  /* ========= */
+ /*  PARSING  */
+/* ========= */
+
+/* PARSE REQUEST LINE - PARAMETERISED */
+/* 
+	TAKES REQUEST LINE AS INPUT 
+	I PREFER NOT TO USE THIS APPROACH, BUT CAN BE USED WITH IF STATEMENT IN CALLING FUNCTION
 */
 bool	Request::parseRequestLine(const std::string& str)
 {
@@ -64,7 +70,9 @@ bool	Request::parseRequestLine(const std::string& str)
 	return outcome;
 }
 
-/* NO PARAMETER - USES _request_line WHICH HAS BEEN SET BY PARAMETERISED CONSTRUCTOR
+/* PARSE REQUEST LINE - NO PARAMETER */
+/* 
+NO PARAMETER - USES _request_line WHICH HAS BEEN SET BY PARAMETERISED CONSTRUCTOR
 	CALLED FROM DEFAULT CONSTRUCTOR
 */
 bool	Request::parseRequestLine()
@@ -81,21 +89,7 @@ bool	Request::parseRequestLine()
 	return outcome;
 }
 
-bool	Request::parseHeaders(const std::string& str)
-{
-	std::istringstream stream(str);
-	/* INCOMPLETE */
-	bool outcome = true;
-	return outcome;
-}
-
-bool	Request::parseBody(const std::string& str)
-{
-	std::istringstream stream(str);
-	/* INCOMPLETE */
-	bool outcome = true;
-	return outcome;
-}
+/*  METHOD PARSING  */
 
 bool	Request::parseMethod(std::istringstream& stream)
 {
@@ -104,6 +98,66 @@ bool	Request::parseMethod(std::istringstream& stream)
 		return false;
 	return true;
 }
+
+/*  VERSION PARSING  */
+
+bool	Request::parseVersion(std::istringstream& stream)
+{
+	std::getline(stream, _version.str, '\r');
+
+	char ch;
+    if (stream.get(ch) && ch == '\n') {
+		if (_version.str.empty()) {
+			setError( "Bad Request", "No HTTP version provided", 400, VERSION );
+			setVersion (BAD_REQUEST, _version.str, 0, 0);
+			return false;
+		}
+		return true;
+	}
+	else {
+		setError( "Bad Request", "Request Line must end \\r\\n", 400, VERSION );
+		setVersion (BAD_REQUEST, _version.str, 0, 0);
+	}
+	return false;
+}
+
+   /* ============= */
+  /*  URI PARSING  */
+ /* ============= */
+
+bool	Request::parseURI(std::istringstream& stream)
+{
+	std::string	str;
+	states		state = SCHEME;
+	size_t		i = 0;
+
+	std::getline(stream, _uri.str, ' ');
+	if (_uri.str.empty())
+		return false;
+	
+	_uri.len = _uri.str.length();
+	
+	while (i < _uri.len)
+	{
+		switch (state) {
+			case AUTH:{
+				if ( _uri.user.empty()) {parseURIState(state, _uri.user, i); }
+				else { parseURIState(state, _uri.pass, i); }
+				break;
+			}
+			case FRAG:	parseURIState(state, _uri.frag, i); break;
+			case HOST: 	parseURIState(state, _uri.host, i);	break;
+			case PATH: 	parseURIState(state, _uri.path, i);	break;
+			case PORT: 	parseURIState(state, _uri.port, i);	break;
+			case QUERY: parseURIState(state, _uri.query, i); break;
+			case SCHEME:parseURIState(state, _uri.scheme, i); break;
+			default: break;
+		}
+	}
+	return true;
+}
+
+/*	URI STATE MACHINE MAP  */
 
 std::map<std::pair<char, Request::states>, Request::states>	Request::uriStateMap( void )
 {
@@ -134,6 +188,8 @@ std::map<std::pair<char, Request::states>, Request::states>	Request::uriStateMap
 	}
 	return state_map;
 }
+
+/*	URI STATE MACHINE  */
 
 void	Request::parseURIState(states& state, std::string& target, size_t& i)
 {
@@ -172,57 +228,39 @@ void	Request::parseURIState(states& state, std::string& target, size_t& i)
 	str.clear();
 }
 
-bool	Request::parseURI(std::istringstream& stream)
-{
-	std::string	str;
-	states		state = SCHEME;
-	size_t		i = 0;
+/*  URI FRAGMENT PARSE  */
 
-	std::getline(stream, _uri.str, ' ');
-	if (_uri.str.empty())
-		return false;
-	
-	_uri.len = _uri.str.length();
-	
-	while (i < _uri.len)
-	{
-		switch (state) {
-			case AUTH:{
-				if ( _uri.user.empty()) {parseURIState(state, _uri.user, i); }
-				else { parseURIState(state, _uri.pass, i); }
-				break;
-			}
-			case FRAG:	parseURIState(state, _uri.frag, i); break;
-			case HOST: 	parseURIState(state, _uri.host, i);	break;
-			case PATH: 	parseURIState(state, _uri.path, i);	break;
-			case PORT: 	parseURIState(state, _uri.port, i);	break;
-			case QUERY: parseURIState(state, _uri.query, i); break;
-			case SCHEME:parseURIState(state, _uri.scheme, i); break;
-			default: break;
-		}
-	}
-	return true;
+bool	Request::parseFragment(){}
+
+/*  URI QUERY PARSE  */
+
+bool	Request::parseQuery(){}
+
+/*  HEADER PARSING  */
+
+bool	Request::parseHeaders(const std::string& str)
+{
+	std::istringstream stream(str);
+	/* INCOMPLETE */ 
+	bool outcome = true;
+	return outcome;
 }
 
-bool	Request::parseVersion(std::istringstream& stream)
-{
-	std::getline(stream, _version.str, '\r');
+/*  BODY PARSING  */
 
-	char ch;
-    if (stream.get(ch) && ch == '\n') {
-		if (_version.str.empty()) {
-			setError( "Bad Request", "No HTTP version provided", 400, VERSION );
-			setVersion (BAD_REQUEST, _version.str, 0, 0);
-			return false;
-		}
-		return true;
-	}
-	else {
-		setError( "Bad Request", "Request Line must end \\r\\n", 400, VERSION );
-		setVersion (BAD_REQUEST, _version.str, 0, 0);
-	}
-	return false;
+bool	Request::parseBody(const std::string& str)
+{
+	std::istringstream stream(str);
+	/* INCOMPLETE */
+	bool outcome = true;
+	return outcome;
 }
+
+  /* ============= */
+ /*  VALIDATION   */
+/* ============= */
+
+/*  METHOD VALIDATION  */
 
 bool	Request::validateMethod()
 {
@@ -251,63 +289,49 @@ bool	Request::validateMethod()
 	return false;
 }
 
-bool	Request::percentDecode( std::string& encoded, err_loc err_location )
+/*  VERSION VALIDATION  */
+
+bool	Request::validateVersion()
 {
-	std::string	decoded;
-	size_t		len = encoded.length();
-	size_t		i = 0;
-	
-	decoded.reserve(len);
-	while ( i < len )
-	{
-		if (encoded[i] == '%')
-		{
-			if ((i + 2) < len && (isxdigit(encoded[i + 1]) && isxdigit(encoded[i + 2]))) {
-		
-				unsigned char converted = hexCharToUnsignedChar(encoded[i + 1]);
-				converted = converted << 4;
-				converted += hexCharToUnsignedChar(encoded[i + 2]);		
-				decoded += converted;
-				i += 3;
-			}
-			else
-			{
-				setError("Bad Request", "Invalid Percent Encoding", 400, err_location);
-				return false;
-			}
-		}
-		else
-			decoded += encoded[i++];
+	if (_version.str.compare("HTTP/1.1") == 0)
+		setVersion(OPO, _version.str, 1, 1);
+	else if (_version.str.compare(std::string("HTTP/1.0")) == 0)
+		setVersion(OPZ, _version.str, 1, 0);
+	else if (_version.str.compare(std::string("HTTP/0.9")) == 0 ||
+				_version.str.compare(std::string("HTTP/2.0")) == 0 ||
+					_version.str.compare(std::string("HTTP/3.0")) == 0) {
+		setError("Bad Request", "Unsupported HTTP Version : " + _version.str, 400, VERSION);
+		setVersion(UNSUPPORTED_VERSION, _version.str, substring_to_int(_version.str, 5, 1), 0);
 	}
-	encoded = decoded;
-	return true;
+	else {
+		setVersion(UNRECOGNISED_VERSION, _version.str, 0, 0);
+		setError("Bad Request", "Unrecognised HTTP Version : " + _version.str, 400, VERSION);
+	}
+	if (_version.type > 1)
+		return false;
+	return true ;
 }
 
-bool	Request::uriCharValidation(const std::string set, const std::string& target, err_loc err_location) {
-	
-	size_t		target_len = target.length();
-	size_t		set_len = set.length();
-	bool		in_set;
-	std::string	message = "URI contains illegal characters";
-	std::string chars;
+  /* ================ */
+ /*  URI VALIDATION  */
+/* ================ */
 
-	for( size_t i = 0; i < target_len; i++ ) {
-		in_set = false;
-		for( size_t j = 0; j < set_len; j++ ) {
-			if (target[i] == set[j]) {
-				in_set = true ;
-				break;
-			}
-		}
-		if (in_set == false){
-			chars += target[i];
-		}
-	}
-	if (chars.empty())
-		return true;
-	setError( "Bad Request", message + " \"" + chars + "\"", 400, err_location );
-	return false;
+bool	Request::validateURI()
+{
+	bool outcome = true;
+	
+	if (!validateScheme())	{ outcome = false; }
+	if (!validateUser())	{ outcome = false; }
+	if (!validatePass())	{ outcome = false; }
+	if (!validateHost()) 	{ outcome = false; }
+	if (!validatePort())	{ outcome = false; }
+	if (!validateQuery())	{ outcome = false; }
+	if (!validateFrag())	{ outcome = false; }
+	
+	return outcome;
 }
+
+/*  URI SCHEME VALIDATION  */
 
 bool	Request::validateScheme()
 {
@@ -330,15 +354,22 @@ bool	Request::validateScheme()
 	return false;
 }
 
+/*  URI USER VALIDATION  */
+
 bool	Request::validateUser() {
 	/* INCOMPLETE */
 		/* userinfo = *( unreserved / pct-encoded / sub-delims / ":" ) */
+	/* THIS SHOULD PROBABLY RETURN ERROR 400 or 404 
+	 	USERNAME / PASS SHOULD NOT APPEAR IN THE  
+	*/
 	bool outcome = true;
 
 	if (!percentDecode( _uri.user, URI_USER )){ outcome = false; }
 	if (!isValidUTF8( _uri.user )){ outcome = false; }
 	return outcome;
 }
+
+/*  URI PASS VALIDATION  */
 
 bool	Request::validatePass() {
 	/* INCOMPLETE */
@@ -347,6 +378,8 @@ bool	Request::validatePass() {
 	if (!isValidUTF8( _uri.pass )){ outcome = false; }
 	return outcome;
 }
+
+/*  URI HOST VALIDATION  */
 
 bool	Request::validateHost() {
 	bool outcome = true;
@@ -377,6 +410,8 @@ bool	Request::validateHost() {
 	*/
 }
 
+/*  URI PORT VALIDATION  */
+
 bool	Request::validatePort() {
 	bool outcome = true;
 
@@ -392,12 +427,18 @@ bool	Request::validatePort() {
 	return outcome;
 }
 
+/*  URI PATH VALIDATION  */
+
 bool	Request::validatePath() {
  /* if authority i.e.[userinfo/host/port] either
  	1)  path starts '/'  
 	2)  must be empty */
+
+	// NEED TO REMOVE PATH TRAVERSAL ELEMENTS
 	return true;
 }
+
+/*  URI QUERY VALIDATION  */
 
 bool	Request::validateQuery(){
 	bool outcome = true;
@@ -408,6 +449,8 @@ bool	Request::validateQuery(){
 	return outcome;
 }
 
+/*  URI FRAGMENT VALIDATION  */
+
 bool	Request::validateFrag(){
 	bool outcome = true;
 	if (!percentDecode( _uri.frag, URI_FRAG ))
@@ -417,41 +460,67 @@ bool	Request::validateFrag(){
 	return outcome;
 }
 
-bool	Request::validateURI()
-{
-	bool outcome = true;
-	
-	if (!validateScheme())	{ outcome = false; }
-	if (!validateUser())	{ outcome = false; }
-	if (!validatePass())	{ outcome = false; }
-	if (!validateHost()) 	{ outcome = false; }
-	if (!validatePort())	{ outcome = false; }
-	if (!validateQuery())	{ outcome = false; }
-	if (!validateFrag())	{ outcome = false; }
-	
-	return outcome;
-}
+   /* ===================== */
+  /* URI VALIDATION UTILS  */
+ /* ===================== */
 
-bool	Request::validateVersion()
-{
-	if (_version.str.compare("HTTP/1.1") == 0)
-		setVersion(OPO, _version.str, 1, 1);
-	else if (_version.str.compare(std::string("HTTP/1.0")) == 0)
-		setVersion(OPZ, _version.str, 1, 0);
-	else if (_version.str.compare(std::string("HTTP/0.9")) == 0 ||
-				_version.str.compare(std::string("HTTP/2.0")) == 0 ||
-					_version.str.compare(std::string("HTTP/3.0")) == 0) {
-		setError("Bad Request", "Unsupported HTTP Version : " + _version.str, 400, VERSION);
-		setVersion(UNSUPPORTED_VERSION, _version.str, substring_to_int(_version.str, 5, 1), 0);
-	}
-	else {
-		setVersion(UNRECOGNISED_VERSION, _version.str, 0, 0);
-		setError("Bad Request", "Unrecognised HTTP Version : " + _version.str, 400, VERSION);
-	}
-	if (_version.type > 1)
-		return false;
-	return true ;
-}
+ bool	Request::percentDecode( std::string& encoded, err_loc err_location )
+ {
+	 std::string	decoded;
+	 size_t		len = encoded.length();
+	 size_t		i = 0;
+	 
+	 decoded.reserve(len);
+	 while ( i < len )
+	 {
+		 if (encoded[i] == '%')
+		 {
+			 if ((i + 2) < len && (isxdigit(encoded[i + 1]) && isxdigit(encoded[i + 2]))) {
+		 
+				 unsigned char converted = hexCharToUnsignedChar(encoded[i + 1]);
+				 converted = converted << 4;
+				 converted += hexCharToUnsignedChar(encoded[i + 2]);		
+				 decoded += converted;
+				 i += 3;
+			 }
+			 else
+			 {
+				 setError("Bad Request", "Invalid Percent Encoding", 400, err_location);
+				 return false;
+			 }
+		 }
+		 else
+			 decoded += encoded[i++];
+	 }
+	 encoded = decoded;
+	 return true;
+ }
+ 
+ bool	Request::uriCharValidation(const std::string set, const std::string& target, err_loc err_location) {
+	 
+	 size_t		target_len = target.length();
+	 size_t		set_len = set.length();
+	 bool		in_set;
+	 std::string	message = "URI contains illegal characters";
+	 std::string chars;
+ 
+	 for( size_t i = 0; i < target_len; i++ ) {
+		 in_set = false;
+		 for( size_t j = 0; j < set_len; j++ ) {
+			 if (target[i] == set[j]) {
+				 in_set = true ;
+				 break;
+			 }
+		 }
+		 if (in_set == false){
+			 chars += target[i];
+		 }
+	 }
+	 if (chars.empty())
+		 return true;
+	 setError( "Bad Request", message + " \"" + chars + "\"", 400, err_location );
+	 return false;
+ }
 
 /* SETTERS */
 void	Request::setError(const std::string& str1, const std::string& str2, int num, err_loc err_location) {

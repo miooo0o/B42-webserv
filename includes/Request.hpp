@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/13 10:43:21 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/17 07:21:34 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@
 
 class	Request
 {
+	// generic URI delimiters  = :/?#[]@
+	// sub-delims  = !$&'()*+,;=
 	//# define RESERVED		"!#$&'()*+,/:;=?@[]"
 	//# define UNRESERVED	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
 	# define SCHEME_CHARS	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-."
@@ -44,75 +46,85 @@ class	Request
 	enum version_types { OPO, OPZ, BAD_REQUEST, UNSUPPORTED_VERSION, UNRECOGNISED_VERSION };
 	
 	struct request_error{
-		int				num;
-		enum err_loc	err_location;
-		std::string		str1;
-		std::string		str2;
+		int												num;
+		enum err_loc									err_location;
+		std::string										str1;
+		std::string										str2;
 	};
 	
 	struct method {
-		enum method_types	type;
-		std::string			str;
+		enum method_types								type;
+		std::string										str;
 		method():type(), str(""){}
 	};
 	
 	struct uri {
-		enum uri_types		uri_type;
-		enum path_types		path_type;
-		size_t				len;
-		std::string 		frag;
-		std::string 		host;
-		std::string 		path;
-		std::string			port;
-		std::string 		query;
-		std::string 		scheme;
-		std::string 		str;
-		std::string 		user;
-		std::string 		pass;
-		int					port_int;
-
+		std::map<std::string, std::string>				fragments;				
+		std::map<std::string, std::string>				query;				
+		enum uri_types									uri_type;
+		enum path_types									path_type;
+		size_t											len;
+		std::string 									frag;
+		std::string 									host;
+		std::string 									pass;
+		std::string 									path;
+		std::string										port;
+		std::string 									query;
+		std::string 									scheme;
+		std::string 									str;
+		int												port_int;
+		std::string 									user;
+		
 		uri(): uri_type(), path_type(), len(0), frag(""), host(""), path(""), port(""), query(""), 
 			scheme(""), str(""), user(""), pass(""), port_int(80){}
 	};
 	
 	struct version{
-		enum version_types	type;
-		std::string			str;
-		int					major;
-		int					minor;
+		enum version_types								type;
+		std::string										str;
+		int												major;
+		int												minor;
 		version(): type(), str(""), major(0), minor(0){}
 	};
 	
 	private:
-			std::string									_body;
 			std::string									_header_line;
 			std::string									_request_line;
+			std::string									_body;
 			
-			std::list<request_error>					_errors;
-			std::map<std::string, std::string>			_headers;
 			method										_method;
 			uri											_uri;
 			version										_version;
+			
+			std::map<std::string, std::string>			_headers;
+
+			std::list<request_error>					_errors;
+		
 			int											_last_response_code;
 			enum err_loc								_last_error_loc;
 
 							/* URI STATE MAP */
-			std::map<std::pair<char, states>, states>	uriStateMap( void );
-			
+							
 							/*	PARSING	*/
 			bool			parseRequestLine();
 			bool			parseMethod(std::istringstream& stream);
+			bool			parseVersion(std::istringstream& stream);
 			bool			parseURI(std::istringstream& stream);
 			void			parseURIState(states& state, std::string& target, size_t& i);
-			bool			parseVersion(std::istringstream& stream);
-			
-							/*	METHOD VALIDATION	*/
+			std::map<std::pair<char, states>, states> uriStateMap( void );
+			bool			parseFragment();
+			bool			parseQuery();
+			bool			parseHeaders();
+			bool			parseBody();
+
+							/*	VALIDATION	*/
+			bool			validateBody( void );
+			bool			validateHeaders( void );
 			bool			validateMethod( void );
-			
-							/*	URI NORMALISATION AND VALIDATION	*/
-			bool			percentDecode(std::string& encoded, err_loc err_location);
-			bool			uriCharValidation(const std::string set, const std::string& target, err_loc err_location);
 			bool			validateURI( void );
+			bool			validateVersion( void );
+			
+							/*	URI VALIDATION	*/
 			bool			validateScheme( void );
 			bool			validateUser( void );
 			bool			validatePass( void );
@@ -122,15 +134,10 @@ class	Request
 			bool			validateQuery( void );
 			bool			validateFrag( void );
 			
-							/*	VERSION VALIDATION	*/
-			bool			validateVersion( void );
-
-							/*	HEADER VALIDATION	*/
-			bool			validateHeaders( void );
+							/*	URI VALIDATION UTILS */
+			bool			percentDecode(std::string& encoded, err_loc err_location);
+			bool			uriCharValidation(const std::string set, const std::string& target, err_loc err_location);
 			
-							/*	BODY VALIDATION	*/
-			bool			validateBody( void );
-
 	public:
 	/* CONSTRUCTORS */
 							Request( void );
@@ -175,7 +182,10 @@ class	Request
 			void			printErrors(std::ostream& os) const;
 };
 
+/* OUTPUT FORMAT  */
 std::ostream& l14(std::ostream& os);
 std::ostream& r3(std::ostream& os);
+
+/* PRINTING REQUEST */
 std::ostream&	operator<<(std::ostream& os, Request& request);
 #endif
