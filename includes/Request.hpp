@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/17 18:05:00 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/18 11:39:55 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,31 @@
 #include <unistd.h>
 #include <vector>
 
+enum err_loc { METHOD, URI_SCHEME, URI_USER, URI_PASS, URI_HOST, URI_PORT, URI_PATH, URI_QUERY, URI_FRAG, VERSION, HEADERS, BODY };
+enum method_types { GET, POST, DELETE, UNSUPPORTED_METHOD, BAD_CASE, UNRECOGNISED_METHOD };
+enum path_types{ PARTIAL, ABSOLUTE };
+enum states { SCHEME, AUTH, USERINFO, HOST, PORT, PATH, QUERY, FRAG };
+enum uri_types { HTTP, HTTPS, DOUBLE_ENCODING, HTTP_REDIRECT, IMPROPER_ENCODING, INVALID_HOST, INVALID_PORT, INVALID_SCHEME, UNSUPPORTED_SCHEME};
+enum version_types { OPO, OPZ, BAD_REQUEST, UNSUPPORTED_VERSION, UNRECOGNISED_VERSION };
+
+typedef std::map<std::string, std::string> StringMap_t;
+typedef	std::map<std::pair<char, states>, states> UriStateMap_t;
+
+#define ERR_BAD_REQ 	"Bad Request"
+#define ERR_METH_UPPER	"Invalid HTTP method: must be uppercase"
+#define ERR_METH_UNSUP	"Method not supported"
+#define ERR_METH_UNREC	"Method not recognised"
+#define ERR_HEAD_SEP	"Invalid header syntax: Header entries must be separated by /\r/\n"
+#define ERR_HEAD_END	"Invalid header syntax: Headers must end with /\r/\n/\r/\n"
+#define ERR_HTTP_UNSUP	"Unsupported HTTP Version : "
+#define ERR_HTTP_UNREC	"Unrecognised HTTP Version : "
+#define ERR_SCHEM_UNSUP	"URI Scheme not supported : "
+#define ERR_SCHEM_UNREC	"URI Scheme not recognised : "
+#define ERR_URI_ENCOD	"Invalid Percent Encoding"
+
 class	Request
 {
+	public :
 	// generic URI delimiters  = :/?#[]@
 	// sub-delims  = !$&'()*+,;=
 	//# define RESERVED		"!#$&'()*+,/:;=?@[]"
@@ -37,13 +60,6 @@ class	Request
 	# define AUTH_CHARS		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;="
 	# define HOST_CHARS		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;=."
 	# define PORT_CHARS		"0123456789"
-
-	enum err_loc { METHOD, URI_SCHEME, URI_USER, URI_PASS, URI_HOST, URI_PORT, URI_PATH, URI_QUERY, URI_FRAG, VERSION, HEADERS, BODY };
-	enum method_types { GET, POST, DELETE, UNSUPPORTED_METHOD, BAD_CASE, UNRECOGNISED_METHOD };
-	enum path_types{ PARTIAL, ABSOLUTE };
-	enum states { SCHEME, AUTH, USERINFO, HOST, PORT, PATH, QUERY, FRAG };
-	enum uri_types { HTTP, HTTPS, DOUBLE_ENCODING, HTTP_REDIRECT, IMPROPER_ENCODING, INVALID_HOST, INVALID_PORT, INVALID_SCHEME, UNSUPPORTED_SCHEME};
-	enum version_types { OPO, OPZ, BAD_REQUEST, UNSUPPORTED_VERSION, UNRECOGNISED_VERSION };
 	
 	struct request_error{
 		int												num;
@@ -59,7 +75,7 @@ class	Request
 	};
 	
 	struct uri {	
-		std::map<std::string, std::string>				query_map;
+		StringMap_t										query_map;
 		enum uri_types									uri_type;
 		enum path_types									path_type;
 		size_t											len;
@@ -96,7 +112,7 @@ class	Request
 			uri											_uri;
 			version										_version;
 			
-			std::map<std::string, std::string>			_headers;
+			StringMap_t									_headers;
 
 			std::list<request_error>					_errors;
 		
@@ -109,9 +125,14 @@ class	Request
 			bool			parseRequestLine();
 			bool			parseMethod(std::istringstream& stream);
 			bool			parseVersion(std::istringstream& stream);
+
+							/*	URI PARSING	*/
 			bool			parseURI(std::istringstream& stream);
 			void			parseURIState(states& state, std::string& target, size_t& i);
-			std::map<std::pair<char, states>, states> uriStateMap( void );
+			UriStateMap_t	uriStateMap( void );
+			void 			setURIPathType(size_t& i);
+			bool			isURIdelimited(char c, states state);
+
 			bool			parseFragment();
 			bool			parseQuery();
 			bool			split_stream_to_map(std::istringstream& iss, char delim1, char delim2);
@@ -140,6 +161,7 @@ class	Request
 			bool			uriCharValidation(const std::string set, const std::string& target, err_loc err_location);
 			
 	public:
+			
 	/* CONSTRUCTORS */
 							Request( void );
 							Request( const std::string& str );
@@ -179,8 +201,11 @@ class	Request
 			std::string		getVersionType() const;
 			int				getResponseCode();
 			std::string		getLastErrorLoc();
-
+			
 			void			printErrors(std::ostream& os) const;
+							
+							/* TESTING */			
+			StringMap_t		getRequestHeaders();
 };
 
 /* OUTPUT FORMAT  */

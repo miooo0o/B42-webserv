@@ -5,7 +5,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/test_parse_version",
+            "program": "${workspaceFolder}/test_parse_headers",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

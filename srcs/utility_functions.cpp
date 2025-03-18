@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/17 18:05:59 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/18 14:51:25 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,8 +156,42 @@ const std::set<std::string>& get_unsupported_schemes() {
 		unsupported_schemes.insert(std::string("z39"));
 		i++;
 	}
-		
+
 	return unsupported_schemes;
+}
+
+void	printMap(const std::map<std::string, std::string>& data) {
+	
+	std::cout << "PARSED HEADER MAP \n===================" << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); ++it) {
+			std::cout << "Key : " + it->first << std::endl;
+			if (it->second == "\r") {
+				std::cout << "[CR]"<< std::endl << std::endl;
+			}
+			else {
+				std::cout << "Val : " + it->second << std::endl << std::endl;
+			}
+	}
+	std::cout << "END OF HEADER MAP \n===================" << std::endl << std::endl;
+
+}
+
+void	parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim) {
+
+	std::string line;
+	std::string key;
+	std::string value;
+
+	while (std::getline(iss, line, pair_delim)) {
+		std::size_t pos = line.find(kv_delim);
+		if (pos == std::string::npos)
+			break;
+		key = line.substr(0, pos);
+		value = line.substr(pos + 1);
+		result[key] = value;
+	}
+	result["mapLastLine"] = line;
+	printMap(result);
 }
 
 void	remove_dot_segments(std::string&){
