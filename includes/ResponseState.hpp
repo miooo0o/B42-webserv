@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/13 12:07:52 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/18 22:17:14 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 class Response;
 class Request;
 class Entries;
+class Entry;
 
 #include "Entries.hpp"
 
@@ -30,16 +31,22 @@ protected:
 	static bool							_isScenarioInitialized;
 
 public:
-	ResponseState(int code);
+	/* constructor */
 	ResponseState(Request& reqeust);
 	// TODO: copy constructor, operator
-
 	virtual ~ResponseState() {}
-	virtual std::string getHandledBody() const = 0;
-	/* ststic methods */
+
+	
+	bool		isEntryUnprocessed();
+	bool		hasValidatedEntry();
+	std::string	generateTemplate();
+	
+	/* virtual  */
+	virtual std::string getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
+	
+	/* ststic methods: relate with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
-	
 protected:
 	/* ststic methods */
 	static void			_initDefaultScenario();
@@ -59,7 +66,7 @@ public:
 	InformationalState(Request& request);
 	~InformationalState();
 
-	std::string getHandledBody() const;
+	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 
 };
 
@@ -69,7 +76,7 @@ public:
 	SuccessState(Request& request);
 	~SuccessState();
 
-	std::string getHandledBody() const;
+	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 };
 
 /* Redirection */
@@ -79,7 +86,7 @@ public:
 	~RedirectState();
 
 
-	std::string getHandledBody() const;
+	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 };
 
 /* Error */
@@ -88,5 +95,5 @@ public:
 	ErrorState(Request& request);
 	~ErrorState();
 
-	std::string getHandledBody() const;
+	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 };
