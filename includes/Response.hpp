@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RESPONSE_HPP
+#define RESPONSE_HPP
 
 #include <string>
 #include <map>
@@ -7,28 +8,28 @@
 class ResponseState;
 class ContentHandler;
 class Request;
+class Entrise;
 
-class Response {
+#include "EntryObserver.hpp"
+#include "Request.hpp"
+
+class Response : public EntryObserver {
 private:
 	Request&							_request;
-	ResponseState*						_state;
+	Entries*							_entries; 
 
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
 
 public:
-	Response(Request& request);		/* with params */
+	Response(Request& request, Entries* entries);		/* with params */
 	~Response();
 
-	/*
-	Response	response(request);
-	return (response.to_response());
-	*/
 	Response		to_response();
 	
 	/* ... */
 	ResponseState*	createState();
-	bool			evaluateState();
+	bool			evaluate();
 
 	/* to_string*/
 	std::string		to_string();
@@ -45,3 +46,5 @@ public:
 	/* add methods */
 	void		addHeader(const std::string& key, const std::string& value);
 };
+
+#endif 

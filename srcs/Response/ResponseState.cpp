@@ -16,6 +16,24 @@ ResponseState::ResponseState(Request& reqeust)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+bool	ResponseState::isEntryUnprocessed() {
+	if (_entries.getQueueStatus() == Entries::QUEUE_FULL) {
+		return (true);
+	}
+	return (false);
+}
+
+bool	ResponseState::hasValidatedEntry() {
+	if (_entries.getQueueStatus() > Entries::QUEUE_EMPTY) {
+		if (_entries.getEntry().isReady()) {
+			return (true);
+		}
+	}
+	return (false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /* Static Methods */
 
 std::map<int, std::string>& ResponseState::getScenarios() {
@@ -49,22 +67,70 @@ void	ResponseState::_initDefaultScenario() {
 	_isScenarioInitialized = true;
 }
 
+
+/*
+	int statusCode = _entries.getEntry().getCode();
+	if (serverScenarios.find(statusCode) != serverScenarios.end()) {
+		return ("");			// read file
+	} else if (_scenarios.find(statusCode) != _scenarios.end()) {
+		return ("");			// html generate
+	} else {
+		_entries.replace(500);	// error_code;
+	}
+*/
+
 ////////////////////////////////////////////////////////////////////////////////
 // Informational
 ////////////////////////////////////////////////////////////////////////////////
+
+InformationalState::InformationalState(Request& request) : ResponseState(request) {
+}
+
+std::string	InformationalState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	return ("");
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Success
 ////////////////////////////////////////////////////////////////////////////////
 
 SuccessState::SuccessState(Request& request) : ResponseState(request) {
-
 }
 
+std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	
+	int statusCode = _entries.getCode();
+
+}
 ////////////////////////////////////////////////////////////////////////////////
 //  Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
+RedirectState::RedirectState(Request& request) : ResponseState(request) {
+}
+
+std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	
+	// TODO: check: redirection logic
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Error
 ////////////////////////////////////////////////////////////////////////////////
+
+ErrorState::ErrorState(Request& request) : ResponseState(request) {
+}
+
+std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	int statusCode = _entries.getCode();
+	if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
+		/* force: return error string (not template) */
+
+	} else if (_entries.getMapRef() == Entry::REF_SERVER_CONFIG) {
+		/* return read file -> .html */
+
+	} else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
+		/* return generate html */
+	}
+}
