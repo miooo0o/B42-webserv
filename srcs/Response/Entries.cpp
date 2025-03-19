@@ -198,17 +198,17 @@ bool Entries::ready() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void	Entries::eval(const std::map<int, std::string>& serverScenarios) {
-	if (QUEUE_HAS_ERROR || _state != QUEUE_FULL) {
-		return ;
-	}
+bool	Entries::eval(const std::map<int, std::string>& serverScenarios) {
+	if (!ready()) return (false);
 	_validateCodeRange();
 	_findCodeReference(serverScenarios);
 	if (getEntry().getValidateStatus() == Entry::ENTRY_VALIDATED) {
 		_classify();
 		getEntry().setExposed(getEntry().getClass() != Entry::INFORMATIONAL);
 		_state = QUEUE_PENDING;
+		return (true);
 	}
+	return (false);
 }
 
 /**
