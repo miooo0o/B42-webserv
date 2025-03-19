@@ -17,6 +17,8 @@ class Response : public EntryObserver {
 private:
 	Request&							_request;
 	Entries*							_entries; 
+	ResponseState*						_state;
+    std::map<int, std::string>			_serverMap;
 
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
@@ -28,8 +30,8 @@ public:
 	Response		to_response();
 	
 	/* ... */
-	ResponseState*	createState();
-	bool			evaluate();
+	void			onEntryChanged();
+	void			updateState();
 
 	/* to_string*/
 	std::string		to_string();

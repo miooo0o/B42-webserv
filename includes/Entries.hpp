@@ -122,7 +122,7 @@ public:
 
 	/* Methods */
 	bool	ready();
-	void	eval(const std::map<int, std::string>& serverScenarios);
+	bool	eval(const std::map<int, std::string>& serverScenarios);
 	
 	void	replace(Entry status);
 	void	push_back(Entry status);
