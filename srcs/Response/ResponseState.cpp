@@ -1,5 +1,5 @@
 #include "ResponseState.hpp"
-#include "Reqeust.hpp"
+#include "Request.hpp"
 #include "Entries.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -11,8 +11,8 @@ bool	ResponseState::_isScenarioInitialized = false;
 ////////////////////////////////////////////////////////////////////////////////
 /* Constructor */
 
-ResponseState::ResponseState(Request& reqeust) 
-: _request(reqeust), _entries(_request) {
+ResponseState::ResponseState(Request& request) 
+: _request(request), _entries(request) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,6 +20,11 @@ ResponseState::ResponseState(Request& reqeust)
 void	ResponseState::updateStatus(const Entry& entry) {
 	_entries.replace(entry);
 }
+
+Entry::e_classes	ResponseState::getClass() {
+	return (_entries.getEntry().getClass());
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /* Static Methods */
@@ -88,7 +93,7 @@ SuccessState::SuccessState(Request& request) : ResponseState(request) {
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
 	
 	int statusCode = _entries.getCode();
-
+	return ("");
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Redirect
@@ -99,8 +104,8 @@ RedirectState::RedirectState(Request& request) : ResponseState(request) {
 
 std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
 	
-	// TODO: check: redirection logic
-
+	int statusCode = _entries.getCode();
+	return ("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,14 +116,16 @@ ErrorState::ErrorState(Request& request) : ResponseState(request) {
 }
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	// int statusCode = _entries.getCode();
+	// if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
+	// 	/* force: return error string (not template) */
+
+	// } else if (_entries.getMapRef() == Entry::REF_SERVER_CONFIG) {
+	// 	/* return read file -> .html */
+
+	// } else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
+	// 	/* return generate html */
+	// }
 	int statusCode = _entries.getCode();
-	if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
-		/* force: return error string (not template) */
-
-	} else if (_entries.getMapRef() == Entry::REF_SERVER_CONFIG) {
-		/* return read file -> .html */
-
-	} else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
-		/* return generate html */
-	}
+	return ("");
 }
