@@ -6,7 +6,7 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/18 22:17:14 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/20 20:58:02 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,15 +35,10 @@ public:
 	ResponseState(Request& reqeust);
 	// TODO: copy constructor, operator
 	virtual ~ResponseState() {}
-
-	
-	bool		isEntryUnprocessed();
-	bool		hasValidatedEntry();
-	std::string	generateTemplate();
 	
 	/* virtual  */
 	virtual std::string getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
-	
+	virtual void		updateStatus(const Entry& entry);
 	/* ststic methods: relate with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
