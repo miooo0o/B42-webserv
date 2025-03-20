@@ -17,20 +17,8 @@ ResponseState::ResponseState(Request& reqeust)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-bool	ResponseState::isEntryUnprocessed() {
-	if (_entries.getQueueStatus() == Entries::QUEUE_FULL) {
-		return (true);
-	}
-	return (false);
-}
-
-bool	ResponseState::hasValidatedEntry() {
-	if (_entries.getQueueStatus() > Entries::QUEUE_EMPTY) {
-		if (_entries.getEntry().isReady()) {
-			return (true);
-		}
-	}
-	return (false);
+void	ResponseState::updateStatus(const Entry& entry) {
+	_entries.replace(entry);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

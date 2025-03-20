@@ -47,6 +47,8 @@ public:
 
 	/* add methods */
 	void		addHeader(const std::string& key, const std::string& value);
+private:
+	void		_cleanState();
 };
 
 #endif 
