@@ -1,5 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/20 23:27:22 by minakim           #+#    #+#             */
+/*   Updated: 2025/03/20 23:27:23 by minakim          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef RESPONSE_HPP
-#define RESPONSE_HPP
+# define RESPONSE_HPP
 
 #include <string>
 #include <map>
@@ -8,10 +20,9 @@
 class ResponseState;
 class ContentHandler;
 class Request;
-class Entrise;
+class Entries;
 
 #include "EntryObserver.hpp"
-#include "Request.hpp"
 
 class Response : public EntryObserver {
 private:
@@ -27,26 +38,25 @@ public:
 	Response(Request& request, Entries* entries);		/* with params */
 	~Response();
 
-	Response		to_response();
+	// Response		to_response();
 	
 	/* ... */
 	void			onEntryChanged();
 	void			updateState();
 
-	/* to_string*/
-	std::string		to_string();
+	// /* to_string*/
+	// std::string		to_string();
 
-	/* setter */
-	void			setState(int code);
-	void			setBody(const std::string& content);
+	// /* setter */
+	// void			setBody(const std::string& content);
 
-	/* getter */
-	std::string							getBody() const;
-	std::string							getStatus() const;
-	std::map<std::string, std::string>	getHeaders() const;
+	// /* getter */
+	// std::string							getBody() const;
+	// std::string							getStatus() const;
+	// std::map<std::string, std::string>	getHeaders() const;
 
-	/* add methods */
-	void		addHeader(const std::string& key, const std::string& value);
+	// /* add methods */
+	// void		addHeader(const std::string& key, const std::string& value);
 private:
 	void		_cleanState();
 };

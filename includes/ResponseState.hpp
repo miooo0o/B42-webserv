@@ -6,11 +6,12 @@
 /*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 12:05:39 by minakim           #+#    #+#             */
-/*   Updated: 2025/03/20 20:58:02 by minakim          ###   ########.fr       */
+/*   Updated: 2025/03/20 23:00:31 by minakim          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef RESPONSESTATE_HPP
+# define RESPONSESTATE_HPP
 
 #include <string>
 #include <map>
@@ -37,14 +38,18 @@ public:
 	virtual ~ResponseState() {}
 	
 	/* virtual  */
-	virtual std::string getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
-	virtual void		updateStatus(const Entry& entry);
+	virtual std::string					getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
+	virtual void						updateStatus(const Entry& entry);
+
 	/* ststic methods: relate with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
+
+
+	Entry::e_classes					getClass();
 protected:
 	/* ststic methods */
-	static void			_initDefaultScenario();
+	static void							_initDefaultScenario();
 };
 
 /**
@@ -59,7 +64,7 @@ protected:
 class InformationalState : public ResponseState {
 public:
 	InformationalState(Request& request);
-	~InformationalState();
+	~InformationalState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 
@@ -69,7 +74,7 @@ public:
 class SuccessState : public ResponseState {
 public:
 	SuccessState(Request& request);
-	~SuccessState();
+	~SuccessState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 };
@@ -78,7 +83,7 @@ public:
 class RedirectState : public ResponseState {
 public:
 	RedirectState(Request& request);
-	~RedirectState();
+	~RedirectState() {}
 
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -88,7 +93,9 @@ public:
 class ErrorState : public ResponseState {
 public:
 	ErrorState(Request& request);
-	~ErrorState();
+	~ErrorState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
 };
+
+#endif

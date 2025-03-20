@@ -1,18 +1,17 @@
 #include "Entries.hpp"
-#include "Reqeust.hpp"
+#include "Request.hpp"
 #include "ResponseState.hpp"
-#include "EntryObserver.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
 Entry::Entry()
 : _code(42), _entryVal(ENTRY_PENDING), _class(_NOT_CLASSIFY),
-  _exposed(false), _ref(REF_STATIC_MAP) {
+  _exposed(false), _scenariosMap(REF_STATIC_MAP) {
 }
 
 Entry::Entry(int code)
 : _code(code), _entryVal(ENTRY_PENDING), _class(_NOT_CLASSIFY), 
-  _exposed(false), _ref(REF_STATIC_MAP) {
+  _exposed(false), _scenariosMap(REF_STATIC_MAP) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,7 +44,12 @@ Entry::e_classes	Entry::getClass() const {
 	return (_class);
 }
 
+Entry::e_reference	Entry::getMapReference() const {
+	return (_scenariosMap);
+}
+
 /* setter */
+
 void	Entry::setCode(int code) {
 	_code = code;
 }
@@ -62,6 +66,9 @@ void	Entry::setExposed(bool res) {
 	_exposed = res;
 }
 
+void		Entry::setMapReference(e_reference ref) {
+	_scenariosMap = ref;
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,10 +76,10 @@ void	Entry::setExposed(bool res) {
 ////////////////////////////////////////////////////////////////////////////////
 
 Entries::Entries(Request& request) 
-: _state(QUEUE_EMPTY) {
+: _queueLevel(QUEUE_EMPTY) {
 	_initEntry(request);
 	if (!_readFromRequest) {
-		replace(Entry(400));	// TODO: find correct status code
+		replace(Entry(400));
 	}
 }
 
@@ -93,7 +100,7 @@ void	Entries::addObserver(EntryObserver* observer) {
 	_observers.push_back(observer);
 }
 
-void	Entries::_removeObserver(EntryObserver* observer) {
+void	Entries::removeObserver(EntryObserver* observer) {
 	for (std::vector<EntryObserver*>::iterator it = _observers.begin(); it != _observers.end(); ++it) {
 		if (*it == observer) {
 			_observers.erase(it);
@@ -109,7 +116,7 @@ void    Entries::_initEntry(Request& reqest) {
 	if (!_entries.empty()) {
 		throw std::logic_error("Entries queue is not empty during initialization.");
 	}
-	int requestStatusCode = 404; // request.getReqeustError();
+	int requestStatusCode = reqest.getCode(); // request.getReqeustError();
 	push_back(Entry(requestStatusCode));
 	if (QUEUE_HAS_DATA)
 		_readFromRequest = true;
@@ -117,13 +124,13 @@ void    Entries::_initEntry(Request& reqest) {
 
 void    Entries::replace(Entry status) {
 	pop_front();
-	if (_state == QUEUE_EMPTY)
+	if (_queueLevel == QUEUE_EMPTY)
 		push_back(status);
 }
 
 void	Entries::push_back(Entry status) {
 
-	if (_state != QUEUE_EMPTY) {
+	if (_queueLevel != QUEUE_EMPTY) {
 		_recodeStatus(status);
 		if (QUEUE_HAS_ERROR) return ;
 		if (QUEUE_HAS_DATA) {
@@ -175,11 +182,11 @@ void	Entries::_enforceLogSizeLimit() {
  * 
  */
 bool Entries::ready() {
-	if (_state == QUEUE_FULL) {
+	if (_queueLevel == QUEUE_FULL) {
 		std::cerr << "debug: _entries is full, eval() needs to be called externally." << std::endl;
 		return (false);
 	}
-	if (_state == QUEUE_PENDING) {
+	if (_queueLevel == QUEUE_PENDING) {
 		return (true);
 	}
 	std::cerr << "debug: _entries cannot proceed. Manual intervention needed." << std::endl;
@@ -203,7 +210,7 @@ bool	Entries::eval(const std::map<int, std::string>& serverScenarios) {
 	if (getEntry().getValidateStatus() == Entry::ENTRY_VALIDATED) {
 		_classify();
 		getEntry().setExposed(getEntry().getClass() != Entry::INFORMATIONAL);
-		_state = QUEUE_PENDING;
+		_queueLevel = QUEUE_PENDING;
 		return (true);
 	}
 	return (false);
@@ -284,8 +291,26 @@ Entry	Entries::getEntry() const {
 	return (_entries.front());
 }
 
+Entry	Entries::getEntry() {
+	if (_entries.empty()) {
+		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
+			throw std::logic_error("Entries queue is empty, but Queue didn't catch the error.");
+		else
+			throw std::logic_error("Entries queue is empty.");
+	}
+	else if (_entries.size() > 1) {
+
+		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
+			throw std::logic_error("Entries queue is overflow, but Queue didn't catch the error.");
+		else
+			throw std::logic_error("Entries queue is overflow");
+	}
+	return (_entries.front());
+}
+
+
 Entries::e_que_entries	Entries::getQueueStatus() const {
-	return (_state);
+	return (_queueLevel);
 }
 
 int	Entries::getCode() const {
@@ -304,19 +329,20 @@ Entry::e_reference	Entries::getMapRef() const {
 	return (getEntry().getMapReference());
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 /* setter */
 
-void	Entries::setState(Entries::e_que_entries state) {
-	_state = state;
+void	Entries::setState(Entries::e_que_entries queueLevel) {
+	_queueLevel = queueLevel;
 }
 
 void	Entries::setCode(int code) {
 	return (getEntry().setCode(code));
 }
 
-void	Entries::setStatus(Entry::e_entry_val status) {
-	return (getEntry().setValidateStatus(status));
+void	Entries::setStatus(Entry::e_entry_val entryValLevel) {
+	return (getEntry().setValidateStatus(entryValLevel));
 }
 void	Entries::setClass(Entry::e_classes entryClass) {
 	return (getEntry().setClass(entryClass));
