@@ -18,16 +18,14 @@
 
 class Response;
 class Request;
-class Entries;
-class Entry;
+class StatusManager;
+class StatusEntry;
 
-#include "Entries.hpp"
+#include "StatusEntry.hpp"
 
-
-/* TODO: Entries should be reference (from response) */
 class ResponseState {
 protected:
-	Entries&							_entries;
+	StatusManager&						_manager;
 	Request&							_request;
 
 	static std::map<int, std::string>	_scenarios;
@@ -35,20 +33,19 @@ protected:
 
 public:
 	/* constructor */
-	ResponseState(Request& reqeust, Entries& entries);
+	ResponseState(Request& reqeust, StatusManager& entries);
 
 	// TODO: copy constructor, operator
 	virtual ~ResponseState() {}
 	
 	/* virtual  */
 	virtual std::string					getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
-	virtual void						replaceEntry(const Entry& entry);
 
 	/* ststic methods: relate with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
 
-	Entry::e_classes					getClass();
+	StatusManager&						getManager();
 protected:
 	/* ststic methods */
 	static void							_initDefaultScenario();
@@ -65,7 +62,7 @@ protected:
  /* informational */
 class InformationalState : public ResponseState {
 public:
-	InformationalState(Request& request, Entries& entries);
+	InformationalState(Request& request, StatusManager& manager);
 	~InformationalState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -75,7 +72,7 @@ public:
 /* Successs */
 class SuccessState : public ResponseState {
 public:
-	SuccessState(Request& request, Entries& entries);
+	SuccessState(Request& request, StatusManager& entries);
 	~SuccessState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -84,7 +81,7 @@ public:
 /* Redirection */
 class RedirectState : public ResponseState {
 public:
-	RedirectState(Request& request, Entries& entries);
+	RedirectState(Request& request, StatusManager& entries);
 	~RedirectState() {}
 
 
@@ -94,7 +91,7 @@ public:
 /* Error */
 class ErrorState : public ResponseState {
 public:
-	ErrorState(Request& request, Entries& entries);
+	ErrorState(Request& request, StatusManager& entries);
 	~ErrorState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);

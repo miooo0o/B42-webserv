@@ -13,7 +13,10 @@ include_directories(${CMAKE_SOURCE_DIR}/srcs)
 file(GLOB MAIN_SRC "${CMAKE_SOURCE_DIR}/srcs/main.cpp")
 file(GLOB RESPONSE_SRCS "${CMAKE_SOURCE_DIR}/srcs/Response/*.cpp")
 set(SOURCES ${MAIN_SRC} ${RESPONSE_SRCS}
-        includes/Request.hpp)
+        includes/Request.hpp
+        includes/StatusQueue.hpp
+        srcs/Response/StatusQueue.cpp
+        includes/StatusEntry.hpp)
 
 add_executable(webserv ${SOURCES})
 

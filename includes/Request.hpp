@@ -1,8 +1,7 @@
 
 #ifndef REQUEST_HPP
-#define REQUEST_HPP
+# define REQUEST_HPP
 
-#include <Entries.hpp>
 #include <map>
 
 class Request {
@@ -11,7 +10,6 @@ public:
 		_serverScenarios[100] = "Continue";
 		_serverScenarios[200] = "OK";
 		_serverScenarios[400] = "Bad Request";
-		_serverScenarios[403] = "Forbidden";
 		_serverScenarios[404] = "Not Found";
 		_serverScenarios[500] = "Internal Server Error";
 	}
