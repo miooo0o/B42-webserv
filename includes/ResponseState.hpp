@@ -23,9 +23,11 @@ class Entry;
 
 #include "Entries.hpp"
 
+
+/* TODO: Entries should be reference (from response) */
 class ResponseState {
 protected:
-	Entries								_entries;
+	Entries&							_entries;
 	Request&							_request;
 
 	static std::map<int, std::string>	_scenarios;
@@ -33,18 +35,18 @@ protected:
 
 public:
 	/* constructor */
-	ResponseState(Request& reqeust);
+	ResponseState(Request& reqeust, Entries& entries);
+
 	// TODO: copy constructor, operator
 	virtual ~ResponseState() {}
 	
 	/* virtual  */
 	virtual std::string					getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
-	virtual void						updateStatus(const Entry& entry);
+	virtual void						replaceEntry(const Entry& entry);
 
 	/* ststic methods: relate with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
-
 
 	Entry::e_classes					getClass();
 protected:
@@ -63,7 +65,7 @@ protected:
  /* informational */
 class InformationalState : public ResponseState {
 public:
-	InformationalState(Request& request);
+	InformationalState(Request& request, Entries& entries);
 	~InformationalState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -73,7 +75,7 @@ public:
 /* Successs */
 class SuccessState : public ResponseState {
 public:
-	SuccessState(Request& request);
+	SuccessState(Request& request, Entries& entries);
 	~SuccessState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -82,7 +84,7 @@ public:
 /* Redirection */
 class RedirectState : public ResponseState {
 public:
-	RedirectState(Request& request);
+	RedirectState(Request& request, Entries& entries);
 	~RedirectState() {}
 
 
@@ -92,7 +94,7 @@ public:
 /* Error */
 class ErrorState : public ResponseState {
 public:
-	ErrorState(Request& request);
+	ErrorState(Request& request, Entries& entries);
 	~ErrorState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);

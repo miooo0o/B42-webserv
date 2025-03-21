@@ -11,13 +11,13 @@ bool	ResponseState::_isScenarioInitialized = false;
 ////////////////////////////////////////////////////////////////////////////////
 /* Constructor */
 
-ResponseState::ResponseState(Request& request) 
-: _request(request), _entries(request) {
+ResponseState::ResponseState(Request& request, Entries& entries)
+: _request(request), _entries(entries) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void	ResponseState::updateStatus(const Entry& entry) {
+void	ResponseState::replaceEntry(const Entry& entry) {
 	_entries.replace(entry);
 }
 
@@ -60,23 +60,14 @@ void	ResponseState::_initDefaultScenario() {
 	_isScenarioInitialized = true;
 }
 
-
-/*
-	int statusCode = _entries.getEntry().getCode();
-	if (serverScenarios.find(statusCode) != serverScenarios.end()) {
-		return ("");			// read file
-	} else if (_scenarios.find(statusCode) != _scenarios.end()) {
-		return ("");			// html generate
-	} else {
-		_entries.replace(500);	// error_code;
-	}
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
 // Informational
 ////////////////////////////////////////////////////////////////////////////////
 
-InformationalState::InformationalState(Request& request) : ResponseState(request) {
+InformationalState::InformationalState(Request& request, Entries& entries)
+	: ResponseState(request, entries) {
+	if (entries.isValidated() && entries.isProcessing())
+		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	InformationalState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -87,7 +78,10 @@ std::string	InformationalState::getHandledBody(std::map<int, std::string>& serve
 // Success
 ////////////////////////////////////////////////////////////////////////////////
 
-SuccessState::SuccessState(Request& request) : ResponseState(request) {
+SuccessState::SuccessState(Request& request, Entries& entries)
+	: ResponseState(request, entries) {
+	if (entries.isValidated() && entries.isProcessing())
+		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -99,7 +93,10 @@ std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScena
 //  Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
-RedirectState::RedirectState(Request& request) : ResponseState(request) {
+RedirectState::RedirectState(Request& request, Entries& entries)
+	: ResponseState(request, entries) {
+	if (entries.isValidated() && entries.isProcessing())
+		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -112,7 +109,10 @@ std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScen
 // Error
 ////////////////////////////////////////////////////////////////////////////////
 
-ErrorState::ErrorState(Request& request) : ResponseState(request) {
+ErrorState::ErrorState(Request& request, Entries& entries)
+	: ResponseState(request, entries) {
+	if (entries.isValidated() && entries.isProcessing())
+		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {

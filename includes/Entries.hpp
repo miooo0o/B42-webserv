@@ -165,12 +165,12 @@ public:
 private:
 	std::deque<Entry>			_entries;   		/* Holds current entries */
 	std::vector<EntryObserver*>	_observers;			/* observer patten to control _entries queue's change */
-	e_que_entries				_queueLevel;     		/* Tracks queue status */
-	bool                		_readFromRequest;	/* Indicates if request data was read */
+	e_que_entries				_queueLevel;     	/* Tracks queue status */
 	std::deque<Entry>   		_log;       		/* Keeps a record of past entries */
 public:
 	/* Constructor */
-	Entries(Request& request);
+	Entries(const Request& request);
+	Entries(const Entries& other);
 	~Entries();
 
 	/* EntryObserver */
@@ -181,6 +181,7 @@ public:
 	bool	eval(const std::map<int, std::string>& serverScenarios);
 	
 	void	replace(Entry status);
+	void	resetEntryWith(Entry& newEntry);
 	void	push_back(Entry status);
 	void	pop_front();
 	
@@ -191,9 +192,10 @@ public:
 	bool				isInClassRange() const;
 	bool				isValidated() const;
 	bool				isPending() const;
+	bool				isProcessing() const;
 	
 	/* get _entries.front() */
-	Entry				getEntry();
+	Entry&				getEntry();
 	Entry				getEntry() const;
 	
 	/* getter */
@@ -205,7 +207,7 @@ public:
 	Entry::e_reference	getMapRef() const;
 
 	/* setter */
-	void				setState(e_que_entries queueLevel); /* Queue status management */
+	void				setQueLevel(e_que_entries queueLevel); /* Queue status management */
 	
 	void				setCode(int code);
 	void				setStatus(Entry::e_entry_val status);
@@ -215,7 +217,7 @@ public:
 	
 private:
 	/* Initialization */
-	void	_initEntry(Request& request);
+	void	_initEntry(const Request& request);
 
 	/* EntryObserver */
 	void	_notifyObservers();

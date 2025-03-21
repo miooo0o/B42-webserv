@@ -50,23 +50,23 @@ Entry::e_reference	Entry::getMapReference() const {
 
 /* setter */
 
-void	Entry::setCode(int code) {
+void	Entry::setCode(const int code) {
 	_code = code;
 }
 
-void	Entry::setValidateStatus(e_entry_val status) {
+void	Entry::setValidateStatus(const e_entry_val status) {
 	_entryVal = status;
 }
 
-void	Entry::setClass(e_classes entryClass) {
+void	Entry::setClass(const e_classes entryClass) {
 	_class = entryClass;
 }
 
-void	Entry::setExposed(bool res) {
+void	Entry::setExposed(const bool res) {
 	_exposed = res;
 }
 
-void		Entry::setMapReference(e_reference ref) {
+void		Entry::setMapReference(const e_reference ref) {
 	_scenariosMap = ref;
 }
 
@@ -75,12 +75,15 @@ void		Entry::setMapReference(e_reference ref) {
 // Entries
 ////////////////////////////////////////////////////////////////////////////////
 
-Entries::Entries(Request& request) 
+Entries::Entries(const Request& request)
 : _queueLevel(QUEUE_EMPTY) {
 	_initEntry(request);
-	if (!_readFromRequest) {
-		replace(Entry(400));
-	}
+}
+
+Entries::Entries(const Entries& other)
+	: _queueLevel(other._queueLevel) {
+	_entries = other._entries;
+	_log = other._log;
 }
 
 Entries::~Entries() {}
@@ -89,6 +92,8 @@ Entries::~Entries() {}
 
 
 void	Entries::_notifyObservers() {
+	if (_observers.empty())
+		return ;
 	for (std::vector<EntryObserver*>::iterator it = _observers.begin();
 		 it != _observers.end(); ++it)
 	{
@@ -112,14 +117,12 @@ void	Entries::removeObserver(EntryObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void    Entries::_initEntry(Request& reqest) {
+void    Entries::_initEntry(const Request& reqest) {
 	if (!_entries.empty()) {
 		throw std::logic_error("Entries queue is not empty during initialization.");
 	}
 	int requestStatusCode = reqest.getCode(); // request.getReqeustError();
 	push_back(Entry(requestStatusCode));
-	if (QUEUE_HAS_DATA)
-		_readFromRequest = true;
 }
 
 void    Entries::replace(Entry status) {
@@ -128,27 +131,36 @@ void    Entries::replace(Entry status) {
 		push_back(status);
 }
 
+void Entries::resetEntryWith(Entry &newEntry) {
+	getEntry().setCode(newEntry.getCode());
+	getEntry().setValidateStatus(Entry::ENTRY_PENDING);
+	getEntry().setClass(Entry::_NOT_CLASSIFY);
+	getEntry().setExposed(false);
+	getEntry().setMapReference(Entry::REF_STATIC_MAP);
+}
+
+
 void	Entries::push_back(Entry status) {
 
 	if (_queueLevel != QUEUE_EMPTY) {
 		_recodeStatus(status);
 		if (QUEUE_HAS_ERROR) return ;
 		if (QUEUE_HAS_DATA) {
-			setState(_QUEUE_OVERFLOW); return ;
+			setQueLevel(_QUEUE_OVERFLOW); return ;
 		}
 	}
 	_entries.push_back(status);
-	setState(QUEUE_FULL);
+	setQueLevel(QUEUE_FULL);
 	_notifyObservers();
 }
 
 void	Entries::pop_front() {
 	if (_entries.empty()) {
-		setState(_QUEUE_UNDERFLOW); return ;
+		setQueLevel(_QUEUE_UNDERFLOW); return ;
 	}
 	_recodeStatus();
 	_entries.pop_front();
-	setState((_entries.empty() ? QUEUE_EMPTY : _QUEUE_ERROR));
+	setQueLevel((_entries.empty() ? QUEUE_EMPTY : _QUEUE_ERROR));
 }
 ////////////////////////////////////////////////////////////////////////////////
 /* Logger support methods : need to fix if Logger class is implemented */
@@ -210,7 +222,7 @@ bool	Entries::eval(const std::map<int, std::string>& serverScenarios) {
 	if (getEntry().getValidateStatus() == Entry::ENTRY_VALIDATED) {
 		_classify();
 		getEntry().setExposed(getEntry().getClass() != Entry::INFORMATIONAL);
-		_queueLevel = QUEUE_PENDING;
+		_queueLevel = QUEUE_PROCESSING;
 		return (true);
 	}
 	return (false);
@@ -243,11 +255,15 @@ void	Entries::_findCodeReference(const std::map<int, std::string>& serverSideMap
 
 	if (getEntry().getValidateStatus() != Entry::ENTRY_PENDING)
 		return;
-	int code = getEntry().getCode();
-	if (_validateWithMap(serverSideMaps, Entry::REF_SERVER_CONFIG))
+	if (_validateWithMap(serverSideMaps, Entry::REF_SERVER_CONFIG) ||
+		_validateWithMap(ResponseState::getScenarios(), Entry::REF_STATIC_MAP)) {
+		if (getEntry().getValidateStatus() == Entry::ENTRY_VALIDATED) {
+			std::cout << "_findCodeReference: validated" << std::endl;
+		} else {
+			std::cout << "_findCodeReference: validate error" << std::endl;
+		}
 		return;
-	else if (_validateWithMap(ResponseState::getScenarios(), Entry::REF_STATIC_MAP))
-		return;
+	}
 	if (++searchAttempts > 1) {
 		getEntry().setMapReference(Entry::_500_NOT_FOUND);
 		getEntry().setValidateStatus(Entry::ENTRY_VALIDATED);
@@ -262,6 +278,11 @@ bool	Entries::_validateWithMap(const std::map<int, std::string>& refMap, Entry::
 	if (refMap.find(code) != refMap.end()) {
 		getEntry().setMapReference(refType);
 		getEntry().setValidateStatus(Entry::ENTRY_VALIDATED);
+		if (getEntry().getValidateStatus() == Entry::ENTRY_VALIDATED) {
+			std::cout << "_validateWithMap: validated" << std::endl;
+		} else {
+			std::cout << "_validateWithMap: validate error" << std::endl;
+		}
 		return (true);
 	}
 	return (false);
@@ -278,32 +299,26 @@ Entry	Entries::getEntry() const {
 	if (_entries.empty()) {
 		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
 			throw std::logic_error("Entries queue is empty, but Queue didn't catch the error.");
-		else
-			throw std::logic_error("Entries queue is empty.");
+		throw std::logic_error("Entries queue is empty.");
 	}
-	else if (_entries.size() > 1) {
-
+	if (_entries.size() > 1) {
 		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
 			throw std::logic_error("Entries queue is overflow, but Queue didn't catch the error.");
-		else
-			throw std::logic_error("Entries queue is overflow");
+		throw std::logic_error("Entries queue is overflow");
 	}
 	return (_entries.front());
 }
 
-Entry	Entries::getEntry() {
+Entry&	Entries::getEntry() {
 	if (_entries.empty()) {
 		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
 			throw std::logic_error("Entries queue is empty, but Queue didn't catch the error.");
-		else
-			throw std::logic_error("Entries queue is empty.");
+		throw std::logic_error("Entries queue is empty.");
 	}
-	else if (_entries.size() > 1) {
-
+	if (_entries.size() > 1) {
 		if (QUEUE_IS_ACTIVE || !QUEUE_HAS_ERROR)
 			throw std::logic_error("Entries queue is overflow, but Queue didn't catch the error.");
-		else
-			throw std::logic_error("Entries queue is overflow");
+		throw std::logic_error("Entries queue is overflow");
 	}
 	return (_entries.front());
 }
@@ -333,7 +348,7 @@ Entry::e_reference	Entries::getMapRef() const {
 ////////////////////////////////////////////////////////////////////////////////
 /* setter */
 
-void	Entries::setState(Entries::e_que_entries queueLevel) {
+void	Entries::setQueLevel(Entries::e_que_entries queueLevel) {
 	_queueLevel = queueLevel;
 }
 
@@ -363,6 +378,10 @@ bool	Entries::hasSingleEntry() const {
 
 bool	Entries::isPending() const {
 	return (getEntry().getValidateStatus() == Entry::ENTRY_PENDING);
+}
+
+bool	Entries::isProcessing() const {
+	return (getQueueStatus() == QUEUE_PROCESSING);
 }
 
 bool	Entries::isExposed() const {

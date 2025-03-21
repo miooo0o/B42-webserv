@@ -18,6 +18,7 @@ Response::Response(Request& request, Entries* entries)
 	: _request(request), _entries(entries), _headers(), _body() {
 	_serverMap = _request.getServerMap();
 	_entries->addObserver(this);
+	this->onEntryChanged();
 }
 
 Response::~Response() {
@@ -46,47 +47,58 @@ void    Response::onEntryChanged() {
  *
  * @throws `std::logic_error` if the status code is out of range or queue is unprocessed.
  */
-void    Response::updateState() {
+void	Response::updateState() {
 	try {
-		if (_entries->eval(_serverMap))
+		_prepareForEvaluation();
+		if (!_entries->eval(_serverMap))
 			throw std::logic_error("Queue is not ready.");
 
 		Entry::e_classes statusClass = _entries->getClass();
-		if (_state && _state->getClass() == statusClass) {
-			_state->updateStatus(_entries->getEntry());
+
+		if (_state && _shouldReuseState(statusClass)) {
+			_entries->resetEntryWith(_entries->getEntry());
+			_entries->eval(_serverMap);
+			return ;
 		}
-		_cleanState();
-		switch (statusClass) {
-			case Entry::INFORMATIONAL: {
-				_state = new InformationalState(_request);
-				break;
-			}
-			case Entry::SUCCESSFUL: {
-				_state = new SuccessState(_request);
-				break;
-			}
-			case Entry::REDIRECTION: {
-				_state = new RedirectState(_request);
-				break;
-			}
-			case Entry::CLIENT_ERROR:
-			case Entry::SERVER_ERROR: {
-				_state = new ErrorState(_request);
-				break;
-			}
-			default: {
-				throw std::logic_error("Status code is not in range.");
-				break;
-			}
-		}
+		_replaceState(statusClass);
 	}
 	catch (std::exception& e) {
 		std::cerr << "Response: Exception in updateState: " << e.what() << std::endl;
 		if (!_state) {
 			_cleanState();
-            _state = new ErrorState(_request);
+			_state = new ErrorState(_request, *_entries);
 		}
+	}
+}
 
+void	Response::_prepareForEvaluation() {
+	if (_entries->getQueueStatus() == Entries::QUEUE_FULL)
+		_entries->setQueLevel(Entries::QUEUE_PENDING);
+}
+
+bool	Response::_shouldReuseState(Entry::e_classes statusClass) const {
+	return (_state->getClass() != Entry::_NOT_CLASSIFY &&
+			_state->getClass() == statusClass);
+}
+
+void	Response::_replaceState(Entry::e_classes statusClass) {
+	_cleanState();
+	switch (statusClass) {
+		case Entry::INFORMATIONAL:
+			_state = new InformationalState(_request, *_entries);
+			break;
+		case Entry::SUCCESSFUL:
+			_state = new SuccessState(_request, *_entries);
+			break;
+		case Entry::REDIRECTION:
+			_state = new RedirectState(_request, *_entries);
+			break;
+		case Entry::CLIENT_ERROR:
+		case Entry::SERVER_ERROR:
+			_state = new ErrorState(_request, *_entries);
+			break;
+		default:
+			throw std::logic_error("Status code is not in range.");
 	}
 }
 
