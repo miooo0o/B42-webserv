@@ -265,3 +265,54 @@ Content-Length-based bodies don't need special terminators; they simply end afte
 | WWW-Authenticate | permanent | [RFC9110, Section 11.6.1: HTTP Semantics] |
 | X-Content-Type-Options | permanent | [Fetch] |
 | X-Frame-Options | permanent | [HTML] |
+
+
+| **Header**               | **Syntax Rules**                                        | **Whitespace Handling**                          |
+|--------------------------|---------------------------------------------------------|-------------------------------------------------|
+| `Accept`                | Comma-separated list of media types                     | OWS around `,` is allowed                       |
+| `Accept-Charset`        | Comma-separated list of character sets                  | OWS around `,` is allowed                       |
+| `Accept-Encoding`       | Comma-separated list of encoding types                  | OWS around `,` is allowed                       |
+| `Accept-Language`       | Comma-separated list of language tags                   | OWS around `,` is allowed                       |
+| `Accept-Ranges`         | `none` or `bytes`                                       | No leading/trailing whitespace                  |
+| `Age`                   | Integer seconds                                         | No leading/trailing whitespace                  |
+| `Allow`                 | Comma-separated list of HTTP methods                    | OWS around `,` is allowed                       |
+| `Authorization`         | `scheme credentials`                                    | Space after scheme must be preserved            |
+| `Cache-Control`         | Comma-separated directives                              | OWS around `,` is allowed                       |
+| `Connection`            | Comma-separated list of connection options              | OWS around `,` is allowed                       |
+| `Content-Disposition`   | `disposition-type; parameter=value`                     | No whitespace before/after `=` in parameters    |
+| `Content-Encoding`      | Comma-separated list of encoding types                  | OWS around `,` is allowed                       |
+| `Content-Language`      | Comma-separated list of language tags                   | OWS around `,` is allowed                       |
+| `Content-Length`        | Integer bytes                                           | No leading/trailing whitespace                  |
+| `Content-Location`      | Absolute or relative URI                                | No leading/trailing whitespace                  |
+| `Content-Range`         | `bytes start-end/total`                                 | No whitespace inside range                      |
+| `Content-Type`          | `media-type; parameter=value`                           | No whitespace before/after `=` in parameters    |
+| `Date`                  | `HTTP-date` (RFC 7231 format)                           | No leading/trailing whitespace                  |
+| `ETag`                  | Quoted string                                           | Must be preserved as-is                         |
+| `Expect`                | `100-continue` or other expectations                    | No leading/trailing whitespace                  |
+| `Expires`               | `HTTP-date`                                             | No leading/trailing whitespace                  |
+| `From`                  | Email address                                          | No leading/trailing whitespace                  |
+| `Host`                  | `hostname[:port]`                                      | No leading/trailing whitespace                  |
+| `If-Match`              | `*` or comma-separated ETags                            | Must preserve quoted ETags                      |
+| `If-Modified-Since`     | `HTTP-date`                                             | No leading/trailing whitespace                  |
+| `If-None-Match`         | `*` or comma-separated ETags                            | Must preserve quoted ETags                      |
+| `If-Range`              | `HTTP-date` or ETag                                     | Must preserve quoted ETags                      |
+| `If-Unmodified-Since`   | `HTTP-date`                                             | No leading/trailing whitespace                  |
+| `Last-Modified`         | `HTTP-date`                                             | No leading/trailing whitespace                  |
+| `Location`              | Absolute URI                                            | No leading/trailing whitespace                  |
+| `Max-Forwards`         | Integer                                                 | No leading/trailing whitespace                  |
+| `Pragma`                | Implementation-defined                                  | OWS may be present                              |
+| `Proxy-Authenticate`    | `scheme challenge`                                      | Space after scheme must be preserved            |
+| `Proxy-Authorization`   | `scheme credentials`                                    | Space after scheme must be preserved            |
+| `Range`                 | `bytes=start-end` or `bytes=start-`                    | No whitespace inside range                      |
+| `Referer`               | Absolute or relative URI                                | No leading/trailing whitespace                  |
+| `Retry-After`           | `HTTP-date` or integer seconds                         | No leading/trailing whitespace                  |
+| `Server`                | Free-form server description                           | OWS may be present                              |
+| `TE`                    | `trailers` or encoding list                            | OWS around `,` is allowed                       |
+| `Trailer`               | Comma-separated list of headers                        | OWS around `,` is allowed                       |
+| `Transfer-Encoding`     | Comma-separated encoding types                         | OWS around `,` is allowed                       |
+| `Upgrade`               | Comma-separated list of protocols                      | OWS around `,` is allowed                       |
+| `User-Agent`            | Free-form user agent string                            | OWS may be present                              |
+| `Vary`                  | `*` or comma-separated header names                    | OWS around `,` is allowed                       |
+| `Via`                   | Comma-separated list of proxies                        | OWS around `,` is allowed                       |
+| `Warning`               | `code agent "text"`                                    | OWS around `,` is allowed                       |
+| `WWW-Authenticate`      | `scheme challenge`                                     | Space after scheme must be preserved            |

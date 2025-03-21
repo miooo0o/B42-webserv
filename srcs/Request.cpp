@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/18 15:02:25 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/21 16:46:26 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 	- I PREFER NOT TO USE THIS APPROACH
 */
 Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(), _uri(), _version(),
-	_headers(), _errors(), _last_response_code(200) {
+	_headers(), _errors(), _last_response_code(200), _testError(0) {
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
@@ -28,7 +28,7 @@ Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(),
 	CAN CHECK REQUEST OBJECT FOR ERROR
 */
 Request::Request( const std::string& str ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
-	_headers(), _errors(), _last_response_code(200) {
+	_headers(), _errors(), _last_response_code(200), _testError(0) {
 	parseRequestLine();
 }
 
@@ -37,7 +37,7 @@ Request::~Request( void ) {}
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
 Request::Request( const Request& other ) : _request_line(other._request_line),_header_line(other._header_line),_body(other._body), 
 	_method(other._method), _uri(other._uri), _version(other._version), _headers(other._headers), _errors(other._errors),
-	  _last_response_code(other._last_response_code) {
+	  _last_response_code(other._last_response_code), _testError(other._testError) {
 }
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
@@ -49,7 +49,7 @@ Request& Request::operator=( const Request& other ) {
 
   /* ========= */
  /*  PARSING  */
-/* ========= */
+/* ========= */	
 
 /* PARSE REQUEST LINE - PARAMETERISED */
 /* 
@@ -107,17 +107,16 @@ bool	Request::parseVersion(std::istringstream& stream)
 
 	char ch;
     if (stream.get(ch) && ch == '\n') {
-		if (_version.str.empty()) {
-			setError( "Bad Request", "No HTTP version provided", 400, VERSION );
-			setVersion (BAD_REQUEST, _version.str, 0, 0);
-			return false;
-		}
-		return true;
-	}
+		if (!_version.str.empty())
+			return true;
+		setError( CODE400, VER_NONE, 400 );
+		_testError.addErrorFlag(errFlag::VERSION_NONE);
+	}	
 	else {
-		setError( "Bad Request", "Request Line must end \\r\\n", 400, VERSION );
-		setVersion (BAD_REQUEST, _version.str, 0, 0);
+		setError( CODE400, REQ_END, 400 );
+		_testError.addErrorFlag(errFlag::REQUEST_ENDING);
 	}
+
 	return false;
 }
 
@@ -283,7 +282,9 @@ bool	Request::parseHeaders(const std::string& str)
 	parseStrStreamToMap(iss, _headers, '\n', ':');
 	StringMap_t::iterator	it = _headers.find("mapLastLine");
 	if (it->second == "\r") {
+		
 		std::cout << "******** HEADER SUCCESS *************" << std::endl; // replace with error
+		// make all keys lowercase
 		// strip '\r' from end of values and then remove mapLastLine
 		return true;
 	}
@@ -317,19 +318,17 @@ bool	Request::validateMethod()
 		if (_method.str == "GET") _method.type = GET;
 		if (_method.str == "POST") _method.type = POST;
 		if (_method.str == "DELETE") _method.type = DELETE;
-		return true;
+		//if (isMethodInRoute(valid_methods, route)) NEED TO ADD FUNCTION isMethodInRoute
+			return true;
+		//setError( CODE405, METH_NOT_PERM, 405, METHOD); // if method supported, but not in route, return error 405
 	}
-	else if (valid_methods.find(to_upper(_method.str)) != valid_methods.end()){
-		_method.type = BAD_CASE;
-		setError( ERR_BAD_REQ, ERR_METH_UPPER, 400, METHOD);
+	else if (valid_methods.find(to_upper(_method.str)) != valid_methods.end()) {
+			setError( CODE400, METH_CASE, 400);
+			_testError.addErrorFlag(errFlag::METHOD_CASE);
 	}
-	else if (unsupported_methods.find(_method.str) != valid_methods.end()){
-		_method.type = UNSUPPORTED_METHOD;
-		setError( ERR_BAD_REQ, ERR_METH_UNSUP, 400, METHOD);
-	}
-	else {
-		_method.type = UNRECOGNISED_METHOD;
-		setError( ERR_BAD_REQ, ERR_METH_UNREC, 400, METHOD);
+	else {	
+		setError( CODE501, METH_UNREC, 501);
+		_testError.addErrorFlag(errFlag::METHOD_UNRECOGNISED);
 	}
 	return false;
 }
@@ -339,21 +338,22 @@ bool	Request::validateMethod()
 bool	Request::validateVersion()
 {
 	if (_version.str.compare("HTTP/1.1") == 0)
-		setVersion(OPO, _version.str, 1, 1);
+		setVersion(OPO, _version.str);
 	else if (_version.str.compare(std::string("HTTP/1.0")) == 0)
-		setVersion(OPZ, _version.str, 1, 0);
-	else if (_version.str.compare(std::string("HTTP/0.9")) == 0 ||
-				_version.str.compare(std::string("HTTP/2.0")) == 0 ||
-					_version.str.compare(std::string("HTTP/3.0")) == 0) {
-		setVersion(UNSUPPORTED_VERSION, _version.str, substring_to_int(_version.str, 5, 1), 0);
-		setError(ERR_BAD_REQ, ERR_HTTP_UNSUP + _version.str, 400, VERSION);
-	}
+		setVersion(OPZ, _version.str);
 	else {
-		setVersion(UNRECOGNISED_VERSION, _version.str, 0, 0);
-		setError(ERR_BAD_REQ, ERR_HTTP_UNREC + _version.str, 400, VERSION);
-	}
-	if (_version.type > 1)
+		if (_version.str.compare(std::string("HTTP/0.9")) == 0 ||
+			_version.str.compare(std::string("HTTP/2.0")) == 0 ||
+			_version.str.compare(std::string("HTTP/3.0")) == 0) {
+			setError(CODE400, VER_UNSUP + _version.str, 400 );
+			_testError.addErrorFlag(errFlag::VERSION_UNSUPPORTED);
+		}
+		else {
+			setError(CODE400, VER_UNREC + _version.str, 400);
+			_testError.addErrorFlag(errFlag::VERSION_UNRECOGNISED);
+		}
 		return false;
+	}
 	return true ;
 }
 
@@ -384,17 +384,19 @@ bool	Request::validateScheme()
 	//scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
 	const std::set<std::string> unsupported_schemes = get_unsupported_schemes();
 
+	if (_uri.scheme.empty())
+		return true;
 	to_lower_ref(_uri.scheme);
 	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
-	uriCharValidation(SCHEME_CHARS, _uri.scheme, URI_SCHEME);
-	if (unsupported_schemes.find(to_lower(_uri.scheme)) != unsupported_schemes.end()){
-		_uri.uri_type = UNSUPPORTED_SCHEME;
-		setError( ERR_BAD_REQ, ERR_SCHEM_UNSUP + _uri.scheme, 400, URI_SCHEME);
+	uriCharValidation(SCHEME_CHARS, _uri.scheme);
+	if (unsupported_schemes.find(_uri.scheme) != unsupported_schemes.end()){
+		setError( CODE400, URI_SCH_UNSUP + _uri.scheme, 400);
+		_testError.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
 	}
 	else {
-		_uri.uri_type = INVALID_SCHEME;
-		setError( ERR_BAD_REQ, ERR_SCHEM_UNREC + _uri.scheme, 400, URI_SCHEME);
+		setError( CODE400, URI_SCH_UNREC + _uri.scheme, 400);
+		_testError.addErrorFlag(errFlag::URI_SCHEME_UNRECOGNISED);
 	}
 	return false;
 }
@@ -409,7 +411,7 @@ bool	Request::validateUser() {
 	*/
 	bool outcome = true;
 
-	if (!percentDecode( _uri.user, URI_USER )){ outcome = false; }
+	if (!percentDecode( _uri.user )){ outcome = false; }
 	if (!isValidUTF8( _uri.user )){ outcome = false; }
 	return outcome;
 }
@@ -419,7 +421,7 @@ bool	Request::validateUser() {
 bool	Request::validatePass() {
 	/* INCOMPLETE */
 	bool outcome = true;
-	if (!percentDecode( _uri.pass, URI_PASS )){ outcome = false;}
+	if (!percentDecode( _uri.pass )){ outcome = false;}
 	if (!isValidUTF8( _uri.pass )){ outcome = false; }
 	return outcome;
 }
@@ -428,7 +430,7 @@ bool	Request::validatePass() {
 
 bool	Request::validateHost() {
 	bool outcome = true;
-	if (!percentDecode( _uri.host, URI_HOST ))
+	if (!percentDecode( _uri.host ))
 		{ outcome = false;}
 	if (!isValidUTF8( _uri.host ))
 		{ outcome = false; }
@@ -460,7 +462,7 @@ bool	Request::validateHost() {
 bool	Request::validatePort() {
 	bool outcome = true;
 
-	if (!(uriCharValidation( PORT_CHARS, _uri.port, URI_PORT)))
+	if (!(uriCharValidation( PORT_CHARS, _uri.port )))
 		{ outcome = false; }
 	if (!_uri.port.empty())
 		{_uri.port_int = str_to_int(_uri.port);}
@@ -475,7 +477,10 @@ bool	Request::validatePort() {
 /*  URI PATH VALIDATION  */
 
 bool	Request::validatePath() {
+/* 1. 
+		if ( _uri_path.str.empty() && _
 
+*/
 	// if (_uri.path_type == ABSOLUTE && (!_uri.path.empty() && _uri.path[0] != '//')){
 	// 	setError( "Bad Request", "Path must start \'/\' or path must be empty", 400, URI_PATH ); //ERROR MESSAGE NEEDS TO CHANGE
 	// 	return false;
@@ -495,7 +500,7 @@ bool	Request::validatePath() {
 
 bool	Request::validateQuery(){
 	bool outcome = true;
-	if (!percentDecode( _uri.query, URI_QUERY ))
+	if (!percentDecode( _uri.query ))
 		{ outcome = false;}
 	if (!isValidUTF8( _uri.query ))
 		{ outcome = false; }
@@ -505,19 +510,23 @@ bool	Request::validateQuery(){
 /*  URI FRAGMENT VALIDATION  */
 
 bool	Request::validateFrag(){
-	bool outcome = true;
-	if (!percentDecode( _uri.frag, URI_FRAG ))
+	
+	if (_uri.frag.empty())
+		return true;
+	setError( CODE400, URI_FRAG_REC + _uri.frag, 400 );
+	 _testError.addErrorFlag(errFlag::URI_FRAG_RECEIVED);
+	return false;	
+/* 	if (!percentDecode( _uri.frag, URI_FRAG ))
 		{ outcome = false;}
 	if (!isValidUTF8( _uri.frag ))
-		{ outcome = false; }
-	return outcome;
+		{ outcome = false; } */
 }
 
    /* ===================== */
   /* URI VALIDATION UTILS  */
  /* ===================== */
 
- bool	Request::percentDecode( std::string& encoded, err_loc err_location )
+ bool	Request::percentDecode( std::string& encoded)
  {
 	 std::string	decoded;
 	 size_t			len = encoded.length();
@@ -538,7 +547,8 @@ bool	Request::validateFrag(){
 			 }
 			 else
 			 {
-				 setError(ERR_BAD_REQ, ERR_URI_ENCOD, 400, err_location);
+				setError(CODE400, URI_ENCOD, 400);
+				 _testError.addErrorFlag(errFlag::URI_ENCODING);
 				 return false;
 			 }
 		 }
@@ -549,7 +559,7 @@ bool	Request::validateFrag(){
 	 return true;
  }
  
- bool	Request::uriCharValidation(const std::string set, const std::string& target, err_loc err_location) {
+ bool	Request::uriCharValidation(const std::string set, const std::string& target) {
 	 
 	 size_t			target_len = target.length();
 	 size_t			set_len = set.length();
@@ -571,19 +581,134 @@ bool	Request::validateFrag(){
 	 }
 	 if (chars.empty())
 		 return true;
-	 setError( ERR_BAD_REQ, message + " \"" + chars + "\"", 400, err_location );
+	 setError( CODE400, message + URI_ILLEGAL_CHARS + " \"" + chars + "\"", 400 );
+	 _testError.addErrorFlag(errFlag::URI_ILLEGAL_CHARACTER);
 	 return false;
  }
 
+ bool			validateHeaders( void ){
+/*
+		A client MUST send a Host header field in all HTTP/1.1 request messages.
+-	 	
+		if ( ! Host header )
+			return 400 Bad Request
+*/	
+
+/*
+-
+		if (URI AUTHORITY COMPONENT (username host port)) {
+			if ( ! Host field value == AUTHORITY - (userinfo + @) )
+				return 400 Bad Request
+		} 
+*/
+/*
+-
+		if (NO AUTHORITY) {
+			if ( ! Host field value == "" )
+				return 400 Bad Request;
+		}
+*/
+/* 
+-
+	if (transfer encoding not supported 
+			return 501 (Not Implemented).
+*/
+/*
+	A server MAY reject a request that contains both Content-Length and Transfer-Encoding 
+	or process such a request in accordance with the Transfer-Encoding alone. 
+	Regardless, the server MUST close the connection after responding to such a request 
+	to avoid the potential attacks.
+-
+	if (transfer encoding && Content-Length 
+		return 501 (Not Implemented).
+		must close connection
+
+*/
+/*
+	Other recipients SHOULD ignore unrecognized header and trailer fields.
+-
+	if (header key not recognised)
+		ignore header
+*/	
+/*
+	Other recipients SHOULD ignore unrecognized header and trailer fields.
+-
+	if (header key not recognised)
+		ignore header
+*/	
+/*
+	check which headers should only be single line
+	for others, either combine to single entry as CSV's (order MUST not change
+	Set-Cookie header is an exception to this rule
+*/
+/*
+	A server MUST NOT apply a request to the target resource until it receives the entire request header section, 
+	since later header field lines might include conditionals, authentication credentials, or deliberately misleading 
+	duplicate header fields that could impact request processing
+*/
+/*
+ 	Look at field-length semantics for individual headers
+*/
+/*
+	A server that receives a request header field line, field value, or set of fields larger than it wishes
+	to process MUST respond with an appropriate 4xx (Client Error) status code. 
+*/
+/*
+	A client MAY discard or truncate received field lines that are larger than the client wishes to process 
+	if the field semantics are such that the dropped value(s) can be safely ignored
+*/
+
+/*	FIELD VALUE RULES */
+
+/* 
+	A field value does not include leading or trailing whitespace. When a specific version of HTTP allows such
+	whitespace to appear in a message, a field parsing implementation MUST exclude 
+	such whitespace prior to evaluating the field value.
+
+	ChatGPT contradicts this : says some values must not be trimmed
+*/
+
+/*
+	For defining field value syntax, this specification uses an ABNF rule named after the field name to define the
+	allowed grammar for that field's value 	(after said value has been extracted from the underlying
+	messaging syntax and multiple instances combined into a list
+*/
+
+/*
+	VALID VALUES :
+
+	- usually constrained to the range of US-ASCII characters
+	- Fields needing a greater range of characters can use an encoding, such as the one defined in [RFC8187].
+	- Historically, HTTP allowed field content with text in the ISO-8859-1 charset [ISO-8859-1],supporting other charsets only through use of [RFC2047] encoding 
+	- Specifications for newly defined fields SHOULD limit their values to visible US-ASCII octets (VCHAR (i.e. visible)), SP, and HTAB.
+	- A recipient SHOULD treat other allowed octets in field content (i.e., obs-text) as opaque data.
+
+	- a recipient of CR, LF, or NUL within a field value MUST either reject the message or replace 
+		each of those characters with SP before further processing or forwarding of that message.
+	- Field values containing other CTL characters are also invalid; however, recipients MAY retain such characters for the sake of robustness when they appear 
+		within a safe context (e.g., an application-specific quoted string that will not be processed by any downstream HTTP parser).
+
+	- Fields that only anticipate a single member as the field value are referred to as "singleton fields"
+	- Fields that allow multiple members as the field value are referred to as "list-based fields".
+	- Fields that expect to contain a comma within a member, such as within an HTTP-date or URI-reference element, ought to be defined with delimiters 
+		around that element to distinguish any comma within that data from potential list separators.
+*/
+
+	return true; 
+}
+ 
+ bool			validateBody( void ){
+	return true;
+ }
+ 
 /* SETTERS */
-void	Request::setError(const std::string& str1, const std::string& str2, int num, err_loc err_location) {
+void	Request::setError(const std::string& str1, const std::string& str2, int num) {
 	request_error error;
+
 	error.num = num;
-	error.err_location = err_location;
 	error.str1 = str1;	
 	error.str2 = str2;	
 	_last_response_code = num;
-	_last_error_loc = err_location;
 	_errors.push_back(error);
 }
 
@@ -592,63 +717,33 @@ void	Request::setMethod(method_types type, std::string& str) {
 	_method.str = str;
 }
 
-void	Request::setVersion(version_types type, std::string& str, int maj, int min) {
+void	Request::setVersion(version_types type, std::string& str) {
 	_version.type = type;
 	_version.str = str;
-	_version.major = maj;
-	_version.minor = min;
 }
 
 /* GETTERS */
 
 std::string	Request::getMethodType() const{
 	
-	std::string type;
-
 	switch( _method.type ){
-		case GET 					: { type = "GET"; break; }
-		case POST 					: { type = "POST"; break; }
-		case DELETE 				: {	type = "DELETE"; break;	}
-		case BAD_CASE 				: { type = "BAD CASE"; break;	}
-		case UNSUPPORTED_METHOD 	: {	type = "UNSUPPORTED"; break; }
-		case UNRECOGNISED_METHOD 	: { type = "UNRECOGNISED";	break; }
+		case GET 					: { return "GET"; }
+		case POST 					: { return "POST"; }
+		case DELETE 				: {	return "DELETE"; }
+		default						: { break; }
 	};
-	return type;
+	return "METHOD : ERROR : " + _method.str;
 }
 
 std::string	Request::getVersionType() const{
 	
-	std::string type;
-
 	switch( _version.type ){
-		case OPO 					: { type = "HTTP/1.1"; break; }
-		case OPZ 					: { type = "HTTP/1.0"; break; }
-		case BAD_REQUEST 			: { type = "BAD_REQUEST"; break; }
-		case UNSUPPORTED_VERSION 	: { type = "UNSUPPORTED VERSION"; break; }
-		case UNRECOGNISED_VERSION 	: { type = "UNRECOGNISED VERSION"; break; }
+		case OPO 					: { return "HTTP/1.1"; }
+		case OPZ 					: { return "HTTP/1.0"; }
+		default						: { break; }
 	};
-	return type;
+	return "VERSION : ERROR :" + _version.str;;
 }
-
-std::string	Request::getErrorLocation(enum err_loc err_location) const{
-	switch(err_location){
-		case METHOD		: { return("REQUEST LINE : METHOD"); break; }
-		case URI_SCHEME	: { return("REQUEST LINE : URI SCHEME"); break; }
-		case URI_USER	: { return("REQUEST LINE : URI USER"); break; }
-		case URI_PASS	: { return("REQUEST LINE : URI PASS"); break; }
-		case URI_HOST	: { return("REQUEST LINE : URI HOST"); break; }
-		case URI_PORT	: { return("REQUEST LINE : URI PORT"); break; }
-		case URI_PATH	: { return("REQUEST LINE : URI PATH"); break; }
-		case URI_QUERY	: { return("REQUEST LINE : URI QUERY"); break; }
-		case URI_FRAG	: { return("REQUEST LINE : URI FRAGMENT"); break; }
-		case VERSION	: { return("REQUEST LINE : VERSION"); break; }
-		case HEADERS	: { return("HEADERS "); break; }
-		case BODY		: { return("BODY"); break; }
-		default			:  break;
-	}
-	std::string str = "NONE";
-	return str;
- }
 
 std::string	Request::getMethodString() const	{ return _method.str; }
 std::string	Request::getURIstring() const		{ return _uri.str; }
@@ -663,7 +758,6 @@ std::string	Request::getURIquery() const		{ return _uri.query; }
 std::string	Request::getURIfrag() const			{ return _uri.frag; }
 std::string	Request::getVersionString() const	{ return _version.str; }
 int			Request::getResponseCode()			{ return _last_response_code; }
-std::string	Request::getLastErrorLoc()			{ return getErrorLocation(_last_error_loc); }
 
 void	Request::printErrors(std::ostream& os) const {
 
@@ -680,10 +774,14 @@ void	Request::printErrors(std::ostream& os) const {
 		os << l14 << "Error num" << r3 << " : " << it->num << "\n";
 		os << l14 << "Error str" << r3 << " : " << it->str1 << "\n";
 		os << l14 << "Error str" << r3 << " : " << it->str2 << "\n";
-		os << l14 << "Error loc" << r3 << " : " << getErrorLocation(it->err_location) << "\n";
 		
 		i++;
 	}
+}
+
+std::ostream& Request::getError(std::ostream& os){
+	os << _testError << std::endl;
+	return os;
 }
 
 std::ostream& l14(std::ostream& os)	{ return os << std::setw(14) << std::left; }
@@ -707,6 +805,8 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 	os << l14 << "Version String" 	<< r3 << " : "	<< request.getVersionString()	<< "\n";
 	os << l14 << "Last Response"	<< r3 << " : "	<< request.getResponseCode()	<< "\n\n";
 	request.printErrors(os);
+	if (request.getResponseCode() != 200)
+		request.getError(os);
 	os << std::setw(0) << std::left << std::endl;
 	return os;
 }
