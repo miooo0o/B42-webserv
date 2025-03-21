@@ -1,6 +1,8 @@
 #include "ResponseState.hpp"
-#include "Reqeust.hpp"
-#include "Entries.hpp"
+
+#include <StatusManager.hpp>
+
+#include "Request.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -11,15 +13,16 @@ bool	ResponseState::_isScenarioInitialized = false;
 ////////////////////////////////////////////////////////////////////////////////
 /* Constructor */
 
-ResponseState::ResponseState(Request& reqeust) 
-: _request(reqeust), _entries(_request) {
+ResponseState::ResponseState(Request& request, StatusManager& entries)
+: _request(request), _manager(entries) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void	ResponseState::updateStatus(const Entry& entry) {
-	_entries.replace(entry);
+StatusManager&	ResponseState::getManager() {
+	return (_manager);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /* Static Methods */
@@ -55,23 +58,12 @@ void	ResponseState::_initDefaultScenario() {
 	_isScenarioInitialized = true;
 }
 
-
-/*
-	int statusCode = _entries.getEntry().getCode();
-	if (serverScenarios.find(statusCode) != serverScenarios.end()) {
-		return ("");			// read file
-	} else if (_scenarios.find(statusCode) != _scenarios.end()) {
-		return ("");			// html generate
-	} else {
-		_entries.replace(500);	// error_code;
-	}
-*/
-
 ////////////////////////////////////////////////////////////////////////////////
 // Informational
 ////////////////////////////////////////////////////////////////////////////////
 
-InformationalState::InformationalState(Request& request) : ResponseState(request) {
+InformationalState::InformationalState(Request& request, StatusManager& manager)
+	: ResponseState(request, manager) {
 }
 
 std::string	InformationalState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -82,43 +74,44 @@ std::string	InformationalState::getHandledBody(std::map<int, std::string>& serve
 // Success
 ////////////////////////////////////////////////////////////////////////////////
 
-SuccessState::SuccessState(Request& request) : ResponseState(request) {
+SuccessState::SuccessState(Request& request, StatusManager& entries)
+	: ResponseState(request, entries) {
 }
 
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-	
-	int statusCode = _entries.getCode();
 
+	return ("");
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
-RedirectState::RedirectState(Request& request) : ResponseState(request) {
+RedirectState::RedirectState(Request& request, StatusManager& entries)
+	: ResponseState(request, entries) {
 }
 
 std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-	
-	// TODO: check: redirection logic
-
+	return ("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Error
 ////////////////////////////////////////////////////////////////////////////////
 
-ErrorState::ErrorState(Request& request) : ResponseState(request) {
+ErrorState::ErrorState(Request& request, StatusManager& entries)
+	: ResponseState(request, entries) {
 }
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-	int statusCode = _entries.getCode();
-	if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
-		/* force: return error string (not template) */
+	// int statusCode = _entries.getCode();
+	// if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
+	// 	/* force: return error string (not template) */
 
-	} else if (_entries.getMapRef() == Entry::REF_SERVER_CONFIG) {
-		/* return read file -> .html */
+	// } else if (_entries.getMapRef() == Entry::REF_SERVER_CONFIG) {
+	// 	/* return read file -> .html */
 
-	} else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
-		/* return generate html */
-	}
+	// } else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
+	// 	/* return generate html */
+	// }
+	return ("");
 }

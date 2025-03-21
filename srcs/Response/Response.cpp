@@ -1,7 +1,9 @@
 #include "Response.hpp"
+#include "StatusQueue.hpp"
 #include "Request.hpp"
-#include "Entries.hpp"
-#include "EntryObserver.hpp"
+#include "StatusManager.hpp"
+#include "ResponseState.hpp"
+#include "StatusEntry.hpp"
 
 /**
  * @brief Constructs a Response object with a request and an entry queue.
@@ -13,17 +15,38 @@
  * @param request The HTTP request associated with this response.
  * @param entries A pointer to the `Entries` queue for status management.
  */
-Response::Response(Request& request, Entries* entries)
-	: _request(request), _entries(entries), _headers(), _body() {
-	_entries.addObserver(this);
+Response::Response(Request& request)
+	: _request(request), _manager(request), _headers(), _body() {
+	_serverMap = _request.getServerMap();
+	_manager.addObserver(this);
+	this->_onEntryChanged();
 }
 
 Response::~Response() {
-	if (_entries) {
-		_entries->removeObserver(this);
-	}
+	_manager.removeObserver(this);
 	_cleanState();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// Public method
+////////////////////////////////////////////////////////////////////////////////
+
+void		Response::addStatusCode(int newCode) {
+	StatusEntry& oldEntry = _manager.getStatusQueue().front();
+	if (_state && StatusEntry::same_class(oldEntry, newCode)) {
+		_manager.reuseEntry(newCode);
+		_onEntryChanged();
+	} else {
+		_manager.archiveAll();
+		_manager.push(StatusEntry(newCode));
+	}
+}
+
+StatusManager	Response::getStatusManager() const {
+	return (_manager);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /**
  * @brief Handles updates when an entry status changes.
@@ -31,61 +54,55 @@ Response::~Response() {
  * This function is triggered whenever the `Entries` queue undergoes changes.
  * It calls `updateState()` to ensure the response reflects the latest entry status.
  */
-void    Response::onEntryChanged() {
-	updateState();
+void    Response::_onEntryChanged() {
+	_syncState();
 }
 
-/**
- * @brief Updates the ResponseState based on the latest entry status.
- *
- * This function evaluates the entry's status and determines the appropriate state subclass.
- * If the entry is successfully validated, it assigns a new state (`SuccessState`, 
- * `ErrorState`, `RedirectState`, etc.). Otherwise, it throws an exception.
- *
- * @throws `std::logic_error` if the status code is out of range or queue is unprocessed.
- */
-void    Response::updateState() {
+void	Response::_syncState() {
 	try {
-		if (_entries->eval(_serverMap));
-			throw std::logic_error("Queue is not ready.");
+		StatusEntry&	target = _manager.getStatusQueue().front();
 
-		Entry::e_classes statusClass = _entries->getClass();
-		if (_state && _state->getClass() == statusClass) {
-			_state->updateStatus(_entries->getEntry());
-		}
-		_cleanState();
-		switch (statusClass) {
-			case Entry::e_classes::INFORMATIONAL: {
-				_state = new InformationalState(_request);
-				break;
-			}
-			case Entry::e_classes::SUCCESSFUL: {
-				_state = new SuccessState(_request);
-				break;
-			}
-			case Entry::e_classes::REDIRECTION: {
-				_state = new RedirectState(_request);
-				break;
-			}
-			case Entry::e_classes::CLIENT_ERROR:
-			case Entry::e_classes::SERVER_ERROR: {
-				_state = new ErrorState(_request);
-				break;
-			}
-			default: {
-				throw std::logic_error("Status code is not in range.")
-				break;
-			}
-		}
+		if (_handleFlowUpdate(target)) return;
+		if (!_manager.eval(_serverMap))
+			throw std::logic_error("Queue is not ready.");
+		_assignNewState(target.getClass());
 	}
 	catch (std::exception& e) {
-		std::cerr << "Response: Exception in updateState: " << e.what() << std::endl;
-		if (!_state) {
-			_cleanState();
-            _state = new ErrorState(_request);
-		}
-
+		_handleUpdateException(e);
 	}
+}
+
+
+bool	Response::_handleFlowUpdate(StatusEntry& target) {
+	if (target.getFlow() == StatusEntry::FLOW_PENDING_REUSE) {
+		_manager.eval(_serverMap);
+		if (target.getFlow() == StatusEntry::FLOW_READY)
+			target.setFlow(StatusEntry::FLOW_PROCESSED);
+		return (true);
+	}
+	return (false);
+}
+
+void	Response::_assignNewState(StatusEntry::e_classes statusClass) {
+	_cleanState();
+	switch (statusClass) {
+		case StatusEntry::INFORMATIONAL:
+			_state = new InformationalState(_request, _manager);
+			break;
+		case StatusEntry::SUCCESSFUL:
+			_state = new SuccessState(_request, _manager);
+			break;
+		case StatusEntry::REDIRECTION:
+			_state = new RedirectState(_request, _manager);
+			break;
+		case StatusEntry::CLIENT_ERROR:
+		case StatusEntry::SERVER_ERROR:
+			_state = new ErrorState(_request, _manager);
+			break;
+		default:
+			throw std::logic_error("Status code is not in range.");
+	}
+	_manager.getStatusQueue().front().setFlow(StatusEntry::FLOW_PROCESSED);
 }
 
 void    Response::_cleanState() {
@@ -94,98 +111,10 @@ void    Response::_cleanState() {
 	_state = NULL;
 }
 
-#include "Response.hpp"
-#include "Request.hpp"
-#include "Entries.hpp"
-#include "EntryObserver.hpp"
-
-/**
- * @brief Constructs a Response object with a request and an entry queue.
- *
- * This constructor initializes the response with a reference to the request and the 
- * `Entries` object. It also registers the response as an observer to `Entries`, allowing 
- * automatic state updates when the queue changes.
- *
- * @param request The HTTP request associated with this response.
- * @param entries A pointer to the `Entries` queue for status management.
- */
-Response::Response(Request& request, Entries* entries)
-	: _request(request), _entries(entries), _headers(), _body() {
-	_entries.addObserver(this);
-}
-
-Response::~Response() {
-	if (_entries) {
-		_entries->removeObserver(this);
-	}
-	_cleanState();
-}
-
-/**
- * @brief Handles updates when an entry status changes.
- *
- * This function is triggered whenever the `Entries` queue undergoes changes.
- * It calls `updateState()` to ensure the response reflects the latest entry status.
- */
-void    Response::onEntryChanged() {
-	updateState();
-}
-
-/**
- * @brief Updates the ResponseState based on the latest entry status.
- *
- * This function evaluates the entry's status and determines the appropriate state subclass.
- * If the entry is successfully validated, it assigns a new state (`SuccessState`, 
- * `ErrorState`, `RedirectState`, etc.). Otherwise, it throws an exception.
- *
- * @throws `std::logic_error` if the status code is out of range or queue is unprocessed.
- */
-void    Response::updateState() {
-	try {
-		if (_entries->eval(_serverMap));
-			throw std::logic_error("Queue is not ready.");
-
-		Entry::e_classes statusClass = _entries->getClass();
-		if (_state && _state->getClass() == statusClass) {
-			_state->updateStatus(_entries->getEntry());
-		}
+void	Response::_handleUpdateException(const std::exception& e) {
+	std::cerr << "Response: Exception in updateState: " << e.what() << std::endl;
+	if (!_state) {
 		_cleanState();
-		switch (statusClass) {
-			case Entry::e_classes::INFORMATIONAL: {
-				_state = new InformationalState(_request);
-				break;
-			}
-			case Entry::e_classes::SUCCESSFUL: {
-				_state = new SuccessState(_request);
-				break;
-			}
-			case Entry::e_classes::REDIRECTION: {
-				_state = new RedirectState(_request);
-				break;
-			}
-			case Entry::e_classes::CLIENT_ERROR:
-			case Entry::e_classes::SERVER_ERROR: {
-				_state = new ErrorState(_request);
-				break;
-			}
-			default: {
-				throw std::logic_error("Status code is not in range.")
-				break;
-			}
-		}
+		_state = new ErrorState(_request, _manager);
 	}
-	catch (std::exception& e) {
-		std::cerr << "Response: Exception in updateState: " << e.what() << std::endl;
-		if (!_state) {
-			_cleanState();
-            _state = new ErrorState(_request);
-		}
-
-	}
-}
-
-void    Response::_cleanState() {
-	if (_state)
-		delete _state;
-	_state = NULL; 
 }

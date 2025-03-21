@@ -1,22 +1,38 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Response.hpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: minakim <minakim@student.42berlin.de>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/03/20 23:27:22 by minakim           #+#    #+#             */
+/*   Updated: 2025/03/20 23:27:23 by minakim          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef RESPONSE_HPP
-#define RESPONSE_HPP
+# define RESPONSE_HPP
 
 #include <string>
 #include <map>
+
 #include <iostream>
+
+# include "StatusManager.hpp"
+# include "EntryObserver.hpp"
+# include "StatusEntry.hpp"
 
 class ResponseState;
 class ContentHandler;
 class Request;
-class Entrise;
+class StatusManager;
+class StatusEntry;
 
-#include "EntryObserver.hpp"
-#include "Request.hpp"
 
 class Response : public EntryObserver {
 private:
 	Request&							_request;
-	Entries*							_entries; 
+	StatusManager						_manager;
 	ResponseState*						_state;
     std::map<int, std::string>			_serverMap;
 
@@ -24,31 +40,24 @@ private:
 	std::string                         _body;
 
 public:
-	Response(Request& request, Entries* entries);		/* with params */
+	Response(Request& request);		/* with params */
 	~Response();
 
-	Response		to_response();
+	// Response		to_response();
 	
 	/* ... */
-	void			onEntryChanged();
-	void			updateState();
+	void			addStatusCode(int code);
+	StatusManager	getStatusManager() const;
 
-	/* to_string*/
-	std::string		to_string();
-
-	/* setter */
-	void			setState(int code);
-	void			setBody(const std::string& content);
-
-	/* getter */
-	std::string							getBody() const;
-	std::string							getStatus() const;
-	std::map<std::string, std::string>	getHeaders() const;
-
-	/* add methods */
-	void		addHeader(const std::string& key, const std::string& value);
 private:
+	void		_onEntryChanged();
+	void		_syncState();
+	bool		_handleFlowUpdate(StatusEntry& target);
+	void		_handleStateReuse(StatusEntry& target);
 	void		_cleanState();
+	void		_assignNewState(StatusEntry::e_classes statusClass);
+	bool		_shouldReuseState(StatusEntry::e_classes statusClass) const;
+	void		_handleUpdateException(const std::exception& e);
 };
 
 #endif 
