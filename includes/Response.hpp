@@ -15,14 +15,18 @@
 
 #include <string>
 #include <map>
+
 #include <iostream>
+
+#include "EntryObserver.hpp"
+#include "Entries.hpp"
 
 class ResponseState;
 class ContentHandler;
 class Request;
 class Entries;
+class Entry;
 
-#include "EntryObserver.hpp"
 
 class Response : public EntryObserver {
 private:
@@ -59,6 +63,9 @@ public:
 	// void		addHeader(const std::string& key, const std::string& value);
 private:
 	void		_cleanState();
+	void		_replaceState(Entry::e_classes statusClass);
+	bool		_shouldReuseState(Entry::e_classes statusClass) const;
+	void		_prepareForEvaluation();
 };
 
 #endif 
