@@ -1,6 +1,8 @@
 #include "ResponseState.hpp"
+
+#include <StatusManager.hpp>
+
 #include "Request.hpp"
-#include "Entries.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -11,18 +13,14 @@ bool	ResponseState::_isScenarioInitialized = false;
 ////////////////////////////////////////////////////////////////////////////////
 /* Constructor */
 
-ResponseState::ResponseState(Request& request, Entries& entries)
-: _request(request), _entries(entries) {
+ResponseState::ResponseState(Request& request, StatusManager& entries)
+: _request(request), _manager(entries) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void	ResponseState::replaceEntry(const Entry& entry) {
-	_entries.replace(entry);
-}
-
-Entry::e_classes	ResponseState::getClass() {
-	return (_entries.getEntry().getClass());
+StatusManager&	ResponseState::getManager() {
+	return (_manager);
 }
 
 
@@ -64,10 +62,8 @@ void	ResponseState::_initDefaultScenario() {
 // Informational
 ////////////////////////////////////////////////////////////////////////////////
 
-InformationalState::InformationalState(Request& request, Entries& entries)
-	: ResponseState(request, entries) {
-	if (entries.isValidated() && entries.isProcessing())
-		entries.setQueLevel(Entries::QUEUE_COMPLETE);
+InformationalState::InformationalState(Request& request, StatusManager& manager)
+	: ResponseState(request, manager) {
 }
 
 std::string	InformationalState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -78,30 +74,23 @@ std::string	InformationalState::getHandledBody(std::map<int, std::string>& serve
 // Success
 ////////////////////////////////////////////////////////////////////////////////
 
-SuccessState::SuccessState(Request& request, Entries& entries)
+SuccessState::SuccessState(Request& request, StatusManager& entries)
 	: ResponseState(request, entries) {
-	if (entries.isValidated() && entries.isProcessing())
-		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-	
-	int statusCode = _entries.getCode();
+
 	return ("");
 }
 ////////////////////////////////////////////////////////////////////////////////
 //  Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
-RedirectState::RedirectState(Request& request, Entries& entries)
+RedirectState::RedirectState(Request& request, StatusManager& entries)
 	: ResponseState(request, entries) {
-	if (entries.isValidated() && entries.isProcessing())
-		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-	
-	int statusCode = _entries.getCode();
 	return ("");
 }
 
@@ -109,10 +98,8 @@ std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScen
 // Error
 ////////////////////////////////////////////////////////////////////////////////
 
-ErrorState::ErrorState(Request& request, Entries& entries)
+ErrorState::ErrorState(Request& request, StatusManager& entries)
 	: ResponseState(request, entries) {
-	if (entries.isValidated() && entries.isProcessing())
-		entries.setQueLevel(Entries::QUEUE_COMPLETE);
 }
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
@@ -126,6 +113,5 @@ std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenari
 	// } else if (_entries.getMapRef() == Entry::REF_STATIC_MAP) {
 	// 	/* return generate html */
 	// }
-	int statusCode = _entries.getCode();
 	return ("");
 }

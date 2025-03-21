@@ -15,7 +15,7 @@
 class EntryObserver {
 public:
     virtual			~EntryObserver() {}
-    virtual void	onEntryChanged() = 0;
+    virtual void	_onEntryChanged() = 0;
 };
 
 #endif

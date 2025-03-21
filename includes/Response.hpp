@@ -18,20 +18,21 @@
 
 #include <iostream>
 
-#include "EntryObserver.hpp"
-#include "Entries.hpp"
+# include "StatusManager.hpp"
+# include "EntryObserver.hpp"
+# include "StatusEntry.hpp"
 
 class ResponseState;
 class ContentHandler;
 class Request;
-class Entries;
-class Entry;
+class StatusManager;
+class StatusEntry;
 
 
 class Response : public EntryObserver {
 private:
 	Request&							_request;
-	Entries*							_entries; 
+	StatusManager						_manager;
 	ResponseState*						_state;
     std::map<int, std::string>			_serverMap;
 
@@ -39,33 +40,24 @@ private:
 	std::string                         _body;
 
 public:
-	Response(Request& request, Entries* entries);		/* with params */
+	Response(Request& request);		/* with params */
 	~Response();
 
 	// Response		to_response();
 	
 	/* ... */
-	void			onEntryChanged();
-	void			updateState();
+	void			addStatusCode(int code);
+	StatusManager	getStatusManager() const;
 
-	// /* to_string*/
-	// std::string		to_string();
-
-	// /* setter */
-	// void			setBody(const std::string& content);
-
-	// /* getter */
-	// std::string							getBody() const;
-	// std::string							getStatus() const;
-	// std::map<std::string, std::string>	getHeaders() const;
-
-	// /* add methods */
-	// void		addHeader(const std::string& key, const std::string& value);
 private:
+	void		_onEntryChanged();
+	void		_syncState();
+	bool		_handleFlowUpdate(StatusEntry& target);
+	void		_handleStateReuse(StatusEntry& target);
 	void		_cleanState();
-	void		_replaceState(Entry::e_classes statusClass);
-	bool		_shouldReuseState(Entry::e_classes statusClass) const;
-	void		_prepareForEvaluation();
+	void		_assignNewState(StatusEntry::e_classes statusClass);
+	bool		_shouldReuseState(StatusEntry::e_classes statusClass) const;
+	void		_handleUpdateException(const std::exception& e);
 };
 
 #endif 

@@ -1,6 +1,6 @@
 #include "Request.hpp"
 #include "Response.hpp"
-#include "Entries.hpp"
+#include "StatusManager.hpp"
 
 #include <stdlib.h>
 
@@ -11,16 +11,23 @@ int main(int ac, char**av) {
     try {
         /* default */
         int test_code = std::atoi(av[1]);
-        Request     request(test_code);
-        Entries     entries(request);
-        Response    response(request, &entries);
+        Request         request(test_code);
 
-        std::cout << "== First Entry ==" << std::endl;
-        std::cout << "Request Code: " << request.getCode() << std::endl;
-        std::cout << "Entry Code: " << entries.getEntry().getCode() << std::endl;
-        std::cout << "Class: " << static_cast<int>(entries.getClass()) << std::endl;
-        std::cout << "Validation Status: " << static_cast<int>(entries.getEntry().getValidateStatus()) << std::endl;
-        std::cout << std::endl;
+        Response        response(request);
+
+        StatusEntry e0 = response.getStatusManager().getStatusQueue().front();
+        std::cout << e0 << std::endl;
+        response.addStatusCode(400);
+        StatusEntry e1 = response.getStatusManager().getStatusQueue().front();
+        std::cout << e1 << std::endl;
+
+        response.addStatusCode(403);
+        StatusEntry e2 = response.getStatusManager().getStatusQueue().front();
+        std::cout << e2 << std::endl;
+
+        response.addStatusCode(409);
+        StatusEntry e3 = response.getStatusManager().getStatusQueue().front();
+        std::cout << e3 << std::endl;
 
         return (0);
     }
