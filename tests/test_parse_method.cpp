@@ -14,7 +14,6 @@ void test_parse_method(std::string& str, const std::string& methodStr, int num, 
 	}
 	else {
 		assert(req.getResponseCode() == 400);
-		assert(req.getLastErrorLoc() == "REQUEST LINE : METHOD");
 		std::cout << "test_parse_method " << num << " passed : method invalid\t: " << methodStr << std::endl;
 	}
 }

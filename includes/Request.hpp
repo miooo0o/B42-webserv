@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/21 14:58:38 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/24 08:52:54 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,6 @@ class	Request
 	std::string		getVersionString() const;
 	std::string		getVersionType() const;
 	int				getResponseCode();
-	std::string		getLastErrorLoc();
 	std::ostream&	getError(std::ostream& os);
 	void			printErrors(std::ostream& os) const;
 	

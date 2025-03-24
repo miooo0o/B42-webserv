@@ -14,7 +14,6 @@ void test_parse_version(std::string& str, const std::string& versionStr, int num
 	}
 	else {
 		assert(req.getResponseCode() == 400);
-		assert(req.getLastErrorLoc() == "REQUEST LINE : VERSION");
 		std::cout << "test_parse_version " << num << " passed : version invalid\t: " << versionStr << std::endl;
 	}
 }
