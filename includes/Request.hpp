@@ -6,17 +6,17 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/24 08:52:54 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/24 12:38:02 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
+#include "../damienServer/Config.hpp"
 #include "./TestClasses/testUtils.hpp"
 #include "./utility_functions.hpp"
 #include "./Error.hpp"
-
 #include <cstring>
 #include <iomanip>
 #include <iostream>
@@ -162,11 +162,13 @@ class	Request
 	
 	public:
 		Error		_testError;
+		Config*		_config;
 	
 	/* CONSTRUCTORS */
 	Request( void );
 	Request( const std::string& str );
 	Request( const Request& other );
+	Request( const std::string& str, Config* config );
 	
 	/* DESTRUCTORS */
 	~Request( void );

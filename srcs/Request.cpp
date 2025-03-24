@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/21 16:46:26 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/24 12:43:14 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,13 @@ Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(),
 */
 Request::Request( const std::string& str ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
 	_headers(), _errors(), _last_response_code(200), _testError(0) {
+	parseRequestLine();
+}
+
+/*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AND CONFIG AS PARAMETERS
+*/
+Request::Request( const std::string& str, Config* config ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
+	_headers(), _errors(), _last_response_code(200), _testError(0), _config(config) {
 	parseRequestLine();
 }
 
@@ -61,11 +68,9 @@ bool	Request::parseRequestLine(const std::string& str)
 	std::istringstream stream(str);
 
 	bool outcome = true;
-	if (!(parseMethod(stream) && validateMethod()))
+	if (!(parseMethod(stream) && parseURI(stream) && parseVersion(stream)))
 		outcome = false;
-	if (!(parseURI(stream) && validateURI()))
-		outcome = false;
-	if (!(parseVersion(stream) && validateVersion()))
+	if (!( validateMethod() && validateURI() && validateVersion()))
 		outcome = false;
 	return outcome;
 }
@@ -80,11 +85,9 @@ bool	Request::parseRequestLine()
 	std::istringstream stream(_request_line);
 
 	bool outcome = true;
-	if (!(parseMethod(stream) && validateMethod()))
+	if (!(parseMethod(stream) && parseURI(stream) && parseVersion(stream)))
 		outcome = false;
-	if (!(parseURI(stream) && validateURI()))
-		outcome = false;
-	if (!(parseVersion(stream) && validateVersion()))
+	if (!( validateMethod() && validateURI() && validateVersion()))
 		outcome = false;
 	return outcome;
 }
@@ -318,9 +321,9 @@ bool	Request::validateMethod()
 		if (_method.str == "GET") _method.type = GET;
 		if (_method.str == "POST") _method.type = POST;
 		if (_method.str == "DELETE") _method.type = DELETE;
-		//if (isMethodInRoute(valid_methods, route)) NEED TO ADD FUNCTION isMethodInRoute
-			return true;
-		//setError( CODE405, METH_NOT_PERM, 405, METHOD); // if method supported, but not in route, return error 405
+		if (!(_config->getRouteForTarget(_uri.path))->allowsMethod(_method.str))
+			setError( CODE405, METH_NOT_PERM, 405); // if method supported, but not in route, return error 405
+		return true;
 	}
 	else if (valid_methods.find(to_upper(_method.str)) != valid_methods.end()) {
 			setError( CODE400, METH_CASE, 400);

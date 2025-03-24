@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/18 13:41:48 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/24 14:29:10 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ const   	    std::set<std::string>& get_unsupported_schemes();
 
 void			parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
 void			remove_dot_segments(std::string&);
+void			trimEndChar( std::string& str, char target);
 
 std::string		to_lower(std::string str);
 std::string		to_upper(std::string str);

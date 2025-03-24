@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/18 14:51:25 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/24 14:29:17 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,6 +198,15 @@ void	remove_dot_segments(std::string&){
 
 	
 	return ;
+}
+
+void	trimEndChars( std::string& str, char target){
+
+	while (str[str.size() - 1] == target) {
+		if (!str.empty()) {
+			str.erase(str.size() - 1);
+		}
+	}
 }
 
 std::string	to_lower(std::string str) {
