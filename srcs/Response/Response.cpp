@@ -56,6 +56,7 @@ StatusManager	Response::getStatusManager() const {
  */
 void    Response::_onEntryChanged() {
 	_syncState();
+	_syncCurrentEntry();
 }
 
 void	Response::_syncState() {
@@ -117,4 +118,9 @@ void	Response::_handleUpdateException(const std::exception& e) {
 		_cleanState();
 		_state = new ErrorState(_request, _manager);
 	}
+}
+
+void	Response::_syncCurrentEntry() {
+	if (_state && _manager.ready())
+		_state->setCurrentEntry(&_manager.getStatusQueue().front());
 }
