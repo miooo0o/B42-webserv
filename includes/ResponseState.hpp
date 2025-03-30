@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <sstream>
 
 class Response;
 class Request;
@@ -25,8 +26,9 @@ class StatusEntry;
 
 class ResponseState {
 protected:
-	StatusManager&						_manager;
 	Request&							_request;
+	StatusManager&						_manager;
+	StatusEntry*						_currentEntry;
 
 	static std::map<int, std::string>	_scenarios;
 	static bool							_isScenarioInitialized;
@@ -41,13 +43,40 @@ public:
 	/* virtual  */
 	virtual std::string					getHandledBody(std::map<int, std::string>& serverScenarios) = 0;
 
-	/* ststic methods: relate with map, `_scenarios` */
+	/* related with map, `_scenarios` */
 	static std::map<int, std::string>&	getScenarios();
 	static void 						addNewScenario(int key, const std::string& value);
 
 	StatusManager&						getManager();
+
+	void								setCurrentEntry(StatusEntry* entry);
+	StatusEntry*						getCurrentEntry() const;
+
 protected:
-	/* ststic methods */
+	/* */
+
+	/* HTML generate */
+	std::string _generateHtml(const std::string& title,
+							 const std::string& message,
+							 const std::string& details = "",
+							 const std::string& additionalHtml = "");
+
+	std::string _generateDoctype() const;
+	std::string _generateHead(const std::string& title) const;
+	std::string _generateStyles() const;
+	std::string _generateBodyStart() const;
+	std::string _generateBodyEnd() const;
+
+	virtual std::string _generateAdditionalStyles() const;
+	virtual std::string _generateContainer(const std::string& title,
+                                            const std::string& message,
+                                            const std::string& details,
+                                            const std::string& additionalHtml) const;
+	virtual std::string _generateTitle(const std::string& title) const;
+	virtual std::string _generateMessage(const std::string& message) const;
+	virtual std::string _generateDetails(const std::string& details) const;
+
+	/* related with map, `_scenarios` */
 	static void							_initDefaultScenario();
 };
 

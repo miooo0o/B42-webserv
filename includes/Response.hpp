@@ -58,6 +58,7 @@ private:
 	void		_assignNewState(StatusEntry::e_classes statusClass);
 	bool		_shouldReuseState(StatusEntry::e_classes statusClass) const;
 	void		_handleUpdateException(const std::exception& e);
+	void		_syncCurrentEntry();
 };
 
 #endif 
