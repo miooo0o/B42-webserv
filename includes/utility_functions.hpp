@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/24 14:29:10 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/30 20:14:49 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,35 +15,52 @@
 
 #include <cctype>
 #include <cstring>
-#include <fcntl.h>
 #include <iostream>
-#include <map>
-#include <netinet/in.h>
-#include <poll.h>
-#include <set>
 #include <sstream>
-#include <stdint.h>
-#include <sys/socket.h>
-#include <unistd.h>
+#include <map>
+#include <set>
 #include <vector>
 
-const			std::set<std::string>& get_valid_methods();
-const			std::set<std::string>& get_unsupported_methods();
-const   	    std::set<std::string>& get_unsupported_schemes();
+#include <dirent.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-void			parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
-void			remove_dot_segments(std::string&);
-void			trimEndChar( std::string& str, char target);
+/*  SET CREATION */
+const std::set<std::string>&		get_unsupported_schemes();
 
-std::string		to_lower(std::string str);
-std::string		to_upper(std::string str);
-void			to_lower_ref(std::string& str);
-void			to_upper_ref(std::string& str);
+/* PARSING OPERATIONS */
+void								parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
 
-int				str_to_int( const std::string str);
-int				substring_to_int(const std::string str, int start, int end);
-long			hexToLong(const char *hex);
-unsigned char   hexCharToUnsignedChar(char c);
-bool			isValidUTF8(const std::string& str);
+/* STRING CASE CONVERSION */
+std::string							to_lower(std::string str);
+std::string							to_upper(std::string str);
+void								to_lower_ref(std::string& str);
+void								to_upper_ref(std::string& str);
+
+/* STRING MODIFICATION */
+void								trimLeadingChar( std::string& str, char target);
+void								trimEndChar( std::string& str, char target);
+void								remove_dot_segments(std::string&);
+
+
+/* STRING/CHAR TYPE CONVERSION */
+int									str_to_int( const std::string str);
+int									substring_to_int(const std::string str, int start, int end);
+long								hexToLong(const char *hex);
+unsigned char						hexCharToUnsignedChar(char c);
+
+/* VALID CHARACTER CHECKS */
+bool								isValidUTF8(const std::string& str);
+
+/* PRINTING OPERATIONS */
+void								printStrMap(const std::map<std::string, std::string>& data);
+
+/*  FILE OPERATIONS  */
+int									getFileType(const std::string& str);
+bool								isAccessible(const std::string& path);
+std::string&    					pathAppendToRoot(const std::string& path, const std::string& root);
+std::pair<std::string, std::string>	pathSplit(std::string& path);
 
 #endif

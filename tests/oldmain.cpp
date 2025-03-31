@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main                                               :+:      :+:    :+:   */
+/*   oldmain.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:56:17 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/21 09:54:47 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/25 15:20:41 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int main()
 	// 				"ABC https://user@example.com/path HTTP/1.1\\r\\n",
 	// 				" ERROR IN METHOD - NOT RECOGNISED ", "2");
 	// test_function( "get https://user@example.com/path HTTP/1.1\r\n",
-	// 				"get https://user@example.com/path HTTP/1.1\\r\\n",
+	// 				"get https://user@example.com/path HTTP/1.1\\r\\n",c
 	// 				" ERROR IN METHOD - LOWER CASE ", "3");
 	// test_function( "GET https://user:pass@example.com HTTP/0.9\r\n",
 	// 				"GET https://user@example.com/path HTTP/1.2\\r\\n",

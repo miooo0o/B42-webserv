@@ -9,24 +9,27 @@ bool	test_parse_headers(const std::string& str, const std::string& headerStr, in
 	Request		req(str);
 	bool		error = true;
 	bool		errState = true;
-
-	req.parseHeaders(headerStr);
 	
-	StringMap_t headers = req.getRequestHeaders();
-
 	std::cout << "Test " << num <<  "\n=======\n" << std::endl;
+	
+	req.parseHeaders(headerStr);
+	req.validateHeaders();
+	StringMap_t headers = req.getRequestHeaders();
 	for (StringMap_t::iterator it = headers.begin(); it != headers.end(); it++){
 		std::cout << "Key : " + it->first << std::endl;
 		std::cout << "Val : " + it->second << std::endl;
 		
 		if (it->first.empty()) {
-			std::cout << "\nError : Key : " << "string is empty\n"; error = errState;
+			std::cout << "\nError : Key : " << "string is empty\n";
+			error = errState;
 		}
 		if ((std::isspace(it->first[it->first.length() - 1]))) {
-			std::cout << "\nError : Key : " << "does not end in space\n"; error = errState;
+			std::cout << "\nError : Key : " << "does not end in space\n";
+			error = errState;
 		}
 		if (it->second.empty()) {
-			std::cout << "\nError : Val : " << "string is empty\n"; error = errState;
+			std::cout << "\nError : Val : " << "string is empty\n";
+			error = errState;
 		}																							
 		std::cout << std::endl;
 	}

@@ -4,20 +4,23 @@ Testing Error Messages (OK but error numbers/messages are not accurate)
 Testing percent coding conversion (LOOKS OK BUT HOST APPEARING IN USER)
 Testing unicode validation (LOOKS OK BUT HOST APPEARING IN USER)
 
+Method Validation : Deal with no path case
+
+Request Line : Deal with double spaces in request line string
+
 Make character sets accurate
 
-Need to remove unnecessary code - e.g. setting enums that have been replaced by errors
 Remove pass field?
 
 Finish validation of URI
 
 split query into pairs
+
 move UTF-8 check to after header parsing (as encoding should be confirmed in headers)?
 
 add header parsing
-add body parsing
 
-Clean up code - split into other classes/subclasses?
+add body parsing
 
 design server parser order : 
     read request line (check for \n or character limit)
@@ -35,3 +38,7 @@ design server parser order :
     requestHandler(request)
     response(requestHandler)
 
+For Mina : 
+Look at UTF encoding and decoding class
+Look at shared error class and macro manipulation
+Logging class (perhaps different levels of logging: VERBOSE (i.e. include parsing/validation of each message))

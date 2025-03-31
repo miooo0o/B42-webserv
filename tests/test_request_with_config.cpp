@@ -6,13 +6,13 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:56:17 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/24 14:04:00 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/30 20:12:27 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Request.hpp"
-#include "../damienServer/ConfigParser.hpp"
-#include "../damienServer/Config.hpp"
+#include "../damianServer/ConfigParser.hpp"
+#include "../damianServer/Config.hpp"
 #include "../includes/TestClasses/testUtils.hpp"
 #include <cstring>
 
@@ -52,15 +52,28 @@ int	main(int argc, char* argv[]) {
 	}
 	ConfigParser cp(argv[1]);
 	Config* config = cp.parseServerblocks();
+	
 	std::cout << config << std::endl;
-	config->printConfig();
+	
 	// /* METHOD TESTS */
-	test_function( "GET https://user@example.com/test/test.html HTTP/1.1\r\n",
-		" METHOD : VALID GET ", "1", config);
-	test_function( "POST  https://user@example.com/test/test.html HTTP/1.1\r\n",
-			" METHOD : VALID POST ", "2", config);	
-	test_function( "DELETE https://user@example.com/test/test.html HTTP/1.1\r\n",
-				" METHOD : VALID DELETE ", "3", config);
+	test_function( "GET /myFork/damianServer HTTP/1.1\r\n", " PERMITTED METHOD, VALID PATH ", "1", config);
+	test_function( "GET /myFork/ HTTP/1.1\r\n", " PERMITTED METHOD, SHORT PATH ", "2", config);
+	test_function( "GET /tests/ HTTP/1.1\r\n", " PERMITTED METHOD, INVALID PATH ", "3", config);
+	test_function( "GET / HTTP/1.1\r\n", " PERMITTED METHOD, NO PATH ", "4", config);
+
+	test_function( "POST /test/test.html HTTP/1.1\r\n", " PERMITTED METHOD, VALID PATH ", "1", config);
+	test_function( "POST /test/ HTTP/1.1\r\n", " PERMITTED METHOD, SHORT PATH ", "1", config);
+	test_function( "POST /tests/ HTTP/1.1\r\n", " PERMITTED METHOD, INVALID PATH ", "3", config);
+	test_function( "POST / HTTP/1.1\r\n", " PERMITTED METHOD, NO PATH ", "4", config);
+
+	test_function( "DELETE /test/test.html HTTP/1.1\r\n", " PERMITTED METHOD, VALID PATH ", "1", config);
+	test_function( "DELETE /test/ HTTP/1.1\r\n", " PERMITTED METHOD, SHORT PATH ", "1", config);
+	test_function( "DELETE /tests/ HTTP/1.1\r\n", " PERMITTED METHOD, INVALID PATH ", "3", config);
+	test_function( "DELETE / HTTP/1.1\r\n", " METHOD : VALID GET, NO PATH ", "4", config);
+
+
+	test_function( "POST /test/test.html HTTP/1.1\r\n",	" METHOD : VALID POST ", "2", config);
+	test_function( "DELETE /test/test.html HTTP/1.1\r\n", " METHOD : VALID DELETE ", "3", config);
 	// test_function( "DELETE https://user@example.com/path/abc/def/123.com HTTP/1.1\r\n",
 	// 	" METHOD : VALID DELETE ", "2", config);
 	// test_function( "POST https://user@example.com/path/abc/def/123.com HTTP/1.1\r\n",

@@ -39,8 +39,10 @@ void ConfigParser::parseLocation(Config& config, std::ifstream& file, std::strin
 		else if (line == "}")
 			break;
 	}
-	if (currentRoute)
+	if (currentRoute){
+		currentRoute->setRouteTarget();
 		config.addRoute(currentRoute);
+	}
 }
 
 Config* ConfigParser::parseServerblocks()
@@ -101,7 +103,7 @@ std::string ConfigParser::trim(const std::string &str)
 {
 	size_t first = str.find_first_not_of(" \t");
 	if (first == std::string::npos) return "";
-		size_t last = str.find_last_not_of(" \t");
+		size_t last = str.find_last_not_of(" \t;");
 	return str.substr(first, last - first + 1);
 }
 
@@ -120,6 +122,7 @@ std::vector<std::string> ConfigParser::parseMethods(const std::string &line)
 	std::istringstream iss(line);
 	std::string key, method;
 	std::vector<std::string> methods;
+
 	iss >> key;
 	while (iss >> method)
 		methods.push_back(method);

@@ -6,52 +6,15 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/24 14:29:17 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/30 20:17:43 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/utility_functions.hpp"
 
-const std::set<std::string>& get_valid_methods() {
-	
-	static std::set<std::string> valid_methods;
-	static int i = 0;
+const std::set<std::string> &get_unsupported_schemes()
+{
 
-	if (i == 0)
-	{
-		valid_methods.insert(std::string("GET"));
-		valid_methods.insert(std::string("POST"));
-		valid_methods.insert(std::string("DELETE"));
-		i++;
-	}
-	
-    return valid_methods;
-}
-
-const std::set<std::string>& get_unsupported_methods() {
-	
-	static std::set<std::string> unsupported_methods;
-	static int i = 0;
-
-	if (i == 0)
-	{
-		unsupported_methods.insert(std::string("HEAD"));
-		unsupported_methods.insert(std::string("PUT"));
-		unsupported_methods.insert(std::string("CONNECT"));
-		unsupported_methods.insert(std::string("OPTIONS"));
-		unsupported_methods.insert(std::string("TRACE"));
-		unsupported_methods.insert(std::string("PATCH"));
-		unsupported_methods.insert(std::string("LINK"));
-		unsupported_methods.insert(std::string("UNLINK"));
-		unsupported_methods.insert(std::string("M-SEARCH"));
-		i++;
-	}
-	
-	return unsupported_methods;
-}
-
-const std::set<std::string>& get_unsupported_schemes() {
-	
 	static std::set<std::string> unsupported_schemes;
 	static int i;
 
@@ -160,29 +123,38 @@ const std::set<std::string>& get_unsupported_schemes() {
 	return unsupported_schemes;
 }
 
-void	printMap(const std::map<std::string, std::string>& data) {
-	
-	std::cout << "PARSED HEADER MAP \n===================" << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); ++it) {
-			std::cout << "Key : " + it->first << std::endl;
-			if (it->second == "\r") {
-				std::cout << "[CR]"<< std::endl << std::endl;
-			}
-			else {
-				std::cout << "Val : " + it->second << std::endl << std::endl;
-			}
-	}
-	std::cout << "END OF HEADER MAP \n===================" << std::endl << std::endl;
+/* PRINTING OPERATIONS */
 
+void printStrMap(const std::map<std::string, std::string> &data)
+{
+
+	std::cout << "PARSED HEADER MAP \n===================" << std::endl;
+	for (std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); ++it)
+	{
+		std::cout << "Key : " + it->first << std::endl;
+		if (it->second == "\r")
+		{
+			std::cout << "[CR]" << std::endl
+					  << std::endl;
+		}
+		else
+		{
+			std::cout << "Val : " + it->second << std::endl
+					  << std::endl;
+		}
+	}
+	std::cout << "END OF HEADER MAP \n===================" << std::endl
+			  << std::endl;
 }
 
-void	parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim) {
-
+void parseStrStreamToMap(std::istringstream &iss, std::map<std::string, std::string> &result, char pair_delim, char kv_delim)
+{
 	std::string line;
 	std::string key;
 	std::string value;
 
-	while (std::getline(iss, line, pair_delim)) {
+	while (std::getline(iss, line, pair_delim))
+	{
 		std::size_t pos = line.find(kv_delim);
 		if (pos == std::string::npos)
 			break;
@@ -191,145 +163,183 @@ void	parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::str
 		result[key] = value;
 	}
 	result["mapLastLine"] = line;
-	printMap(result);
+	printStrMap(result);
 }
 
-void	remove_dot_segments(std::string&){
+std::vector<std::string> split_path(std::istringstream& iss) {
+	std::string str;
+	std::vector<std::string> segments;
 
-	
-	return ;
-}
-
-void	trimEndChars( std::string& str, char target){
-
-	while (str[str.size() - 1] == target) {
-		if (!str.empty()) {
-			str.erase(str.size() - 1);
-		}
+	if (str.substr(0, 1) == "./")
+		str = str.substr(2);
+	else if (str[0] == '/')
+		segments.push_back("/");
+	while (std::getline(iss, str, '/')) {
+		if (str.empty() || str.compare(".") == 0)
+			continue ;
+		else if (str.compare("..") == 0 && segments.size() > 1)
+			segments.pop_back();
+		else
+			segments.push_back(str);
 	}
+	return segments;
 }
 
-std::string	to_lower(std::string str) {
+std::string	rebuild_path(std::vector<std::string> segments) {
+	std::string path;
 
-    for (size_t i = 0; i < str.size(); ++i) {
-        str[i] = std::tolower(static_cast<unsigned char>(str[i]));
-    }
+	if (segments[0] == "/")
+	for ( size_t i = 1; i < segments.size(); i++ ){
+		path + segments[i];
+	}
+	return path;
+}
+
+void remove_dot_segments(std::string& str)
+{
+	std::istringstream iss(str);
+	std::vector<std::string> segments;
+	
+	segments = split_path(iss);
+	str = rebuild_path(segments);
+	return; 
+}
+
+/* STRING CASE CONVERSION */
+
+std::string to_lower(std::string str)
+{
+	for (size_t i = 0; i < str.size(); ++i)
+		str[i] = std::tolower(static_cast<unsigned char>(str[i]));
 	return str;
 }
 
-std::string	to_upper(std::string str) {
-
-    for (size_t i = 0; i < str.size(); ++i) {
-        str[i] = std::toupper(static_cast<unsigned char>(str[i]));
-    }
+std::string to_upper(std::string str)
+{
+	for (size_t i = 0; i < str.size(); ++i)
+		str[i] = std::toupper(static_cast<unsigned char>(str[i]));
 	return str;
 }
 
-void	to_lower_ref(std::string& str) {
-
-    for (size_t i = 0; i < str.size(); ++i) {
-        str[i] = std::tolower(static_cast<unsigned char>(str[i]));
-    }
+void to_lower_ref(std::string &str)
+{
+	for (size_t i = 0; i < str.size(); ++i)
+		str[i] = std::tolower(static_cast<unsigned char>(str[i]));
 }
 
-void	to_upper_ref(std::string& str) {
-
-    for (size_t i = 0; i < str.size(); i++) {
-        str[i] = std::toupper(static_cast<unsigned char>(str[i]));
-    }
+void to_upper_ref(std::string &str)
+{
+	for (size_t i = 0; i < str.size(); i++)
+		str[i] = std::toupper(static_cast<unsigned char>(str[i]));
 }
 
-int	str_to_int(const std::string str){
-	int	value;
+/* STRING MODIFICATION */
 
-	std::istringstream	iss(str);
+void	trimLeadingChar( std::string& str, char target){
+	while (str[0] == target)
+			str.erase(0, 1);
+}
+
+void trimEndChar(std::string &str, char target)
+{
+	while (str[str.size() - 1] == target)
+		str.erase(str.size() - 1);
+}
+
+/* STRING/CHAR TYPE CONVERSION */
+
+int str_to_int(const std::string str)
+{
+	int value;
+
+	std::istringstream iss(str);
 	iss >> value;
 	return value;
 }
 
-int	substring_to_int(const std::string str, int start, int end){
-
-	std::string	substring = str.substr(start, end);
-	return (str_to_int( substring ));
+int substring_to_int(const std::string str, int start, int end)
+{
+	std::string substring = str.substr(start, end);
+	return (str_to_int(substring));
 }
 
-long	hexToLong(const char *str) {
-	long	result = 0;
-	int		value;
-	char	c;
+long hexToLong(const char *str)
+{
+	long result = 0;
+	int value;
+	char c;
 
 	if (!str)
 		return 0;
 
-    while (*str) {
+	while (*str)
+	{
 		c = *str;
 		value = 0;
 
-        if (std::isdigit(c)) {
-            value = c - '0';
-        } 
-        else if (c >= 'A' && c <= 'F') {
+		if (std::isdigit(c))
+			value = c - '0';
+		else if (c >= 'A' && c <= 'F')
 			value = c - 'A' + 10;
-        }
-        else if (c >= 'a' && c <= 'f') {
+		else if (c >= 'a' && c <= 'f')
 			value = c - 'a' + 10;
-        }
 		else
 			break;
-        result = (result << 4) | value;
-        ++str;
-    }
-    
-    return result;
+		result = (result << 4) | value;
+		str++;
+	}
+
+	return result;
 }
 
-unsigned char   hexCharToUnsignedChar(char c){
+unsigned char hexCharToUnsignedChar(char c)
+{
 	unsigned char x;
 
 	if (c >= '0' && c <= '9')
 		x = c - '0';
-	else if (c >= 'A' && c <= 'F') {
+	else if (c >= 'A' && c <= 'F')
 		x = c - 'A' + 10;
-	}
-	else if (c >= 'a' && c <= 'f') {
+	else if (c >= 'a' && c <= 'f')
 		x = c - 'a' + 10;
-	}
 	else
 		return -1;
 	return x;
 }
 
-bool	isValidUTF8(const std::string& str) {
-	if (str.empty()) return true;
+/* VALID CHARACTER CHECKS */
 
-	unsigned char	c;
-	int				expectedContinuationBytes = 0;
-	size_t			i = 0;
+bool isValidUTF8(const std::string &str)
+{
+	if (str.empty())
+		return true;
 
-    while (str[i]) {
-        c = static_cast<unsigned char>(str[i]);
+	unsigned char c;
+	int expectedContinuationBytes = 0;
+	size_t i = 0;
 
-		if (expectedContinuationBytes == 0) {
-			if ((c & 0x80) == 0x00) {
+	while (str[i])
+	{
+		c = static_cast<unsigned char>(str[i]);
+
+		if (expectedContinuationBytes == 0)
+		{
+			if ((c & 0x80) == 0x00)
 				expectedContinuationBytes = 0;
-			}
-			else if ((c & 0xE0) == 0xC0) {
+			else if ((c & 0xE0) == 0xC0)
 				expectedContinuationBytes = 1;
-			}
-			else if ((c & 0xF0) == 0xE0) {
+			else if ((c & 0xF0) == 0xE0)
 				expectedContinuationBytes = 2;
-			}
-			else if ((c & 0xF8) == 0xF0) {
+			else if ((c & 0xF8) == 0xF0)
 				expectedContinuationBytes = 3;
-			}
 			else
 				return false;
 		}
-		else {
-		    if ((c & 0xC0) != 0x80) {
-		        return false;
-		    }
-		    expectedContinuationBytes--;
+		else
+		{
+			if ((c & 0xC0) != 0x80)
+				return false;
+			expectedContinuationBytes--;
 		}
 		i++;
 	}
@@ -355,22 +365,43 @@ bool	isValidUTF8(const std::string& str) {
 1111	15	F
 
 (c & 0x80) == 0x00			 c 		 0xxx xxxx	c must start 0
-			 0xxx 0000
-		+	 1000 0000
+0xxx 0000
++	 1000 0000
 
 (c & 0xE0) == 0xC0			 c		 110x xxxx	c must start 110
-		+	 1110 0000
-			 1100 0000
++	 1110 0000
+1100 0000
 
 (c & 0xF0) == 0xE0			c		 1110 xxxx	c must start 1110
-		+	 1111 0000	
-			 1110 0000
++	 1111 0000
+1110 0000
 
 (c & 0xF8) == 0xF0			c		 1111 0xxx	c must start 1111 0
-		+	 1111 1000
-			 1111 0000
++	 1111 1000
+1111 0000
 
 (c & 0xC0) != 0x80			c		 10xx xxxx	if the condition is true, the byte doesn't begin 11, and isn't a valid continuation byte
-		+	 1100 0000
-	!=		 1000 0000
++	 1100 0000
+!=		 1000 0000
 */
+
+/* FILE OPERATIONS */
+
+int getFileType(const std::string &path)
+{
+	struct stat fileStat;
+
+	if (stat(path.c_str(), &fileStat) == 0)
+	{
+		if (S_ISDIR(fileStat.st_mode))
+			return 1;
+		if (S_ISREG(fileStat.st_mode))
+			return 2;
+	}
+	return 0;
+}
+
+bool isAccessible(const std::string &path)
+{
+	return access(path.c_str(), R_OK) == 0;
+}

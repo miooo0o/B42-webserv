@@ -6,20 +6,19 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/24 12:43:14 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/31 01:58:33 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Request.hpp"
 
-/*	DEFAULT CONSTRUCTOR
-	
+/*	DEFAULT CONSTRUCTOR	
 	PARSE REQUEST LINE MUST THEN BE CALLED WITH REQUEST LINE
 	CAN USE THE RETURN VALUE PARSE REQUEST LINE (BOOL) TO DETERMINE IF ERROR OR NOT
 	- I PREFER NOT TO USE THIS APPROACH
 */
-Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(), _uri(), _version(),
-	_headers(), _errors(), _last_response_code(200), _testError(0) {
+Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(), _version(), _uri(), 
+	_headers(), _last_response_code(200), _error(0) {
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
@@ -27,15 +26,15 @@ Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(),
 	PARSE REQUEST MUST THEN CALLED WITHOUT REQUEST LINE (OR COULD CALL PARSE)
 	CAN CHECK REQUEST OBJECT FOR ERROR
 */
-Request::Request( const std::string& str ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
-	_headers(), _errors(), _last_response_code(200), _testError(0) {
+Request::Request( const str_t& str ) : _request_line(str), _header_line(""), _body(""), _method(), _version(), _uri(),
+	_headers(), _last_response_code(200), _error(0) {
 	parseRequestLine();
 }
 
 /*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AND CONFIG AS PARAMETERS
 */
-Request::Request( const std::string& str, Config* config ) : _request_line(str), _header_line(""), _body(""), _method(), _uri(), _version(),
-	_headers(), _errors(), _last_response_code(200), _testError(0), _config(config) {
+Request::Request( const str_t& str, Config* config ) : _request_line(str), _header_line(""), _body(""), _method(), _version(), _uri(),
+	_headers(), _last_response_code(200), _error(0), _config(config) {
 	parseRequestLine();
 }
 
@@ -43,8 +42,8 @@ Request::~Request( void ) {}
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
 Request::Request( const Request& other ) : _request_line(other._request_line),_header_line(other._header_line),_body(other._body), 
-	_method(other._method), _uri(other._uri), _version(other._version), _headers(other._headers), _errors(other._errors),
-	  _last_response_code(other._last_response_code), _testError(other._testError) {
+	_method(other._method), _version(other._version), _uri(other._uri), _headers(other._headers),
+	  _last_response_code(other._last_response_code), _error(other._error) {
 }
 
 /* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
@@ -63,13 +62,15 @@ Request& Request::operator=( const Request& other ) {
 	TAKES REQUEST LINE AS INPUT 
 	I PREFER NOT TO USE THIS APPROACH, BUT CAN BE USED WITH IF STATEMENT IN CALLING FUNCTION
 */
-bool	Request::parseRequestLine(const std::string& str)
+bool	Request::parseRequestLine(const str_t& str)
 {
 	std::istringstream stream(str);
 
 	bool outcome = true;
+	
 	if (!(parseMethod(stream) && parseURI(stream) && parseVersion(stream)))
 		outcome = false;
+	_route = setRoute();
 	if (!( validateMethod() && validateURI() && validateVersion()))
 		outcome = false;
 	return outcome;
@@ -82,11 +83,14 @@ NO PARAMETER - USES _request_line WHICH HAS BEEN SET BY PARAMETERISED CONSTRUCTO
 */
 bool	Request::parseRequestLine()
 {
-	std::istringstream stream(_request_line);
-
-	bool outcome = true;
+	std::istringstream	stream(_request_line);
+	bool				outcome = true;
+	
 	if (!(parseMethod(stream) && parseURI(stream) && parseVersion(stream)))
 		outcome = false;
+
+	_route = setRoute();
+
 	if (!( validateMethod() && validateURI() && validateVersion()))
 		outcome = false;
 	return outcome;
@@ -96,8 +100,8 @@ bool	Request::parseRequestLine()
 
 bool	Request::parseMethod(std::istringstream& stream)
 {
-	std::getline(stream, _method.str, ' ');
-	if (_method.str.empty())
+	std::getline(stream, _method, ' ');
+	if (_method.empty())
 		return false;
 	return true;
 }
@@ -106,21 +110,16 @@ bool	Request::parseMethod(std::istringstream& stream)
 
 bool	Request::parseVersion(std::istringstream& stream)
 {
-	std::getline(stream, _version.str, '\r');
-
+	std::getline(stream, _version, '\r');
 	char ch;
-    if (stream.get(ch) && ch == '\n') {
-		if (!_version.str.empty())
-			return true;
-		setError( CODE400, VER_NONE, 400 );
-		_testError.addErrorFlag(errFlag::VERSION_NONE);
-	}	
-	else {
-		setError( CODE400, REQ_END, 400 );
-		_testError.addErrorFlag(errFlag::REQUEST_ENDING);
-	}
 
-	return false;
+    if (stream.get(ch) && ch == '\n') {
+		if (!_version.empty())
+			return true;
+		return _error.addErrorFlag(errFlag::VERSION_NONE);
+	}
+	else
+		return _error.addErrorFlag(errFlag::REQUEST_ENDING);
 }
 
    /* ============= */
@@ -129,9 +128,9 @@ bool	Request::parseVersion(std::istringstream& stream)
 
 bool	Request::parseURI(std::istringstream& stream)
 {
-	std::string	str;
-	states		state = SCHEME;
-	size_t		i = 0;
+	str_t	str;
+	states	state = SCHEME;
+	size_t	i = 0;
 
 	std::getline(stream, _uri.str, ' ');
 	if (_uri.str.empty())
@@ -193,10 +192,10 @@ UriStateMap_t	Request::uriStateMap( void )
 
 /*	URI STATE MACHINE  */
 
-void	Request::parseURIState(states& state, std::string& target, size_t& i)
+void	Request::parseURIState(states& state, str_t& target, size_t& i)
 {
 	char c;
-	static std::string str;
+	static str_t str;
 	static UriStateMap_t state_map = uriStateMap();
 	
 	while (i < _uri.len) {
@@ -265,20 +264,20 @@ bool	Request::parseQuery(){
 
 bool	Request::split_stream_to_map(std::istringstream& iss, char delim1, char delim2) {
 	
-	std::string	key;
-	std::string	value;
+	str_t	key;
+	str_t	value;
 	
 	while (iss.eof()) {
 		std::getline(iss, key, delim1);
 		std::getline(iss, value, delim2);
-		_uri.query_map.insert(std::make_pair<std::string, std::string>(key, value));
+		_uri.query_map.insert(std::make_pair<str_t, str_t>(key, value));
     }
     return true;
 }
 
 /*  HEADER PARSING  */
 
-bool	Request::parseHeaders(const std::string& str)
+bool	Request::parseHeaders(const str_t& str)
 {
 	std::istringstream	iss(str);
 	
@@ -297,7 +296,7 @@ bool	Request::parseHeaders(const std::string& str)
 
 /*  BODY PARSING  */
 
-bool	Request::parseBody(const std::string& str)
+bool	Request::parseBody(const str_t& str)
 {
 	std::istringstream stream(str);
 	/* INCOMPLETE */
@@ -311,53 +310,49 @@ bool	Request::parseBody(const std::string& str)
 
 /*  METHOD VALIDATION  */
 
+Route*	Request::setRoute(){
+	return _config->getRouteForTarget(_uri.path);
+}
+
+bool	Request::serverSupportsMethod(const str_t& method) {
+	const std::vector<str_t> valid_methods = _config->getAllowedMethods();
+	std::vector<str_t>::const_iterator it = valid_methods.begin();
+	
+	for (*it; it != valid_methods.end(); it++) {
+		if (method == *it)
+			return true;
+	}
+    return false;
+}
+
 bool	Request::validateMethod()
 {
-	const std::set<std::string> valid_methods = get_valid_methods();
-	const std::set<std::string> unsupported_methods = get_unsupported_methods();
-
-	if (valid_methods.find(_method.str) != valid_methods.end())
-	{
-		if (_method.str == "GET") _method.type = GET;
-		if (_method.str == "POST") _method.type = POST;
-		if (_method.str == "DELETE") _method.type = DELETE;
-		if (!(_config->getRouteForTarget(_uri.path))->allowsMethod(_method.str))
-			setError( CODE405, METH_NOT_PERM, 405); // if method supported, but not in route, return error 405
+	if (serverSupportsMethod(_method)) {
+		if (_route && !_route->allowsMethod(_method))
+			_error.addErrorFlag(errFlag::METHOD_NOT_PERMITTED);
 		return true;
 	}
-	else if (valid_methods.find(to_upper(_method.str)) != valid_methods.end()) {
-			setError( CODE400, METH_CASE, 400);
-			_testError.addErrorFlag(errFlag::METHOD_CASE);
-	}
-	else {	
-		setError( CODE501, METH_UNREC, 501);
-		_testError.addErrorFlag(errFlag::METHOD_UNRECOGNISED);
-	}
-	return false;
+	else if (serverSupportsMethod(to_upper(_method)))
+		return _error.addErrorFlag(errFlag::METHOD_CASE);
+	else
+		return _error.addErrorFlag(errFlag::METHOD_UNRECOGNISED);
 }
 
 /*  VERSION VALIDATION  */
 
 bool	Request::validateVersion()
 {
-	if (_version.str.compare("HTTP/1.1") == 0)
-		setVersion(OPO, _version.str);
-	else if (_version.str.compare(std::string("HTTP/1.0")) == 0)
-		setVersion(OPZ, _version.str);
+	if (_version.compare("HTTP/1.1") == 0 || _version.compare(str_t("HTTP/1.0")) == 0)
+		return true ;
 	else {
-		if (_version.str.compare(std::string("HTTP/0.9")) == 0 ||
-			_version.str.compare(std::string("HTTP/2.0")) == 0 ||
-			_version.str.compare(std::string("HTTP/3.0")) == 0) {
-			setError(CODE400, VER_UNSUP + _version.str, 400 );
-			_testError.addErrorFlag(errFlag::VERSION_UNSUPPORTED);
+		if (_version.compare(str_t("HTTP/0.9")) == 0 ||
+			_version.compare(str_t("HTTP/2.0")) == 0 ||
+			_version.compare(str_t("HTTP/3.0")) == 0) {
+			return _error.addErrorFlag(errFlag::VERSION_UNSUPPORTED);
 		}
-		else {
-			setError(CODE400, VER_UNREC + _version.str, 400);
-			_testError.addErrorFlag(errFlag::VERSION_UNRECOGNISED);
-		}
-		return false;
+		else
+			return _error.addErrorFlag(errFlag::VERSION_UNRECOGNISED);
 	}
-	return true ;
 }
 
   /* ================ */
@@ -385,7 +380,7 @@ bool	Request::validateScheme()
 {
 	/* INCOMPLETE */
 	//scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-	const std::set<std::string> unsupported_schemes = get_unsupported_schemes();
+	const std::set<str_t> unsupported_schemes = get_unsupported_schemes();
 
 	if (_uri.scheme.empty())
 		return true;
@@ -393,15 +388,10 @@ bool	Request::validateScheme()
 	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
 	uriCharValidation(SCHEME_CHARS, _uri.scheme);
-	if (unsupported_schemes.find(_uri.scheme) != unsupported_schemes.end()){
-		setError( CODE400, URI_SCH_UNSUP + _uri.scheme, 400);
-		_testError.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
-	}
-	else {
-		setError( CODE400, URI_SCH_UNREC + _uri.scheme, 400);
-		_testError.addErrorFlag(errFlag::URI_SCHEME_UNRECOGNISED);
-	}
-	return false;
+	if (unsupported_schemes.find(_uri.scheme) != unsupported_schemes.end())
+		return _error.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
+	else 
+		return _error.addErrorFlag(errFlag::URI_SCHEME_UNRECOGNISED);
 }
 
 /*  URI USER VALIDATION  */
@@ -516,9 +506,7 @@ bool	Request::validateFrag(){
 	
 	if (_uri.frag.empty())
 		return true;
-	setError( CODE400, URI_FRAG_REC + _uri.frag, 400 );
-	 _testError.addErrorFlag(errFlag::URI_FRAG_RECEIVED);
-	return false;	
+	 return _error.addErrorFlag(errFlag::URI_FRAG_RECEIVED);	
 /* 	if (!percentDecode( _uri.frag, URI_FRAG ))
 		{ outcome = false;}
 	if (!isValidUTF8( _uri.frag ))
@@ -529,11 +517,11 @@ bool	Request::validateFrag(){
   /* URI VALIDATION UTILS  */
  /* ===================== */
 
- bool	Request::percentDecode( std::string& encoded)
+ bool	Request::percentDecode( str_t& encoded)
  {
-	 std::string	decoded;
-	 size_t			len = encoded.length();
-	 size_t			i = 0;
+	 str_t	decoded;
+	 size_t	len = encoded.length();
+	 size_t	i = 0;
 	 
 	 decoded.reserve(len);
 	 while ( i < len )
@@ -549,11 +537,8 @@ bool	Request::validateFrag(){
 				 i += 3;
 			 }
 			 else
-			 {
-				setError(CODE400, URI_ENCOD, 400);
-				 _testError.addErrorFlag(errFlag::URI_ENCODING);
-				 return false;
-			 }
+				return _error.addErrorFlag(errFlag::URI_ENCODING);
+			
 		 }
 		 else
 			 decoded += encoded[i++];
@@ -562,13 +547,13 @@ bool	Request::validateFrag(){
 	 return true;
  }
  
- bool	Request::uriCharValidation(const std::string set, const std::string& target) {
+ bool	Request::uriCharValidation(const str_t set, const str_t& target) {
 	 
-	 size_t			target_len = target.length();
-	 size_t			set_len = set.length();
-	 bool			in_set;
-	 std::string	message = "URI contains illegal characters";
-	 std::string	chars;
+	 size_t	target_len = target.length();
+	 size_t	set_len = set.length();
+	 bool	in_set;
+	 str_t	message = "URI contains illegal characters";
+	 str_t	chars;
  
 	 for( size_t i = 0; i < target_len; i++ ) {
 		 in_set = false;
@@ -584,19 +569,29 @@ bool	Request::validateFrag(){
 	 }
 	 if (chars.empty())
 		 return true;
-	 setError( CODE400, message + URI_ILLEGAL_CHARS + " \"" + chars + "\"", 400 );
-	 _testError.addErrorFlag(errFlag::URI_ILLEGAL_CHARACTER);
-	 return false;
+	 return _error.addErrorFlag(errFlag::URI_ILLEGAL_CHARACTER);
  }
 
- bool			validateHeaders( void ){
-/*
-		A client MUST send a Host header field in all HTTP/1.1 request messages.
--	 	
-		if ( ! Host header )
-			return 400 Bad Request
-*/	
-
+ bool	Request::validateHeaders( void ){
+	StringMap_t::iterator	it;
+	/*
+	A client MUST send a Host header field in all HTTP/1.1 request messages.
+	-	 	
+	if ( ! Host header )
+	return 400 Bad Request
+	*/	
+	it = _headers.find("host");
+	{
+		/* HOST HEADER VALIDATION */
+		if (it == _headers.end()) // NO HOST HEADER
+			return _error.addErrorFlag(errFlag::HEADER_OMITTED_HOST);
+		if (it != _headers.end()) { // HOST HEADER PRESENT
+			if (it->second.empty()) // NO VALUE PROVIDED
+				return _error.addErrorFlag(errFlag::HEADER_OMITTED_HOST);
+			else if(!_uri.host.empty() && it->second.compare(_uri.host) != 0) // HOST DOESN'T MATCH URI HOST(IF PRESENT)
+				return _error.addErrorFlag(errFlag::HEADER_HOST_MISMATCH);
+		}
+	}
 /*
 -
 		if (URI AUTHORITY COMPONENT (username host port)) {
@@ -700,102 +695,39 @@ bool	Request::validateFrag(){
 	return true; 
 }
  
- bool			validateBody( void ){
+ bool	Request::validateBody( void ){
 	return true;
  }
  
-/* SETTERS */
-void	Request::setError(const std::string& str1, const std::string& str2, int num) {
-	request_error error;
-
-	error.num = num;
-	error.str1 = str1;	
-	error.str2 = str2;	
-	_last_response_code = num;
-	_errors.push_back(error);
-}
-
-void	Request::setMethod(method_types type, std::string& str) {
-	_method.type = type;
-	_method.str = str;
-}
-
-void	Request::setVersion(version_types type, std::string& str) {
-	_version.type = type;
-	_version.str = str;
-}
-
 /* GETTERS */
 
-std::string	Request::getMethodType() const{
-	
-	switch( _method.type ){
-		case GET 					: { return "GET"; }
-		case POST 					: { return "POST"; }
-		case DELETE 				: {	return "DELETE"; }
-		default						: { break; }
-	};
-	return "METHOD : ERROR : " + _method.str;
-}
-
-std::string	Request::getVersionType() const{
-	
-	switch( _version.type ){
-		case OPO 					: { return "HTTP/1.1"; }
-		case OPZ 					: { return "HTTP/1.0"; }
-		default						: { break; }
-	};
-	return "VERSION : ERROR :" + _version.str;;
-}
-
-std::string	Request::getMethodString() const	{ return _method.str; }
-std::string	Request::getURIstring() const		{ return _uri.str; }
-std::string	Request::getURIscheme() const		{ return _uri.scheme; }
-std::string	Request::getURIuser() const			{ return _uri.user; }
-std::string	Request::getURIpass() const			{ return _uri.pass; }
-std::string	Request::getURIhost() const			{ return _uri.host; }
-std::string	Request::getURIport() const			{ return _uri.port; }
-int			Request::getURIportInt()			{ return _uri.port_int; }
-std::string	Request::getURIpath() const			{ return _uri.path; }
-std::string	Request::getURIquery() const		{ return _uri.query; }
-std::string	Request::getURIfrag() const			{ return _uri.frag; }
-std::string	Request::getVersionString() const	{ return _version.str; }
-int			Request::getResponseCode()			{ return _last_response_code; }
-
-void	Request::printErrors(std::ostream& os) const {
-
-	int	i = 0;
-	
-	if (_errors.begin() == _errors.end())
-		return ;
-	os << "Request Errors:\n";
-	for (std::list<request_error>::const_iterator it = _errors.begin(); it != _errors.end(); ++it)
-	{
-		os << "\nError " << i << "\n";
-		os << "=======" << "\n";
-		
-		os << l14 << "Error num" << r3 << " : " << it->num << "\n";
-		os << l14 << "Error str" << r3 << " : " << it->str1 << "\n";
-		os << l14 << "Error str" << r3 << " : " << it->str2 << "\n";
-		
-		i++;
-	}
-}
+str_t	Request::getMethodString() const	{ return _method; }
+str_t	Request::getURIstring() const		{ return _uri.str; }
+str_t	Request::getURIscheme() const		{ return _uri.scheme; }
+str_t	Request::getURIuser() const			{ return _uri.user; }
+str_t	Request::getURIpass() const			{ return _uri.pass; }
+str_t	Request::getURIhost() const			{ return _uri.host; }
+str_t	Request::getURIport() const			{ return _uri.port; }
+int		Request::getURIportInt()			{ return _uri.port_int; }
+str_t	Request::getURIpath() const			{ return _uri.path; }
+str_t	Request::getURIquery() const		{ return _uri.query; }
+str_t	Request::getURIfrag() const			{ return _uri.frag; }
+str_t	Request::getVersionString() const	{ return _version; }
+int		Request::getResponseCode()			{ return _error.getLastResponseCode(); }
 
 std::ostream& Request::getError(std::ostream& os){
-	os << _testError << std::endl;
+	os << _error << std::endl;
 	return os;
 }
 
 std::ostream& l14(std::ostream& os)	{ return os << std::setw(14) << std::left; }
 std::ostream& r3(std::ostream& os)	{ return os << std::setw(3) << std::right; }
 
-
 std::ostream&	operator<<(std::ostream& os, Request& request) {
 
 	os << l14 << "Method String" 	<< r3 << " : " 	<< request.getMethodString()	<< "\n";
-	os << l14 << "Method" 			<< r3 << " : "	<< request.getMethodType()		<< "\n\n"; 
 	os << l14 << "URI String" 		<< r3 << " : " 	<< request.getURIstring() 		<< "\n";
+	os << l14 << "Version String" 	<< r3 << " : "	<< request.getVersionString()	<< "\n\n";
 	os << l14 << "Scheme" 			<< r3 << " : " 	<< request.getURIscheme() 		<< "\n";
 	os << l14 << "User" 			<< r3 << " : " 	<< request.getURIuser() 		<< "\n";
 	os << l14 << "Pass" 			<< r3 << " : "	<< request.getURIpass() 		<< "\n";
@@ -805,9 +737,7 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 	os << l14 << "Path" 			<< r3 << " : " 	<< request.getURIpath() 		<< "\n";
 	os << l14 << "Query" 			<< r3 << " : " 	<< request.getURIquery()		<< "\n";
 	os << l14 << "Fragment" 		<< r3 << " : " 	<< request.getURIfrag()			<< "\n\n";
-	os << l14 << "Version String" 	<< r3 << " : "	<< request.getVersionString()	<< "\n";
-	os << l14 << "Last Response"	<< r3 << " : "	<< request.getResponseCode()	<< "\n\n";
-	request.printErrors(os);
+	os << l14 << "Last Response"	<< r3 << " : "	<< request.getResponseCode()	<< "\n";
 	if (request.getResponseCode() != 200)
 		request.getError(os);
 	os << std::setw(0) << std::left << std::endl;
@@ -818,4 +748,43 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 
 StringMap_t	Request::getRequestHeaders(){
 	return _headers;
+}
+
+bool	Request::uriPathHandling(){
+	
+	/* NEED TO DECIDE HOW TO HANDLE PARTIAL PATHS
+
+		1.
+			Route : /home/records 
+			Request: /records
+		
+			Do we search within routes for a partial match, and then return a resource?
+			Or are we strict, and only allow exact matches?
+
+		2. 
+			Route : /home/records/ 
+			Request: /home/records/abc/
+
+			Would we return a default file here if abc exists?
+			Or are we strict, and only allow exact matches?			
+
+		3.
+			Route : /test
+			Request: /test/otherFolder/text.html
+
+			Would we return the resource if the path exists, and an error if not? 
+			Or are we strict, and only allow exact matches?
+			Or do we redirect to /test?
+			Or do we alway redirect to /home if the path is invalid?
+			
+		Options :
+			Exact Path Matching	: Only return exact matches
+			Dynamic Matching	: Allow partial matches, or treat route path as a base, and allow searches
+			Static file routing	: If base matches, and then "parameters" match exactly, return resource
+			Default handler		: No match, return default page
+			URL rewrite			: If partial match, URL rewrite (example 1 : return test/default_file)
+ 
+		*/
+	
+	return true;
 }

@@ -1,0 +1,10 @@
+Error Logging
+
+Server Path processing - need to decide on matching criteria
+
+Request Line Validation
+Unit Test Clean Up
+Query Parsing Testing
+Header Parsing Testing
+Body Parsing
+Error Handling - exit at first error - no need to be so granular?

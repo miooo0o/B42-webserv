@@ -1,37 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Response.hpp                                       :+:      :+:    :+:   */
+/*   core_def.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/11 15:57:40 by kmooney           #+#    #+#             */
-/*   Updated: 2025/02/11 16:03:18 by kmooney          ###   ########.fr       */
+/*   Created: 2025/03/28 18:51:39 by kmooney           #+#    #+#             */
+/*   Updated: 2025/03/31 08:46:43 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef RESPONSE_HPP
-# define RESPONSE_HPP
+#ifndef CORE_DEF_HPP
+# define CORE_DEF_HPP
 
-#include "./TestClasses/testUtils.hpp"
 #include <iostream>
 #include <stdint.h>
+#include <time.h>
+#include <unistd.h>
 
-class	Response
-{	
-	private:
-								/* CONSTRUCTORS */
-								Response( void );
-								Response( const Response& other );
+typedef	int						fd_t;
+typedef	std::string				str_t;
 
-								/* DESTRUCTORS */
-								~Response( void );
+typedef struct	file_s			file_t;
+typedef struct	targetInfo_s	targetInfo_t;
 
-								/* COPY ASSIGNMENT */
-			Response&			operator=(const Response& other);   
+struct file_s {
+	fd_t    	fd;
+	__mode_t	perm;
+	str_t   	filename;
+	void		*data;
 	
-	public:
-		
+	file_s(str_t name) : filename(name){}
+	file_s(){}
 };
 
 #endif
