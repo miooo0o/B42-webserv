@@ -6,21 +6,19 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/31 08:34:18 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/03/31 12:57:12 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Error.hpp"
 
-Error::Error(): _log(), _lastError(0), _response_code(200), _last_response_code(200) {flagStringsInit();}
+Error::Error(): _lastError(0), _response_code(200), _last_response_code(200), _error_log(NULL) {flagStringsInit();}
 
-Error::Error( uint64_t error) : _lastError(0), _errorFlags(error), _response_code(200), _last_response_code(200){flagStringsInit();}
-typedef struct	log			log;
+Error::Error( uint64_t error) : _lastError(0), _errorFlags(error), _response_code(200), _last_response_code(200), _error_log(NULL) {flagStringsInit();}
 
 Error::~Error( void ) {}
 
 Error::Error( const Error& other ):_errorFlags(other._errorFlags) {
-	_log = other._log;
 }
 
 Error& Error::operator=( const Error& other ) {
@@ -71,10 +69,22 @@ bool	Error::isFlagSet(uint64_t flag) {
 	return (_errorFlags & flag) != 0;
 }
 
+/* PASSES ERROR INFO TO LOGS WHERE IT IS SAVED TO FILE*/
+void	Error::logError(){
+	
+	std::ostream& os = std::cout;
+	getErrorInfo(getPosition(_lastError), os);
+	if (!_error_log)
+		_error_log = new Logs();
+	log_t tmp (&os, STREAM, LOGS_ERR );
+	_error_log->logHandler(tmp, APPEND);
+}
+
 bool	Error::addErrorFlag(uint64_t error) {
 	_lastError = error;
 	_errorFlags |= error;
-	_log->addEventToLog(LOGS_ERR, APPEND);
+
+	logError();
 	return false;
 }
 
@@ -105,7 +115,7 @@ std::string		Error::getErrorNum(int pos){
 	return errorNum;
 }
 
-int getPosition(uint64_t num){
+int Error::getPosition(uint64_t num){
 	int	pos = 0;
 	
 	if (num == 0)

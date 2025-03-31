@@ -162,16 +162,16 @@ struct errFlag{
 
 class	Error {
 	
-	Logs*						_log;
 	std::vector<std::string>	_flagStrings;
 	
 	uint64_t			_lastError;
 	uint64_t			_errorFlags;
 	int					_response_code;
 	int					_last_response_code;
-	
 	bool				isFlagSet(uint64_t flag);
 	
+	Logs*				_error_log;
+
 	public:
 	
 	/* CONSTRUCTORS */
@@ -196,6 +196,8 @@ class	Error {
 	std::ostream&	getErrorInfo(int pos, std::ostream& os);
 	std::ostream&	getErrorStream(std::ostream& os);
 	int				getLastResponseCode();
+	int				getPosition(uint64_t num);
+	void			logError();
 	//void			printErrors(std::ostream& os) const;
 	//std::string&	getErrorStr2(std::ostream& os);
 	//std::string	getErrorStringFromNumber(int code);

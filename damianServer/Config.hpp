@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include "Route.hpp"
+#include "../includes/core_def.hpp"
 
 class Config {
 private:
