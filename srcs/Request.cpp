@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/31 01:58:33 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/01 14:34:28 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -302,7 +302,35 @@ bool	Request::parseBody(const str_t& str)
 	/* INCOMPLETE */
 	bool outcome = true;
 	return outcome;
+
+	/* 	CONSIDERATIONS 
+			
+		{
+			Transfer-coding Considerations [CHUNKED : need to communicate to server Request State - CHUNKED_INCOMPLETE ] : UNRESOLVED
+		} 
+		{	Size : [ MAximum Chunk Size? ]										
+			: recipients MUST anticipate potentially large hexadecimal			
+				numerals and prevent parsing errors due to integer conversion 
+					overflows or precision loss due to integer representation } : 
+		{
+			Last Chunk Validation ; [ CONFIRM NO CHUNK FOLLOWS ZERO CHUNK] : UNRESOLVED - Need to check how end of message is represented CRLF?
+		}
+		{
+		}
+	*/
+	/*
+		Process
+		{
+			{ Parse size (to CRLF)	: [ VALID HEX CHARS, CONVERT HEX TO DEC ] }	: [CONTINUE ? RETURN INVALID HEX ERROR, CONTINUE]
+			{ Validate size			: [ MAXIMUM SIZE CHECK ] }					: [CONTINUE ? RETURN MAX SIZE ERROR, CONTINUE]
+			{ Parse chunk (to CRLF)	: [ COMPARE LENGTH TO SIZE ] }				: [CONTINUE ? RETURN LENGTH ERROR]
+			{ Validate last chunk	: [ SIZE MUST BE 0 ] }						: [CONTINUE ? RETURN LENGTH ERROR]
+		}
+ 	*/
 }
+
+
+
 
   /* ============= */
  /*  VALIDATION   */
@@ -387,7 +415,7 @@ bool	Request::validateScheme()
 	to_lower_ref(_uri.scheme);
 	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
-	uriCharValidation(SCHEME_CHARS, _uri.scheme);
+	uriCharValidation(CHARSET_SCHEME, _uri.scheme);
 	if (unsupported_schemes.find(_uri.scheme) != unsupported_schemes.end())
 		return _error.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
 	else 
@@ -455,7 +483,7 @@ bool	Request::validateHost() {
 bool	Request::validatePort() {
 	bool outcome = true;
 
-	if (!(uriCharValidation( PORT_CHARS, _uri.port )))
+	if (!(uriCharValidation( CHARSET_PORT, _uri.port )))
 		{ outcome = false; }
 	if (!_uri.port.empty())
 		{_uri.port_int = str_to_int(_uri.port);}
@@ -572,128 +600,6 @@ bool	Request::validateFrag(){
 	 return _error.addErrorFlag(errFlag::URI_ILLEGAL_CHARACTER);
  }
 
- bool	Request::validateHeaders( void ){
-	StringMap_t::iterator	it;
-	/*
-	A client MUST send a Host header field in all HTTP/1.1 request messages.
-	-	 	
-	if ( ! Host header )
-	return 400 Bad Request
-	*/	
-	it = _headers.find("host");
-	{
-		/* HOST HEADER VALIDATION */
-		if (it == _headers.end()) // NO HOST HEADER
-			return _error.addErrorFlag(errFlag::HEADER_OMITTED_HOST);
-		if (it != _headers.end()) { // HOST HEADER PRESENT
-			if (it->second.empty()) // NO VALUE PROVIDED
-				return _error.addErrorFlag(errFlag::HEADER_OMITTED_HOST);
-			else if(!_uri.host.empty() && it->second.compare(_uri.host) != 0) // HOST DOESN'T MATCH URI HOST(IF PRESENT)
-				return _error.addErrorFlag(errFlag::HEADER_HOST_MISMATCH);
-		}
-	}
-/*
--
-		if (URI AUTHORITY COMPONENT (username host port)) {
-			if ( ! Host field value == AUTHORITY - (userinfo + @) )
-				return 400 Bad Request
-		} 
-*/
-/*
--
-		if (NO AUTHORITY) {
-			if ( ! Host field value == "" )
-				return 400 Bad Request;
-		}
-*/
-/* 
--
-	if (transfer encoding not supported 
-			return 501 (Not Implemented).
-*/
-/*
-	A server MAY reject a request that contains both Content-Length and Transfer-Encoding 
-	or process such a request in accordance with the Transfer-Encoding alone. 
-	Regardless, the server MUST close the connection after responding to such a request 
-	to avoid the potential attacks.
--
-	if (transfer encoding && Content-Length 
-		return 501 (Not Implemented).
-		must close connection
-
-*/
-/*
-	Other recipients SHOULD ignore unrecognized header and trailer fields.
--
-	if (header key not recognised)
-		ignore header
-*/	
-/*
-	Other recipients SHOULD ignore unrecognized header and trailer fields.
--
-	if (header key not recognised)
-		ignore header
-*/	
-/*
-	check which headers should only be single line
-	for others, either combine to single entry as CSV's (order MUST not change
-	Set-Cookie header is an exception to this rule
-*/
-/*
-	A server MUST NOT apply a request to the target resource until it receives the entire request header section, 
-	since later header field lines might include conditionals, authentication credentials, or deliberately misleading 
-	duplicate header fields that could impact request processing
-*/
-/*
- 	Look at field-length semantics for individual headers
-*/
-/*
-	A server that receives a request header field line, field value, or set of fields larger than it wishes
-	to process MUST respond with an appropriate 4xx (Client Error) status code. 
-*/
-/*
-	A client MAY discard or truncate received field lines that are larger than the client wishes to process 
-	if the field semantics are such that the dropped value(s) can be safely ignored
-*/
-
-/*	FIELD VALUE RULES */
-
-/* 
-	A field value does not include leading or trailing whitespace. When a specific version of HTTP allows such
-	whitespace to appear in a message, a field parsing implementation MUST exclude 
-	such whitespace prior to evaluating the field value.
-
-	ChatGPT contradicts this : says some values must not be trimmed
-*/
-
-/*
-	For defining field value syntax, this specification uses an ABNF rule named after the field name to define the
-	allowed grammar for that field's value 	(after said value has been extracted from the underlying
-	messaging syntax and multiple instances combined into a list
-*/
-
-/*
-	VALID VALUES :
-
-	- usually constrained to the range of US-ASCII characters
-	- Fields needing a greater range of characters can use an encoding, such as the one defined in [RFC8187].
-	- Historically, HTTP allowed field content with text in the ISO-8859-1 charset [ISO-8859-1],supporting other charsets only through use of [RFC2047] encoding 
-	- Specifications for newly defined fields SHOULD limit their values to visible US-ASCII octets (VCHAR (i.e. visible)), SP, and HTAB.
-	- A recipient SHOULD treat other allowed octets in field content (i.e., obs-text) as opaque data.
-
-	- a recipient of CR, LF, or NUL within a field value MUST either reject the message or replace 
-		each of those characters with SP before further processing or forwarding of that message.
-	- Field values containing other CTL characters are also invalid; however, recipients MAY retain such characters for the sake of robustness when they appear 
-		within a safe context (e.g., an application-specific quoted string that will not be processed by any downstream HTTP parser).
-
-	- Fields that only anticipate a single member as the field value are referred to as "singleton fields"
-	- Fields that allow multiple members as the field value are referred to as "list-based fields".
-	- Fields that expect to contain a comma within a member, such as within an HTTP-date or URI-reference element, ought to be defined with delimiters 
-		around that element to distinguish any comma within that data from potential list separators.
-*/
-
-	return true; 
-}
  
  bool	Request::validateBody( void ){
 	return true;
@@ -788,3 +694,33 @@ bool	Request::uriPathHandling(){
 	
 	return true;
 }
+/*
+void Request::ChunkedDecoding(){
+	
+PSEUDO CODE
+
+size_t len = 0;
+read chunk-size, chunk-ext (if any), and CRLF
+while (chunk-size > 0) {
+	read chunk-data and CRLF
+	append chunk-data to content
+	length := length + chunk-size
+	read chunk-size, chunk-ext (if any), and CRLF
+}
+read trailer field
+while (trailer field is not empty) {
+	if (trailer fields are stored/forwarded separately) {
+		append trailer field to existing trailer fields
+	}
+	else if (trailer field is understood and defined as mergeable) {
+		merge trailer field with existing header fields
+	}
+	else {
+		discard trailer field
+	}
+	read trailer field
+}
+Content-Length := length
+Remove "chunked" from Transfer-Encoding
+}
+*/

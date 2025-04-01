@@ -104,23 +104,26 @@
 #define URI_ENCOD			"400 URI : Invalid Percent Encoding"
 #define URI_FRAG_REC		"400 URI : Fragment identifier (#) is not allowed in request URI"
 #define URI_HOST_RES		"404 URI : Host : could not be resolved"
-#define URI_ILLEGAL_CHARS	"400 URI : Illegal characters "
+#define URI_ILLEGAL_CHARS	"400 URI : Illegal characters"
 #define URI_LENGTH			"400 URI : Requested URI is too long to process"
 #define URI_LOOP			"400 URI : Too many URI redirections"
 #define URI_PATH_INV		"400 URI : Path is invalid : "
 #define URI_PATH_LEN		"400 URI : Path : too long"
-#define URI_PATH_TRAV		"403 URI : Path : Attempted directory traversal detected "
+#define URI_PATH_TRAV		"403 URI : Path : Attempted directory traversal detected"
 #define URI_PATH_UNSAFE		"400 URI : Path : Unsafe Characters in Path"
 #define URI_PORT_INV		"400 URI : Port : Invalid or missing port number in URI"
 #define URI_QUERY_CONF		"400 URI : Query : Conflicting parameters in request"
 #define URI_QUERY_INV		"400 URI : Query : Invalid Query String"
-#define URI_SCH_UNSUP		"400 URI : Scheme not supported "
-#define URI_SCH_UNREC		"400 URI : Scheme not recognised "
-#define VER_NONE			"400 Version : HTTP version not provided "
-#define VER_UNREC			"400 Version : Unrecognised HTTP Version "
-#define VER_UNSUP			"400 Version : Unsupported HTTP Version "
+#define URI_SCH_UNSUP		"400 URI : Scheme not supported"
+#define URI_SCH_UNREC		"400 URI : Scheme not recognised"
+#define VER_NONE			"400 Version : HTTP version not provided"
+#define VER_UNREC			"400 Version : Unrecognised HTTP Version"
+#define VER_UNSUP			"400 Version : Unsupported HTTP Version"
 
 #define HEAD_HOST_MIS		"400 Headers : Host : Mismatch" // NOT SURE IF REQUIRED FOR US
+#define HEADERS_MULTI_LEN	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
+#define HEADERS_EMPTY_VAL	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
+#define	HEADER_TR_ENCOD_NOT	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
 
 /*
 TO BE ADDED 
@@ -158,6 +161,9 @@ struct errFlag{
 	static const uint64_t VERSION_UNSUPPORTED = 1ULL << 28;
 
 	static const uint64_t HEADER_HOST_MISMATCH = 1ULL << 29; // NOT SURE IF REQUIRED
+	static const uint64_t HEADER_MULTIPLE_LENGTH_HEADERS = 1ULL << 30;
+	static const uint64_t HEADER_EMPTY_VALUE = 1ULL << 31;
+	static const uint64_t HEADER_TRANSFER_ENCODING_NOT_IMPLEMENTED = 1ULL << 32;
 };
 
 class	Error {

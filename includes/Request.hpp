@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/31 01:57:59 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/01 15:04:39 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,24 +59,42 @@ typedef	std::map<std::pair<char, states>, states> UriStateMap_t;
 // sub-delims  = !$&'()*+,;=
 //# define RESERVED		"!#$&'()*+,/:;=?@[]"
 //# define UNRESERVED	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~"
-# define SCHEME_CHARS	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-."
-# define AUTH_CHARS		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;="
-# define HOST_CHARS		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;=."
-# define PORT_CHARS		"0123456789"
+# define CHARSET_SCHEME	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-."
+# define CHARSET_AUTH	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;="
+# define CHARSET_HOST	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%!$&'()*+,;=."
+# define CHARSET_PORT	"0123456789"
+# define CHARSET_HEX	"0123456789ABCDEF"
+# define CHARSET_DEC	"0123456789"
+# define CRLF			"\r\n"
+
 class	Request
 {
 	public :
 		struct uri {	
-			StringMap_t						query_map;
-			enum uri_types					uri_type;
-			enum path_types					path_type;
-			size_t							len;
+			StringMap_t				query_map;
+			enum uri_types			uri_type;
+			enum path_types			path_type;
+			size_t					len;
+			int						port_int;
 			str_t 					frag, host, pass, path, port, query, scheme, str, target, user;
-			int								port_int;
 
 			uri(): uri_type(), path_type(PARTIAL), len(0), frag(""), host(""), pass(""), path(""), port(""), query(""), 
 			scheme(""), str(""), user(""), port_int(80){}
 		};
+
+
+		/* EXCEPTIONS */
+		class	headerException : public std::exception
+		{
+			public:
+					headerException( uint64_t errnum );
+					virtual ~headerException() throw();
+					 virtual uint64_t error() const throw();
+		
+			private: 
+					uint64_t _errnum;
+		 };
+
 
 				/* CONSTRUCTORS */
 				Request( void );
@@ -164,6 +182,13 @@ class	Request
 				bool			validateMethod( void );
 				bool			validateURI( void );
 				bool			validateVersion( void );
+
+				/*	HEADER VALIDATION	*/
+				uint64_t		error() const;
+				void			headerCheck( const str_t header, void (*f)(str_t));
+				static void		headersTransferEncoding( str_t val );
+				static void		headersHost( str_t val );
+				void			headersHostPresent( void );
 				
 				/*	URI VALIDATION	*/
 				bool			validateScheme( void );
@@ -185,7 +210,7 @@ class	Request
 		/*	URI VALIDATION UTILS */
 		bool			percentDecode(str_t& encoded);
 		bool			uriCharValidation(const str_t set, const str_t& target);
-		
+
 };
 
 /* OUTPUT FORMAT  */

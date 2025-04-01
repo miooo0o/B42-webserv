@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/31 12:57:12 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/01 15:02:24 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,9 @@ void	Error::flagStringsInit()
 	_flagStrings.push_back(VER_UNSUP);
 
 	_flagStrings.push_back(HEAD_HOST_MIS);
+	_flagStrings.push_back(HEADERS_MULTI_LEN);
+	_flagStrings.push_back(HEADERS_EMPTY_VAL);
+	_flagStrings.push_back(HEADER_TR_ENCOD_NOT);
 }
 		
 /* GETTERS */

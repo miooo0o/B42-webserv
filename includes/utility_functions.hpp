@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/30 20:14:49 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/01 15:01:52 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@
 
 /*  SET CREATION */
 const std::set<std::string>&		get_unsupported_schemes();
+const std::set<std::string>& 		getHeaderTransferEncodings();
 
 /* PARSING OPERATIONS */
 void								parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);

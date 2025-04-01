@@ -6,11 +6,30 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/30 20:17:43 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/01 14:47:00 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/utility_functions.hpp"
+
+const std::set<std::string> &getHeaderTransferEncodings(){
+	
+	static std::set<std::string> supportedEndodings;
+	static int i;
+	
+	if (i == 0)
+	{
+		supportedEndodings.insert(std::string("chunked"));
+		//supportedEndodings.insert(std::string("compress"));
+		//supportedEndodings.insert(std::string("deflate"));
+		//supportedEndodings.insert(std::string("gzip"));
+		//supportedEndodings.insert(std::string("identity"));
+		//supportedEndodings.insert(std::string("trailers"));
+		//supportedEndodings.insert(std::string("x-compress"));
+		//supportedEndodings.insert(std::string("x-gzip"));
+		i++;
+	}
+}
 
 const std::set<std::string> &get_unsupported_schemes()
 {
