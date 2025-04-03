@@ -92,7 +92,7 @@
 #define CODE511 "Network Authentication Required"
 
 #define HEAD_CONT_UNS		"415 Headers : Content-Type : Unsupported media type"
-#define HEAD_OMI_HOST		"415 Headers : Host : Omitted"
+#define HEAD_HOST			"400 Headers : Host : error in Host header (omitted, multiple lines or incorrect format) "
 #define HEAD_END			"400 Headers: Incorrect character sequence at end of headers"
 #define HEAD_OMI_CONT		"415 Headers : Content-Type : Omitted"
 #define HEAD_SEP			"400 Headers: entries must be separated by /\r/\n"
@@ -124,7 +124,6 @@
 #define HEADERS_MULTI_LEN	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
 #define HEADERS_EMPTY_VAL	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
 #define	HEADER_TR_ENCOD_NOT	"501 Headers: Headers : Content-Length and Transfer-Encoding Headers present : only one length header permitted"
-
 /*
 TO BE ADDED 
  */
@@ -134,7 +133,7 @@ struct errFlag{
 	static const uint64_t HEADER_CONTENT_UNSUPPORTED = 1ULL << 1;
 	static const uint64_t HEADER_END = 1ULL << 2;
 	static const uint64_t HEADER_OMITTED_CONTENT_TYPE = 1ULL << 3;
-	static const uint64_t HEADER_OMITTED_HOST = 1ULL << 4;
+	static const uint64_t HEADER_HOST_INVALID = 1ULL << 4;
 	static const uint64_t HEADER_SEPARATOR = 1ULL << 5;
 	static const uint64_t METHOD_NOT_PERMITTED = 1ULL << 6;
 	static const uint64_t METHOD_UNRECOGNISED = 1ULL << 7;
@@ -207,7 +206,6 @@ class	Error {
 	//void			printErrors(std::ostream& os) const;
 	//std::string&	getErrorStr2(std::ostream& os);
 	//std::string	getErrorStringFromNumber(int code);
-	
 	//void			getError();
 };  
 

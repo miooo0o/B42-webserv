@@ -6,12 +6,14 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/01 15:01:52 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/02 20:38:37 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILITY_FUNCTIONS_HPP
 #define UTILITY_FUNCTIONS_HPP
+
+#include "core_def.hpp"
 
 #include <cctype>
 #include <cstring>
@@ -28,11 +30,11 @@
 #include <unistd.h>
 
 /*  SET CREATION */
-const std::set<std::string>&		get_unsupported_schemes();
 const std::set<std::string>& 		getHeaderTransferEncodings();
 
 /* PARSING OPERATIONS */
 void								parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
+void								parseStrStreamToStrVecStrMap(std::istringstream& iss, std::map<std::string, std::vector< std::string> >& result, char pair_delim, char kv_delim);
 
 /* STRING CASE CONVERSION */
 std::string							to_lower(std::string str);
@@ -45,7 +47,6 @@ void								trimLeadingChar( std::string& str, char target);
 void								trimEndChar( std::string& str, char target);
 void								remove_dot_segments(std::string&);
 
-
 /* STRING/CHAR TYPE CONVERSION */
 int									str_to_int( const std::string str);
 int									substring_to_int(const std::string str, int start, int end);
@@ -57,6 +58,7 @@ bool								isValidUTF8(const std::string& str);
 
 /* PRINTING OPERATIONS */
 void								printStrMap(const std::map<std::string, std::string>& data);
+void                                printStrVecStrMap(const std::map<std::string, std::vector< std::string> >& data);
 
 /*  FILE OPERATIONS  */
 int									getFileType(const std::string& str);

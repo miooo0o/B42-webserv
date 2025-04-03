@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 10:45:02 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/01 15:04:33 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/02 20:37:43 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,23 +38,18 @@
 
 #include "../includes/Request.hpp"
 
-void	Request::headersHostPresent( void ) {
-	if (_headers.find("host") == _headers.end())
-		throw headerException(errFlag::HEADER_OMITTED_HOST);
+void	Request::headersHostChecks( void ) const {
+	int lines = _headers.count("host");
+	if ( lines != 1 )
+		throw headerException(errFlag::HEADER_HOST_INVALID);
+	else if ( lines == 1)
+	{
+		str_t value = _headers.find("host")->second;
+		if ( value.empty() || ( !_uri.host.empty() && value.compare(_uri.host) != 0) )
+			throw headerException(errFlag::HEADER_HOST_INVALID);
+	}
 	return;
 }
-
-/*
-void	Request::headershostg( str_t val){
-	
-if (it->second.empty()) // NO VALUE PROVIDED
-return _error.addErrorFlag(errFlag::HEADER_OMITTED_HOST);
-else if(!_uri.host.empty() && it->second.compare(_uri.host) != 0) // HOST DOESN'T MATCH URI HOST(IF PRESENT)
-return _error.addErrorFlag(errFlag::HEADER_HOST_MISMATCH);
-return;
-}
-*/
-
 
 void	Request::headersTransferEncoding( str_t val){
 	const std::set<str_t> valid_te = getHeaderTransferEncodings();
@@ -65,7 +60,7 @@ void	Request::headersTransferEncoding( str_t val){
 }
 
 void	Request::headerCheck( const str_t header, void(*f)(str_t)){
-	StringMap_t::iterator	it;
+	std::map< std::string, std::vector< std::string> >::iterator	it;
 
 	it = _headers.find(header);
 	if (it != _headers.end())
@@ -76,39 +71,21 @@ void	Request::headerCheck( const str_t header, void(*f)(str_t)){
 bool	Request::validateHeaders( void ){
 
 	try {
-		headersHostPresent();
+		if (_version.compare("HTTP/1.1") == 0 ){
+			headersHostChecks();
 		headerCheck("transfer-encoding", headersTransferEncoding);
-		headerCheck("transfer-encoding", headersTransferEncoding);
-		headerCheck("transfer-encoding", headersTransferEncoding);
-		headerCheck("transfer-encoding", headersTransferEncoding);
-		headerCheck("transfer-encoding", headersTransferEncoding);
+		}
 	}
 	catch (uint64_t errnum){ return _error.addErrorFlag( errnum ); }
 }
 
 bool	Request::validateHeaders( void ){
-	StringMap_t::iterator	it;
-	/*
-	A client MUST send a Host header field in all HTTP/1.1 request messages.
-	-	 	
+	std::map< std::string, std::vector< std::string> >::iterator	it;
 
-		}
-	}
 /*
--
-		if (URI AUTHORITY COMPONENT (username host port)) {
-			if ( ! Host field value == AUTHORITY - (userinfo + @) )
-				return 400 Bad Request
-		} 
+	 Ensure host name matches server name 
+	 Is there a scheme header? Ensure match with http, https
 */
-/*
--
-		if (NO AUTHORITY) {
-			if ( ! Host field value == "" )
-				return 400 Bad Request;
-		}
-*/
-
 { // TRANSFER ENCODING & CONTENT LENGTH : ONLY ONE OF TWO PERMITTED : THIS IS A 'MAY' BUT CONNECTION 'MUST' BE CLOSED
 	if ((it = _headers.find("transfer-encoding")) != _headers.end() && (it = _headers.find("content-length")) != _headers.end())
 		return _error.addErrorFlag(errFlag::HEADER_MULTIPLE_LENGTH_HEADERS);
@@ -187,4 +164,4 @@ bool	Request::validateHeaders( void ){
 	return true; 
 }
 
-uint64_t Request::headerValidationException::error() const throw() { return _errnum; }
+uint64_t Request::headerException::error() const throw() { return _errnum; }
