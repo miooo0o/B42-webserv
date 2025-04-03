@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 17:08:11 by kmooney           #+#    #+#             */
-/*   Updated: 2025/03/31 12:59:52 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/02 14:16:07 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void	Logs::logHandler( log_t& entry, int action){
 
 void	Logs::addToLog( log_t& entry ){
 	str_t name = getType_name(entry. entry_type);
-
+	
 }
 
 void	Logs::flushStreamToFile( log_t& entry ){

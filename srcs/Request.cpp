@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/01 14:34:28 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/02 20:51:07 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -281,9 +281,10 @@ bool	Request::parseHeaders(const str_t& str)
 {
 	std::istringstream	iss(str);
 	
-	parseStrStreamToMap(iss, _headers, '\n', ':');
-	StringMap_t::iterator	it = _headers.find("mapLastLine");
-	if (it->second == "\r") {
+	parseStrStreamToStrVecStrMap(iss, _headers, '\n', ':');
+	//parseStrStreamToMap(iss, _headers, '\n', ':');
+	std::map<std::string, std::vector< std::string> > ::iterator it = _headers.find("mapLastLine");
+	if (it->second[0] == "\r") {
 		
 		std::cout << "******** HEADER SUCCESS *************" << std::endl; // replace with error
 		// make all keys lowercase
@@ -406,20 +407,12 @@ bool	Request::validateURI()
 
 bool	Request::validateScheme()
 {
-	/* INCOMPLETE */
-	//scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
-	const std::set<str_t> unsupported_schemes = get_unsupported_schemes();
-
 	if (_uri.scheme.empty())
 		return true;
 	to_lower_ref(_uri.scheme);
 	if (_uri.scheme.compare("https") == 0 || _uri.scheme.compare("http") == 0)
 		return true;
-	uriCharValidation(CHARSET_SCHEME, _uri.scheme);
-	if (unsupported_schemes.find(_uri.scheme) != unsupported_schemes.end())
-		return _error.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
-	else 
-		return _error.addErrorFlag(errFlag::URI_SCHEME_UNRECOGNISED);
+	return _error.addErrorFlag(errFlag::URI_SCHEME_UNSUPPORTED);
 }
 
 /*  URI USER VALIDATION  */
@@ -487,11 +480,9 @@ bool	Request::validatePort() {
 		{ outcome = false; }
 	if (!_uri.port.empty())
 		{_uri.port_int = str_to_int(_uri.port);}
-	else if (_uri.uri_type == HTTPS)
-		{_uri.port_int = 443;}
 	if (_uri.port_int >= 0 && _uri.port_int <= 65535)
 		{ outcome = false; }
-	
+
 	return outcome;
 }
 
@@ -607,17 +598,17 @@ bool	Request::validateFrag(){
  
 /* GETTERS */
 
-str_t	Request::getMethodString() const	{ return _method; }
-str_t	Request::getURIstring() const		{ return _uri.str; }
-str_t	Request::getURIscheme() const		{ return _uri.scheme; }
-str_t	Request::getURIuser() const			{ return _uri.user; }
-str_t	Request::getURIpass() const			{ return _uri.pass; }
-str_t	Request::getURIhost() const			{ return _uri.host; }
-str_t	Request::getURIport() const			{ return _uri.port; }
+str_t	Request::getMethodString() 	const	{ return _method; }
+str_t	Request::getURIstring() 	const	{ return _uri.str; }
+str_t	Request::getURIscheme() 	const	{ return _uri.scheme; }
+str_t	Request::getURIuser() 		const	{ return _uri.user; }
+str_t	Request::getURIpass() 		const	{ return _uri.pass; }
+str_t	Request::getURIhost() 		const	{ return _uri.host; }
+str_t	Request::getURIport() 		const	{ return _uri.port; }
 int		Request::getURIportInt()			{ return _uri.port_int; }
-str_t	Request::getURIpath() const			{ return _uri.path; }
-str_t	Request::getURIquery() const		{ return _uri.query; }
-str_t	Request::getURIfrag() const			{ return _uri.frag; }
+str_t	Request::getURIpath() 		const	{ return _uri.path; }
+str_t	Request::getURIquery() 		const	{ return _uri.query; }
+str_t	Request::getURIfrag() 		const	{ return _uri.frag; }
 str_t	Request::getVersionString() const	{ return _version; }
 int		Request::getResponseCode()			{ return _error.getLastResponseCode(); }
 
@@ -652,11 +643,12 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 
 /* TESTING  */
 
-StringMap_t	Request::getRequestHeaders(){
+std::map<std::string, std::vector< std::string> >	Request::getRequestHeaders(){
 	return _headers;
 }
 
 bool	Request::uriPathHandling(){
+	
 	
 	/* NEED TO DECIDE HOW TO HANDLE PARTIAL PATHS
 
@@ -694,6 +686,7 @@ bool	Request::uriPathHandling(){
 	
 	return true;
 }
+
 /*
 void Request::ChunkedDecoding(){
 	
