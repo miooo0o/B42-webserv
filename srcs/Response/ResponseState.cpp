@@ -1,6 +1,5 @@
 #include "ResponseState.hpp"
-
-#include <StatusManager.hpp>
+#include "StatusManager.hpp"
 
 /**
  * Static member initialization
@@ -43,8 +42,6 @@ SuccessState::SuccessState(Request& request, StatusManager& entries)
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
 	if (_currentEntry->getCode() == 204)
 		return ("");
-
-
 	return ("");
 }
 ////////////////////////////////////////////////////////////////////////////////
