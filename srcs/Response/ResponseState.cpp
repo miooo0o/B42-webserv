@@ -6,11 +6,11 @@
  */
 std::map<int, std::string> ResponseState::_scenarios;
 bool	ResponseState::_isScenarioInitialized = false;
+
+////////////////////////////////////////////////////////////////////////////////
+// ResponseState
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Constructor
- */
 ResponseState::ResponseState(Request& request, StatusManager& entries)
 : _request(request), _manager(entries), _currentEntry(NULL) {}
 
@@ -44,8 +44,9 @@ std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScena
 		return ("");
 	return ("");
 }
+
 ////////////////////////////////////////////////////////////////////////////////
-//  Redirect
+// Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
 RedirectState::RedirectState(Request& request, StatusManager& entries)
@@ -67,6 +68,7 @@ ErrorState::ErrorState(Request& request, StatusManager& entries)
 	if (_currentEntry == NULL)
 		throw std::logic_error("No current entry");
 }
+
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
 	// int statusCode = _entries.getCode();
@@ -140,6 +142,11 @@ void	ResponseState::_initDefaultScenario() {
 ////////////////////////////////////////////////////////////////////////////////
 // ResponseState, HTML generate methods
 ////////////////////////////////////////////////////////////////////////////////
+
+/* TODO: not decide template design yet. can be change.
+ * @note: css, html
+ */
+
 std::string ResponseState::_generateHtml(const std::string& title,
 							 const std::string& message,
 							 const std::string& details,
@@ -155,11 +162,11 @@ std::string ResponseState::_generateHtml(const std::string& title,
 }
 
 std::string ResponseState::_generateDoctype() const {
-    return "<!DOCTYPE html>\n";
+    return ("<!DOCTYPE html>\n");
 }
 
 std::string ResponseState::_generateHead(const std::string& title) const {
-    std::stringstream ss;
+    std::stringstream	ss;
     ss << "<html>\n<head>\n"
        << "<title>" << title << "</title>\n"
        << _generateStyles()
@@ -168,7 +175,7 @@ std::string ResponseState::_generateHead(const std::string& title) const {
 }
 
 std::string ResponseState::_generateStyles() const {
-    std::stringstream ss;
+    std::stringstream	ss;
     ss << "<style>\n"
        << "body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }\n"
        << "h1 { color: #333; }\n"
@@ -190,7 +197,7 @@ std::string ResponseState::_generateContainer(const std::string& title,
                               const std::string& message,
                               const std::string& details,
                               const std::string& additionalHtml) const {
-    std::stringstream ss;
+    std::stringstream	ss;
 
     ss << "<div class='container'>\n";
     ss << _generateTitle(title);
@@ -206,17 +213,17 @@ std::string ResponseState::_generateContainer(const std::string& title,
 }
 
 std::string ResponseState::_generateTitle(const std::string& title) const {
-    return "<h1>" + title + "</h1>\n";
+    return ("<h1>" + title + "</h1>\n");
 }
 
 std::string ResponseState::_generateMessage(const std::string& message) const {
-    return "<p>" + message + "</p>\n";
+    return ("<p>" + message + "</p>\n");
 }
 
 std::string ResponseState::_generateDetails(const std::string& details) const {
-    return "<div class='details'><p>" + details + "</p></div>\n";
+    return ("<div class='details'><p>" + details + "</p></div>\n");
 }
 
 std::string ResponseState::_generateBodyEnd() const {
-    return "</body>\n</html>";
+    return ("</body>\n</html>");
 }

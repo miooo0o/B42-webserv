@@ -28,7 +28,6 @@ class Request;
 class StatusManager;
 class StatusEntry;
 
-
 class Response : public EntryObserver {
 private:
 	Request&							_request;
@@ -43,7 +42,6 @@ public:
 	Response(Request& request);		/* with params */
 	~Response();
 
-	// Response		to_response();
 	
 	/* ... */
 	void			addStatusCode(int code);
