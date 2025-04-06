@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 20:44:00 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/06 21:57:02 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class	Request
 			size_t					len;
 			int						port_int;
 			str_t 					frag, host, pass, path, port, query, scheme, str, target, user;
-			std::map<std::string, std::vector< std::string> > query_map;
+			std::map<std::string, std::string> query_map;
 
 			uri(): path_type(PARTIAL), len(0), port_int(80), frag(""), host(""), pass(""), path(""), port(""), query(""), 
 			scheme(""), str(""), user(""){}
@@ -71,7 +71,7 @@ class	Request
 				
 			/*	PARSING	*/
 			bool			parseRequestLine(const str_t& str);
-			bool			parseHeaders(const str_t& str);
+			bool			parseHeaders(str_t& str);
 			bool			parseBody(const str_t& str);
 				
 			/* SETTERS */
@@ -103,24 +103,29 @@ class	Request
 			void			printErrors(std::ostream& os) const;
 				
 			/* TESTING */			
-			std::map<std::string, std::vector< std::string> >		getRequestHeaders();
-				
+			std::map<std::string, std::vector< std::string> > getRequestHeaders();
+						/*	TEMPORARY TEST FUNCTIONS	*/
+			bool			test_validateHeaders( void );
+							
 			private: 
 			/* EXCEPTIONS */
-			class	headerException : public std::exception
+			class	HeaderException : public std::exception
 			{
 				public:
-				headerException( uint64_t errnum );
-				virtual ~headerException() throw();
-				virtual uint64_t error() const throw();
+					uint64_t _errnum;
 					
-				uint64_t _errnum;
+					HeaderException( uint64_t errnum ) : _errnum(errnum){throw error();};
+					//const char* what(const char* message) const throw() { return message;} // ADD CUSTON EXCEPTION CLASS & ERRORS
+					virtual ~HeaderException() throw(){};
+					virtual uint64_t error() throw();
+			
+					uint64_t getValue() const { return _errnum; }
 			};
 				
 			str_t			_request_line, _header_line, _body, _method, _version;
 			uri				_uri;
 				
-			std::map<std::string, std::vector< std::string> >	_headers;
+			std::map<std::string, std::vector< std::string> > _headers;
 			int				_last_response_code;
 			Error			_error;
 			Config*			_config;
@@ -158,13 +163,15 @@ class	Request
 			bool			validateMethod( void );
 			bool			validateURI( void );
 			bool			validateVersion( void );
-
+			
 			/*	HEADER VALIDATION	*/
 			uint64_t		error() const;
 			void			headerCheck( const str_t header, void (*f)(str_t));
+			
 			static void		headersTransferEncoding( str_t val );
 			static void		headersHost( str_t val );
 			void			headersHostChecks( void ) const;
+			void			headersKeyToLower( void );
 				
 			/*	URI VALIDATION	*/
 			bool			validateScheme( void );

@@ -11,7 +11,7 @@ CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g
 INCLUDES	=	./
 
 OBJDIR 		= 	objs
-SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_headers.cpp damianServer/Config.cpp dsrcs/logs.cpp amianServer/Route.cpp damianServer/ConfigParser.cpp
+SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_headers.cpp srcs/headers.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
 
 #SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_request_with_config.cpp damianServer/Configsrcs/logs.cpp .cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
 #SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_headers.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp

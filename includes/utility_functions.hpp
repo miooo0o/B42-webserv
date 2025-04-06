@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 20:38:37 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/06 21:08:36 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,14 +33,14 @@
 const std::set<std::string>& 		getHeaderTransferEncodings();
 
 /* PARSING OPERATIONS */
-void								parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
-void								parseStrStreamToStrVecStrMap(std::istringstream& iss, std::map<std::string, std::vector< std::string> >& result, char pair_delim, char kv_delim);
+void								parseStreamToStrStrMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
+void								parseStreamToStrVecStrMap(std::istringstream& iss, std::map<std::string, std::vector< std::string> >& result, char pair_delim, char kv_delim, char vec_delim);
 
 /* STRING CASE CONVERSION */
 std::string							to_lower(std::string str);
 std::string							to_upper(std::string str);
-void								to_lower_ref(std::string& str);
-void								to_upper_ref(std::string& str);
+void								to_lower_ref(str_t& str);
+void								to_upper_ref(str_t& str);
 
 /* STRING MODIFICATION */
 void								trimLeadingChar( std::string& str, char target);

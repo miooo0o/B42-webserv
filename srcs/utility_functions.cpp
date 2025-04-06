@@ -6,29 +6,31 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 20:43:42 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/06 12:53:06 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/utility_functions.hpp"
 
-const std::set<std::string> &getHeaderTransferEncodings(){
-	
+const std::set<std::string> &getHeaderTransferEncodings()
+{
+
 	static std::set<std::string> supportedEndodings;
 	static int i;
-	
+
 	if (i == 0)
 	{
 		supportedEndodings.insert(std::string("chunked"));
-		//supportedEndodings.insert(std::string("compress"));
-		//supportedEndodings.insert(std::string("deflate"));
-		//supportedEndodings.insert(std::string("gzip"));
-		//supportedEndodings.insert(std::string("identity"));
-		//supportedEndodings.insert(std::string("trailers"));
-		//supportedEndodings.insert(std::string("x-compress"));
-		//supportedEndodings.insert(std::string("x-gzip"));
+		// supportedEndodings.insert(std::string("compress"));
+		// supportedEndodings.insert(std::string("deflate"));
+		// supportedEndodings.insert(std::string("gzip"));
+		// supportedEndodings.insert(std::string("identity"));
+		// supportedEndodings.insert(std::string("trailers"));
+		// supportedEndodings.insert(std::string("x-compress"));
+		// supportedEndodings.insert(std::string("x-gzip"));
 		i++;
 	}
+	return supportedEndodings;
 }
 
 /* PRINTING OPERATIONS */
@@ -39,6 +41,7 @@ void printStrMap(const std::map<std::string, std::string> &data)
 	std::cout << "PARSED HEADER MAP \n===================" << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = data.begin(); it != data.end(); it++)
 	{
+		int i = 0;
 		std::cout << "Key : " + it->first << std::endl;
 		if (it->second == "\r")
 		{
@@ -47,36 +50,43 @@ void printStrMap(const std::map<std::string, std::string> &data)
 		}
 		else
 		{
-			std::cout << "Val : " + it->second << std::endl
-					  << std::endl;
+			std::cout << "Val " << i << " : " + it->second << std::endl;
+			i++;
 		}
+		std::cout << std::endl;
 	}
 	std::cout << "END OF HEADER MAP \n===================" << std::endl
 			  << std::endl;
 }
 
-void printStrVecStrMap( const StrVecStrMap_t &data) // NEED TO CONSIDER HOW VECTOR FIELDS ARE POPULATED
+void printStrVecStrMap(const std::map<std::string, std::vector<std::string> > &data) // NEED TO CONSIDER HOW VECTOR FIELDS ARE POPULATED
 {
-	std::cout << "PARSED HEADER MAP \n===================" << std::endl;
-	for ( StrVecStrMap_t::const_iterator it = data.begin(); it != data.end(); it++)
+	std::cout << "PARSED HEADER MAP VECTOR \n==========================" << std::endl;
+	for (std::map<std::string, std::vector<std::string> >::const_iterator it = data.begin(); it != data.end(); it++)
 	{
+		int i = 0;
 		std::cout << "Key : " + it->first << std::endl;
-		if (it->second == "\r")
+		for (std::vector<std::string>::const_iterator itVec = it->second.begin(); itVec != it->second.end(); itVec++)
 		{
-			std::cout << "[CR]" << std::endl
-					  << std::endl;
+			if (*itVec == "\r")
+			{
+				std::cout << "[CR]" << std::endl
+						  << std::endl;
+			}
+			else
+			{
+				std::cout << "Val " << i << " : " + *itVec << std::endl;
+			}
+			i++;
 		}
-		else
-		{
-			std::cout << "Val : " + it->second << std::endl
-					  << std::endl;
-		}
+		std::cout << std::endl;
 	}
 	std::cout << "END OF HEADER MAP \n===================" << std::endl
 			  << std::endl;
 }
 
-void	parseStrStreamToStrVecStrMap(std::istringstream& iss, std::map<std::string, std::vector< std::string> >& result, char pair_delim, char kv_delim){
+void parseStreamToStrVecStrMap(std::istringstream &iss, std::map<std::string, std::vector<std::string> > &result, char pair_delim, char kv_delim, char vec_delim)
+{
 	std::string line;
 	std::string key;
 	std::string value;
@@ -88,13 +98,17 @@ void	parseStrStreamToStrVecStrMap(std::istringstream& iss, std::map<std::string,
 			break;
 		key = line.substr(0, pos);
 		value = line.substr(pos + 1);
-		result[key].push_back(value);
+		std::istringstream vec_stream(value);
+		while (std::getline(vec_stream, line, vec_delim))
+		{
+			result[key].push_back(line);
+		}
 	}
 	result["mapLastLine"].push_back(line);
 	printStrVecStrMap(result);
 }
 
-void	parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::string>& result, char pair_delim, char kv_delim);
+void parseStreamToStrStrMap(std::istringstream &iss, std::map<std::string, std::string> &result, char pair_delim, char kv_delim)
 {
 	std::string line;
 	std::string key;
@@ -113,7 +127,8 @@ void	parseStrStreamToMap(std::istringstream& iss, std::map<std::string, std::str
 	printStrMap(result);
 }
 
-std::vector<std::string> split_path(std::istringstream& iss) {
+std::vector<std::string> split_path(std::istringstream &iss)
+{
 	std::string str;
 	std::vector<std::string> segments;
 
@@ -121,9 +136,10 @@ std::vector<std::string> split_path(std::istringstream& iss) {
 		str = str.substr(2);
 	else if (str[0] == '/')
 		segments.push_back("/");
-	while (std::getline(iss, str, '/')) {
+	while (std::getline(iss, str, '/'))
+	{
 		if (str.empty() || str.compare(".") == 0)
-			continue ;
+			continue;
 		else if (str.compare("..") == 0 && segments.size() > 1)
 			segments.pop_back();
 		else
@@ -132,24 +148,26 @@ std::vector<std::string> split_path(std::istringstream& iss) {
 	return segments;
 }
 
-std::string	rebuild_path(std::vector<std::string> segments) {
+std::string rebuild_path(std::vector<std::string> segments)
+{
 	std::string path;
 
 	if (segments[0] == "/")
-	for ( size_t i = 1; i < segments.size(); i++ ){
-		path + segments[i];
-	}
+		for (size_t i = 1; i < segments.size(); i++)
+		{
+			path + segments[i];
+		}
 	return path;
 }
 
-void remove_dot_segments(std::string& str)
+void remove_dot_segments(std::string &str)
 {
 	std::istringstream iss(str);
 	std::vector<std::string> segments;
-	
+
 	segments = split_path(iss);
 	str = rebuild_path(segments);
-	return; 
+	return;
 }
 
 /* STRING CASE CONVERSION */
@@ -182,9 +200,10 @@ void to_upper_ref(std::string &str)
 
 /* STRING MODIFICATION */
 
-void	trimLeadingChar( std::string& str, char target){
+void trimLeadingChar(std::string &str, char target)
+{
 	while (str[0] == target)
-			str.erase(0, 1);
+		str.erase(0, 1);
 }
 
 void trimEndChar(std::string &str, char target)
