@@ -5,8 +5,6 @@
 #include "../damianServer/ConfigParser.hpp"
 #include <cstring>
 
-
-
 void test_parse_method(Config* config, const std::string& methodStr, int num, int expected_code, bool test, const std::string& str){
 
 	Request req(str, config);

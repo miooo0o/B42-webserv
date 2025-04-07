@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 17:08:11 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 14:16:07 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/05 17:22:49 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,19 +46,20 @@ void	Logs::addToLog( log_t& entry ){
 }
 
 void	Logs::flushStreamToFile( log_t& entry ){
-	
+	(void)entry;
 }
 
 void	Logs::printStdOut( log_t& entry ){
+	(void)entry;
 
 }
 
 void	Logs::deleteLog( log_t& entry ){
-
+	(void)entry;
 }
 
 void	Logs::clearLog( log_t& entry ){
-
+	(void)entry;
 }
 
 str_t	Logs::getType_name( int entry_type ){
@@ -76,5 +77,5 @@ str_t	Logs::getType_name( int entry_type ){
 	}
 }
 
-void	Logs::openFile(str_t filename){}
+void	Logs::openFile(str_t filename){(void)filename;}
 void	Logs::clostFile(){}

@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/28 18:51:39 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 20:45:41 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/05 23:04:58 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <map>
 #include <vector>
+
 /*
 enum serv_action{
 	//	SERVER TASKS
@@ -58,8 +59,8 @@ typedef	int				fd_t;
 typedef	std::string		str_t;
 //typedef struct log_s			log_t;
 //typedef struct file_s			file_t;
-typedef std::map< str_t,str_t >StringMap_t;
-//typedef std::map< str_t,std::vector<str_t> > StrVecStrMap_t;
+typedef std::map< str_t, str_t >StringMap_t;
+typedef std::map< str_t, std::vector<str_t> > StrVecStrMap_t;
 
 typedef void (*fStr)(str_t);
 typedef void (*fStr2)(str_t, str_t);

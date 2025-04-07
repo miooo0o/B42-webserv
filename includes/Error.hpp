@@ -95,7 +95,7 @@
 #define HEAD_HOST			"400 Headers : Host : error in Host header (omitted, multiple lines or incorrect format) "
 #define HEAD_END			"400 Headers: Incorrect character sequence at end of headers"
 #define HEAD_OMI_CONT		"415 Headers : Content-Type : Omitted"
-#define HEAD_SEP			"400 Headers: entries must be separated by /\r/\n"
+#define HEAD_SEP			"400 Headers: entries must be separated by \\r\\n"
 #define METH_NOT_PERM		"405 Method : Method not permitted for the target resource"
 #define METH_UNREC			"501 Method : Method not recognised" // REMOVE
 #define METH_UNSUP			"501 Method : Method not supported"

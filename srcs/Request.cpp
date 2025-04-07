@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 20:51:07 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/06 23:35:18 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,23 +276,40 @@ bool	Request::split_stream_to_map(std::istringstream& iss, char delim1, char del
 }
 
 /*  HEADER PARSING  */
-
-bool	Request::parseHeaders(const str_t& str)
+/* 
+	Headers are provided in the ABNF syntax : 
+	key: value\r\n
+	The header section is delimited by /r/n/r/n
+*/
+bool	Request::parseHeaders(str_t& str)
 {
 	std::istringstream	iss(str);
 	
-	parseStrStreamToStrVecStrMap(iss, _headers, '\n', ':');
+	parseStreamToStrVecStrMap(iss, _headers, '\n', ':', ',');
 	//parseStrStreamToMap(iss, _headers, '\n', ':');
-	std::map<std::string, std::vector< std::string> > ::iterator it = _headers.find("mapLastLine");
-	if (it->second[0] == "\r") {
-		
-		std::cout << "******** HEADER SUCCESS *************" << std::endl; // replace with error
-		// make all keys lowercase
-		// strip '\r' from end of values and then remove mapLastLine
+
+	std::map<std::string, std::vector< std::string> >::iterator it = _headers.find("mapLastLine");
+
+	if (it->second.size() == 1 && it->second[0].compare("\r") == 0)
+	{
+		headersKeyToLower();
+		_headers.erase("maplastline");
+		printStrVecStrMap(_headers);
 		return true;
 	}
 	else
 		return false;
+}
+
+void	Request::headersKeyToLower( void )
+{
+	std::map<std::string, std::vector< std::string> > lowered;	
+	for (std::map<std::string, std::vector< std::string> >::iterator it = _headers.begin(); it != _headers.end(); it++){
+		std::string lowerKey = to_lower(it->first);
+		lowered[lowerKey] = it->second;
+	}
+	_headers = lowered;
+	return ;
 }
 
 /*  BODY PARSING  */
@@ -643,7 +660,8 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 
 /* TESTING  */
 
-std::map<std::string, std::vector< std::string> >	Request::getRequestHeaders(){
+StrVecStrMap_t Request::getRequestHeaders(){
+//std::map<std::string, std::vector< std::string> >	Request::getRequestHeaders(){
 	return _headers;
 }
 
