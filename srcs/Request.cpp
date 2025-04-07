@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/06 23:35:18 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/07 13:44:29 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -233,8 +233,10 @@ void	Request::setURIPathType(size_t& i) {
 	if (_uri.str.substr(i + 1, 2) == "//") {
 		i += 2;
 		if (_uri.str[i + 3] == ':')
-			_uri.path_type = ABSOLUTE;
+			_uri.uri_type = ABSOLUTE_FORM;
 	}
+	else if (_uri.uri_type != ABSOLUTE_FORM && _uri.path.empty() && !_uri.port.empty() && _uri.scheme.empty())
+		_uri.uri_type = AUTH_FORM;
 }
 
 bool Request::isURIdelimited(char c, enum states state) {
@@ -510,13 +512,13 @@ bool	Request::validatePath() {
 		if ( _uri_path.str.empty() && _
 
 */
-	// if (_uri.path_type == ABSOLUTE && (!_uri.path.empty() && _uri.path[0] != '//')){
+	// if (_uri.uri_type == ABSOLUTE && (!_uri.path.empty() && _uri.path[0] != '//')){
 	// 	setError( "Bad Request", "Path must start \'/\' or path must be empty", 400, URI_PATH ); //ERROR MESSAGE NEEDS TO CHANGE
 	// 	return false;
 	// }
 	// else if (_uri.path.empty())
 	// 	_uri.path[0] = '//';
-	// else if (_uri.path_type == ABSOLUTE)
+	// else if (_uri.uri_type == ABSOLUTE)
 	// 	remove_dot_segments(_uri.path);
 	// 	else if (_uri.path[0] == '//') {
 	// //	merge_path(base_path); // need to get base path from Server Config */
@@ -613,8 +615,19 @@ bool	Request::validateFrag(){
 	return true;
  }
  
-/* GETTERS */
 
+str_t	Request::enumToURIType() const{
+	switch (_uri.uri_type){
+		case AUTH_FORM 		:{ return "AUTHORITY FORM"; }
+		case ORIGIN_FORM 	:{ return "ORIGIN FORM"; }
+		case ASTERISK 		:{ return "ASTERISK FORM"; }
+		case ABSOLUTE_FORM	:{ return "ABSOLUTE FORM"; }
+		default				:{ return "NOT SET"; 		}
+	}
+}
+
+/* GETTERS */
+str_t	Request::getURIType() 		const	{ return enumToURIType(); }
 str_t	Request::getMethodString() 	const	{ return _method; }
 str_t	Request::getURIstring() 	const	{ return _uri.str; }
 str_t	Request::getURIscheme() 	const	{ return _uri.scheme; }
@@ -639,6 +652,7 @@ std::ostream& r3(std::ostream& os)	{ return os << std::setw(3) << std::right; }
 
 std::ostream&	operator<<(std::ostream& os, Request& request) {
 
+	os << l14 << "URI Type" 		<< r3 << " : " 	<< request.getURIType()			<< "\n";
 	os << l14 << "Method String" 	<< r3 << " : " 	<< request.getMethodString()	<< "\n";
 	os << l14 << "URI String" 		<< r3 << " : " 	<< request.getURIstring() 		<< "\n";
 	os << l14 << "Version String" 	<< r3 << " : "	<< request.getVersionString()	<< "\n\n";

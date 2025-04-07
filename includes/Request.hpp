@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/06 21:57:02 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/07 13:44:34 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@
 
 #include <unistd.h>
 
-enum path_types{ PARTIAL, ABSOLUTE };
+enum uri_types{ AUTH_FORM, ORIGIN_FORM, ABSOLUTE_FORM, ASTERISK };
 enum states { SCHEME, AUTH, USERINFO, HOST, PORT, PATH, QUERY, FRAG };
 typedef	std::map<std::pair<char, states>, states> UriStateMap_t;
 
@@ -50,13 +50,13 @@ class	Request
 {
 	public :
 		struct uri {	
-			enum path_types			path_type;
+			enum uri_types			uri_type;
 			size_t					len;
 			int						port_int;
 			str_t 					frag, host, pass, path, port, query, scheme, str, target, user;
 			std::map<std::string, std::string> query_map;
 
-			uri(): path_type(PARTIAL), len(0), port_int(80), frag(""), host(""), pass(""), path(""), port(""), query(""), 
+			uri(): uri_type(ORIGIN_FORM), len(0), port_int(80), frag(""), host(""), pass(""), path(""), port(""), query(""), 
 			scheme(""), str(""), user(""){}
 		};
 
@@ -83,7 +83,8 @@ class	Request
 			bool			routeSupportsMethod();
 				
 			/* GETTERS */
-			str_t			enumToVersionType() const;
+			str_t			enumToURIType() const;
+			str_t			getURIType() const;
 			str_t			getMethodType() const;
 			str_t			getMethodString() const;
 			str_t			getURIfrag() const;
@@ -115,7 +116,6 @@ class	Request
 					uint64_t _errnum;
 					
 					HeaderException( uint64_t errnum ) : _errnum(errnum){throw error();};
-					//const char* what(const char* message) const throw() { return message;} // ADD CUSTON EXCEPTION CLASS & ERRORS
 					virtual ~HeaderException() throw(){};
 					virtual uint64_t error() throw();
 			
