@@ -1,0 +1,58 @@
+1. Networking & Server Core
+
+    Responsibilities:
+    
+	Setting up sockets (bind, listen, accept)
+        Managing connections (poll/select/epoll)
+        Handling non-blocking I/O
+        Managing multiple clients and ports
+        Ensuring proper error handling and resilience
+    
+	Key Functions Used:
+    	socket, bind, listen, accept, poll, epoll, select, fcntl, close, read, write
+    
+	Dependencies:
+		Needs a functional configuration parser to load server settings.
+
+2. Configuration & Routing
+
+    Responsibilities:
+    
+	Parsing configuration files
+        Setting up virtual hosts, routes, and limits
+        Managing error pages and client body size restrictions
+        Defining accepted HTTP methods per route
+    
+	Key Components:
+        File parsing logic
+        Data structures for configuration storage
+    
+	Dependencies:
+        Works independently but interacts with both networking (to apply configurations) and request processing (to route correctly).
+
+3. HTTP Request Handling & CGI Execution
+
+    Responsibilities:
+    
+	Parsing HTTP requests and forming HTTP responses
+        Implementing GET, POST, DELETE methods
+        Handling file uploads and directory listings
+        Executing CGI scripts (fork, execve)
+        Managing status codes, headers, and error responses
+    
+	Key Functions Used:
+    read, write, open, opendir, readdir, close, execve, fork
+    
+	Dependencies:
+        Requires networking to receive/send requests
+        Uses configuration to apply routing rules
+
+How They Work Together
+
+    Networking receives requests and passes them to Request Handling.
+    
+	Request Handling checks the Configuration to determine the appropriate response.
+    
+	If CGI is required, Request Handling will invoke execve within a separate process.
+
+    Networking sends the final response back to the client.

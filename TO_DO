@@ -1,0 +1,72 @@
+Priorities
+++++++++++
+Read Mina's code
+Read Damian's code?
+
+To be designed
+++++++++++++++
+Server side 
+
+To be added
++++++++++++
+Add Body Parsing
+Add proper Unit Testing
+Server Path processing - need to decide on endpoint matching criteria
+
+Message Parsing : Implement the following
+1. Although the line terminator for the start-line and fields is the sequence CRLF, a recipient MAY recognize a single LF as a line terminator and ignore any preceding CR.
+2. A sender MUST NOT generate a bare CR (a CR character not immediately followed by LF) within
+	 any protocol elements other than the content. A recipient of such a bare CR MUST consider that element
+		to be invalid or replace each bare CR with SP before processing the element or forwarding the message
+3. An HTTP/1.1 user agent MUST NOT preface or follow a request with an extra CRLF.
+4. If terminating the request message body with a line-ending is desired, then the user agent MUST count the terminating CRLF octets as part of the message body length.
+5. A sender MUST NOT send whitespace between the start-line and the first header field
+
+
+To Be Fixed
+++++++++++++
+Fix Header Parsing
+Method Validation : Deal with no path case
+Request Line : Deal with double spaces in request line string
+Make character sets accurate
+Remove pass field?
+Move UTF-8 check to after header parsing (as encoding should be confirmed in headers)?
+
+To be finished
+++++++++++++++
+Finish Request Line Validation
+Finish validation of URI
+Finish Header Validation
+Finish parsing and validation
+Finish class creation - find a coherent approach for all classes
+split query into pairs
+
+Testing
+++++++++
+Request Line Testing (Method, URI (Path, Query etc), Version)
+Percent Code Testing
+Header Parsing Testing
+Body Parsing Testing(Chunked, PlainText)
+Error Testing
+Log Testing
+
+design server parser order :
+    read request line (check for \n or character limit)
+    instantiate request - parse and validate request line
+    if critical_error
+        return response
+    read headers
+    call Request::header_parsing function - parse and validate headers
+    if critical_error
+        return response
+    read body based on header: content-length
+    call Request::body_parsing function - parse and validate body
+    if critical_error
+        return response
+    requestHandler(request)
+    response(requestHandler)
+
+For Mina : 
+Look at UTF encoding and decoding class
+Look at shared error class and macro manipulation
+Logging class (perhaps different levels of logging: VERBOSE (i.e. include parsing/validation of each message))
