@@ -1,9 +1,9 @@
 MK_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-TEST1	=	testPrograms/headerParsing/
-TEST2	=	testPrograms/methodParsing/
-TEST3	=	testPrograms/versionParsing/
-TEST4	=	testPrograms/withConfig/
+TEST1	=	$(MK_DIR)testPrograms/headerParsing/
+TEST2	=	$(MK_DIR)testPrograms/methodParsing/
+TEST3	=	$(MK_DIR)testPrograms/versionParsing/
+TEST4	=	$(MK_DIR)testPrograms/withConfig/
 
 maketests:
 	$(MAKE) -C $(TEST1)
