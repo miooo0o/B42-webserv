@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/06 12:53:06 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 00:00:21 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,8 +81,6 @@ void printStrVecStrMap(const std::map<std::string, std::vector<std::string> > &d
 		}
 		std::cout << std::endl;
 	}
-	std::cout << "END OF HEADER MAP \n===================" << std::endl
-			  << std::endl;
 }
 
 void parseStreamToStrVecStrMap(std::istringstream &iss, std::map<std::string, std::vector<std::string> > &result, char pair_delim, char kv_delim, char vec_delim)
@@ -94,18 +92,20 @@ void parseStreamToStrVecStrMap(std::istringstream &iss, std::map<std::string, st
 	while (std::getline(iss, line, pair_delim))
 	{
 		std::size_t pos = line.find(kv_delim);
+		
 		if (pos == std::string::npos)
 			break;
 		key = line.substr(0, pos);
 		value = line.substr(pos + 1);
+
 		std::istringstream vec_stream(value);
-		while (std::getline(vec_stream, line, vec_delim))
-		{
+		
+		while (std::getline(vec_stream, line, vec_delim)){
 			result[key].push_back(line);
 		}
 	}
 	result["mapLastLine"].push_back(line);
-	printStrVecStrMap(result);
+	//printStrVecStrMap(result);
 }
 
 void parseStreamToStrStrMap(std::istringstream &iss, std::map<std::string, std::string> &result, char pair_delim, char kv_delim)

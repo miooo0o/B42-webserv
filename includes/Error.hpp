@@ -91,10 +91,11 @@
 #define CODE510 "Not Extended"
 #define CODE511 "Network Authentication Required"
 
+#define NO_ERROR			"No error"
 #define HEAD_CONT_UNS		"415 Headers : Content-Type : Unsupported media type"
-#define HEAD_HOST			"400 Headers : Host : error in Host header (omitted, multiple lines or incorrect format) "
 #define HEAD_END			"400 Headers: Incorrect character sequence at end of headers"
 #define HEAD_OMI_CONT		"415 Headers : Content-Type : Omitted"
+#define HEAD_HOST			"400 Headers : Host : error in Host header (omitted, multiple lines or incorrect format) "
 #define HEAD_SEP			"400 Headers: entries must be separated by \\r\\n"
 #define METH_NOT_PERM		"405 Method : Method not permitted for the target resource"
 #define METH_UNREC			"501 Method : Method not recognised" // REMOVE

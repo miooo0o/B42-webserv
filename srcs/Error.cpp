@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/02 16:44:58 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 00:31:56 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,11 @@ Error& Error::operator=( const Error& other ) {
 
 void	Error::flagStringsInit()
 {
+	_flagStrings.push_back(NO_ERROR);
 	_flagStrings.push_back(HEAD_CONT_UNS);
-	_flagStrings.push_back(HEAD_HOST);
 	_flagStrings.push_back(HEAD_END);
 	_flagStrings.push_back(HEAD_OMI_CONT);
+	_flagStrings.push_back(HEAD_HOST);
 	_flagStrings.push_back(HEAD_SEP);
 	_flagStrings.push_back(METH_NOT_PERM);
 	_flagStrings.push_back(METH_UNREC);

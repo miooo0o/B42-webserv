@@ -6,62 +6,46 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/07 13:44:29 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 00:22:56 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/Request.hpp"
 
-/*	DEFAULT CONSTRUCTOR	
-	PARSE REQUEST LINE MUST THEN BE CALLED WITH REQUEST LINE
-	CAN USE THE RETURN VALUE PARSE REQUEST LINE (BOOL) TO DETERMINE IF ERROR OR NOT
-	- I PREFER NOT TO USE THIS APPROACH
-*/
-Request::Request() :  _request_line(""), _header_line(""), _body(""), _method(), _version(), _uri(), 
-	_headers(), _last_response_code(200), _error(0) {
-}
+/* DEFAULT CONSTRUCTOR	*/
+Request::Request() :_last_response_code(200), _error(0) {}
 
-/*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AS PARAMETER
-	
-	PARSE REQUEST MUST THEN CALLED WITHOUT REQUEST LINE (OR COULD CALL PARSE)
-	CAN CHECK REQUEST OBJECT FOR ERROR
-*/
-Request::Request( const str_t& str ) : _request_line(str), _header_line(""), _body(""), _method(), _version(), _uri(),
-	_headers(), _last_response_code(200), _error(0) {
+/* PARAMETRISED CONSTRUCTOR */
+Request::Request( const str_t& str ) : _request_line(str),_last_response_code(200), _error(0) {
 	parseRequestLine();
 }
 
-/*	PARAMETRISED CONSTRUCTOR - TAKES REQUEST LINE AND CONFIG AS PARAMETERS
-*/
-Request::Request( const str_t& str, Config* config ) : _request_line(str), _header_line(""), _body(""), _method(), _version(), _uri(),
-	_headers(), _last_response_code(200), _error(0), _config(config) {
+/* PARAMETRISED CONSTRUCTOR */
+Request::Request( const str_t& str, Config* config ) : _request_line(str), _last_response_code(200), _error(0), _config(config) {
 	parseRequestLine();
 }
 
-Request::~Request( void ) {}
+/* DESTRUCTOR */
+Request::~Request( void ){}
 
-/* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
-Request::Request( const Request& other ) : _request_line(other._request_line),_header_line(other._header_line),_body(other._body), 
-	_method(other._method), _version(other._version), _uri(other._uri), _headers(other._headers),
-	  _last_response_code(other._last_response_code), _error(other._error) {
-}
+/* COPY CONSTRUCTOR */
+Request::Request( const Request& other ) :
+	_request_line(other._request_line),_header_line(other._header_line), _body(other._body),
+	_method(other._method), _version(other._version), _uri(other._uri), _headers(other._headers), 
+	_last_response_code(other._last_response_code), _error(other._error) {
+ }
 
-/* NOT SURE THIS IS NECESSARY - WE COULD MAKE PRIVATE */
+/* COPY ASSIGNMENT */
 Request& Request::operator=( const Request& other ) {	
 	if ( this != &other )
 		*this = other;
 	return ( *this );
 }
-
-  /* ========= */
- /*  PARSING  */
-/* ========= */	
+    /* ======================================================================= */
+  /* 							 PARSING							 		 */
+/* ======================================================================= */
 
 /* PARSE REQUEST LINE - PARAMETERISED */
-/* 
-	TAKES REQUEST LINE AS INPUT 
-	I PREFER NOT TO USE THIS APPROACH, BUT CAN BE USED WITH IF STATEMENT IN CALLING FUNCTION
-*/
 bool	Request::parseRequestLine(const str_t& str)
 {
 	std::istringstream stream(str);
@@ -77,10 +61,6 @@ bool	Request::parseRequestLine(const str_t& str)
 }
 
 /* PARSE REQUEST LINE - NO PARAMETER */
-/* 
-NO PARAMETER - USES _request_line WHICH HAS BEEN SET BY PARAMETERISED CONSTRUCTOR
-	CALLED FROM DEFAULT CONSTRUCTOR
-*/
 bool	Request::parseRequestLine()
 {
 	std::istringstream	stream(_request_line);
@@ -97,7 +77,6 @@ bool	Request::parseRequestLine()
 }
 
 /*  METHOD PARSING  */
-
 bool	Request::parseMethod(std::istringstream& stream)
 {
 	std::getline(stream, _method, ' ');
@@ -107,7 +86,6 @@ bool	Request::parseMethod(std::istringstream& stream)
 }
 
 /*  VERSION PARSING  */
-
 bool	Request::parseVersion(std::istringstream& stream)
 {
 	std::getline(stream, _version, '\r');
@@ -122,9 +100,9 @@ bool	Request::parseVersion(std::istringstream& stream)
 		return _error.addErrorFlag(errFlag::REQUEST_ENDING);
 }
 
-   /* ============= */
-  /*  URI PARSING  */
- /* ============= */
+    /* ======================================================================= */
+  /* 						URI PARSING								 		 */
+/* ======================================================================= */
 
 bool	Request::parseURI(std::istringstream& stream)
 {
@@ -286,10 +264,8 @@ bool	Request::split_stream_to_map(std::istringstream& iss, char delim1, char del
 bool	Request::parseHeaders(str_t& str)
 {
 	std::istringstream	iss(str);
-	
 	parseStreamToStrVecStrMap(iss, _headers, '\n', ':', ',');
-	//parseStrStreamToMap(iss, _headers, '\n', ':');
-
+	
 	std::map<std::string, std::vector< std::string> >::iterator it = _headers.find("mapLastLine");
 
 	if (it->second.size() == 1 && it->second[0].compare("\r") == 0)
@@ -675,7 +651,6 @@ std::ostream&	operator<<(std::ostream& os, Request& request) {
 /* TESTING  */
 
 StrVecStrMap_t Request::getRequestHeaders(){
-//std::map<std::string, std::vector< std::string> >	Request::getRequestHeaders(){
 	return _headers;
 }
 

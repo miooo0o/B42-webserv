@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 10:45:02 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/06 11:00:27 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/07 23:55:46 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ bool	Request::validateHeaders( void ){
 	try {
 		if (_version.compare("HTTP/1.1") == 0 ){ // CHECK REQUIREMENT FOR HTTTP/1.0
 			headersHostChecks();
-		headerCheck("transfer-encoding", headersTransferEncoding);
+			//headerCheck("transfer-encoding", headersTransferEncoding);
 		}
 	}
 	catch (uint64_t errnum){ return _error.addErrorFlag( errnum ); }
@@ -167,8 +167,7 @@ bool	Request::validateHeaders( void ){
 // 	return true; 
 // }
 
-bool	Request::test_validateHeaders( void )
-{
+bool	Request::test_validateHeaders( void ){
 	return validateHeaders();
 }
 
