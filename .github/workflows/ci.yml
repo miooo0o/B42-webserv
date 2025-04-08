@@ -21,13 +21,10 @@ jobs:
         run: g++ -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp srcs/TestClasses/testUtils.cpp -I ./includes -o webserv
 
       - name: Compile Unit Tests
-        run: |
-          g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp srcs/TestClasses/*.cpp ./damianServer/*.cpp tests/test_parse_method.cpp -I ./includes -o test_parse_method
-          g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp srcs/TestClasses/*.cpp ./damianServer/*.cpp tests/test_parse_version.cpp -I ./includes -o test_parse_version
-          g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp srcs/TestClasses/*.cpp ./damianServer/*.cpp tests/test_parse_headers.cpp -I ./includes -o test_parse_headers
-          g++ -std=c++98 -Wall -Wextra -Werror -g -O0 srcs/*.cpp srcs/TestClasses/*.cpp ./damianServer/*.cpp tests/test_request_with_config.cpp -I ./includes -o test_request_with_config
+        run: make
       - name: Run Unit Tests
         run: |
-          ./test_parse_method
-          ./test_parse_version
-          ./test_parse_headers
+          ./tests/testPrograms/headerParsing/headerTest
+          ./tests/testPrograms/methodParsing/methodTest
+          ./tests/testPrograms/versionParsing/versionTest
+          ./tests/testPrograms/withConfig/configTest

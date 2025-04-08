@@ -1,0 +1,42 @@
+Overall To Do
+==============
+
+Me
+==
+Finish Request Parsing
+Finish Request Validation
+- Headers (Validation and Syntax)
+- Query (Parsing Validation and Syntax)
+
+I've started and haven't finished but will get to
+==================================================
+Finish Logs
+
+	create coherent plan
+	create log folder/files
+	maybe base log utils and sub class for each area?
+Create Program Errors class (program error class containing public exceptions : keep them all in one place?)
+
+Mina and Me
+============
+Request Handler Class Pair Coding
+
+Damian
+======
+Finish server and config parsing
+Add validation to config
+
+To do
+======
+Create Utils Class
+CGI
+Content
+Testing
+
+Would be nice to do
+====================
+Handling https://
+Cookies/Session
+A page that loads content without refresh (e.g. using an XMLHttpRequest Script in a static page : maybe we can add images with auto refresh.)
+Returning JSON
+Handling multipart

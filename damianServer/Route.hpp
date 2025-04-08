@@ -17,20 +17,22 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-class Route {
+class Route
+{
 
-	struct	targetInfo_s {
-		bool							inaccessible;
-		bool							is_dir;
-		bool							is_file;
-		bool							not_found;
-		__mode_t						permissions;
-		std::string						path;
-		
-		targetInfo_s() : inaccessible(false), is_dir(false), is_file(false), not_found(false), permissions(0), path(""){}
+	struct targetInfo_s
+	{
+		bool inaccessible;
+		bool is_dir;
+		bool is_file;
+		bool not_found;
+		__mode_t permissions;
+		std::string path;
+
+		targetInfo_s() : inaccessible(false), is_dir(false), is_file(false), not_found(false), permissions(0), path("") {}
 	};
 
-	private:
+private:
 	std::vector<std::string>				allowed_methods;
 	std::string								appended_root;
 	bool									autoindex;
@@ -80,6 +82,7 @@ public:
 	std::ostream&				printTargetInfo(std::ostream& os);
 	std::ostream&				printPermittedMethods(std::ostream &os);
 	void						appendPathToRoot();	
+	void						getTargetPathPermissions();
 	void						setRouteTarget();
 };
 #endif

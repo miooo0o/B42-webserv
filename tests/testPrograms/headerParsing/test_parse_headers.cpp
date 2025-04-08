@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cassert>
-#include "../includes/Request.hpp"
-#include "../damianServer/Config.hpp"
-#include "../damianServer/ConfigParser.hpp"
+#include "../../../includes/Request.hpp"
+#include "../../../damianServer/Config.hpp"
+#include "../../../damianServer/ConfigParser.hpp"
 #include <cstring>
 
 bool	test_parse_headers(Config* config, const std::string& str, std::string& headerStr, int num){

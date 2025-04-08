@@ -1,42 +1,35 @@
-NAME 		=	test_parse_headers
-#NAME 		=	test_parse_method
-#NAME 		=	test_parse_version
-#NAME 		=	test_request_with_config
+TEST1	=	./tests/testPrograms/headerParsing/
+TEST2	=	./tests/testPrograms/methodParsing/
+TEST3	=	./tests/testPrograms/versionParsing/
+TEST4	=	./tests/testPrograms/withConfig/
 
-CPP			=	g++
-#CPP			=	c++
-#CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g -O0
-CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g
+maketests:
+	$(MAKE) -C $(TEST1)
+	$(MAKE) -C $(TEST2)
+	$(MAKE) -C $(TEST3)
+	$(MAKE) -C $(TEST4)
+ 
+headerTest:
+	$(MAKE) -C $(TEST1)
+	@echo "headerTest"
 
-INCLUDES	=	./
+methodTest:
+	$(MAKE) -C $(TEST2)
+	@echo "methodTest"
 
-OBJDIR 		= 	objs
-SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_headers.cpp srcs/headers.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
+versionTest:
+	$(MAKE) -C $(TEST3)
+	@echo "versionTest"
 
-#SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_request_with_config.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
-#SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_headers.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
-#SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_method.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
-#SRCS		=	srcs/Request.cpp srcs/Error.cpp srcs/utility_functions.cpp srcs/Logs.cpp srcs/TestClasses/testUtils.cpp tests/test_parse_version.cpp damianServer/Config.cpp damianServer/Route.cpp damianServer/ConfigParser.cpp
-
-OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
-DEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRCS))
-
-all: $(NAME)
-
-$(NAME): $(OBJS)
-	@$(CPP) $(CPPFLAGS) $(OBJS) -I $(INCLUDES) -o $(NAME)
-
-$(OBJDIR)/%.o: %.cpp
-	@mkdir -p $(@D)
-	$(CPP) $(CPPFLAGS) -c -MMD -MP $< -o $@
-
--include $(DEPS)
-
-clean:
-	@rm -rf $(OBJDIR)
+configTest:
+	$(MAKE) -C $(TEST4)
+	@echo "configTest"
 
 fclean: clean
-	@rm -f $(NAME)
+	$(MAKE) fclean -C $(TEST1)
+	$(MAKE) fclean -C $(TEST2)
+	$(MAKE) fclean -C $(TEST3)
+	$(MAKE) fclean -C $(TEST4)
 
 re: fclean all
 .PHONY: all clean fclean re

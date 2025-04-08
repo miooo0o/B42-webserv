@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cassert>
-#include "../includes/Request.hpp"
-#include "../damianServer/Config.hpp"
-#include "../damianServer/ConfigParser.hpp"
+#include "../../../includes/Request.hpp"
+#include "../../../damianServer/Config.hpp"
+#include "../../../damianServer/ConfigParser.hpp"
 #include <cstring>
 
 void test_parse_method(Config* config, const std::string& methodStr, int num, int expected_code, bool test, const std::string& str){
