@@ -26,7 +26,7 @@ class StatusEntry;
 
 class ResponseState {
 protected:
-	Request&							_request;
+	Request*							_request;
 	StatusManager&						_manager;
 	StatusEntry*						_currentEntry;
 
@@ -35,7 +35,7 @@ protected:
 
 public:
 	/* constructor */
-	ResponseState(Request& reqeust, StatusManager& entries);
+	ResponseState(Request* reqeust, StatusManager& entries);
 
 	// TODO: copy constructor, operator
 	virtual ~ResponseState() {}
@@ -56,16 +56,16 @@ protected:
 	/* */
 
 	/* HTML generate */
-	std::string _generateHtml(const std::string& title,
+	std::string			_generateHtml(const std::string& title,
 							 const std::string& message,
 							 const std::string& details = "",
 							 const std::string& additionalHtml = "");
 
-	std::string _generateDoctype() const;
-	std::string _generateHead(const std::string& title) const;
-	std::string _generateStyles() const;
-	std::string _generateBodyStart() const;
-	std::string _generateBodyEnd() const;
+	std::string 		_generateDoctype() const;
+	std::string 		_generateHead(const std::string& title) const;
+	std::string 		_generateStyles() const;
+	std::string 		_generateBodyStart() const;
+	std::string 		_generateBodyEnd() const;
 
 	virtual std::string _generateAdditionalStyles() const;
 	virtual std::string _generateContainer(const std::string& title,
@@ -91,7 +91,7 @@ protected:
  /* informational */
 class InformationalState : public ResponseState {
 public:
-	InformationalState(Request& request, StatusManager& manager);
+	InformationalState(Request* request, StatusManager& manager);
 	~InformationalState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -101,7 +101,7 @@ public:
 /* Successs */
 class SuccessState : public ResponseState {
 public:
-	SuccessState(Request& request, StatusManager& entries);
+	SuccessState(Request* request, StatusManager& entries);
 	~SuccessState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
@@ -110,7 +110,7 @@ public:
 /* Redirection */
 class RedirectState : public ResponseState {
 public:
-	RedirectState(Request& request, StatusManager& entries);
+	RedirectState(Request* request, StatusManager& entries);
 	~RedirectState() {}
 
 
@@ -120,10 +120,12 @@ public:
 /* Error */
 class ErrorState : public ResponseState {
 public:
-	ErrorState(Request& request, StatusManager& entries);
+	ErrorState(Request* request, StatusManager& entries);
 	~ErrorState() {}
 
 	std::string getHandledBody(std::map<int, std::string>& serverScenarios);
+private:
+	bool	_call_static;
 };
 
 #endif

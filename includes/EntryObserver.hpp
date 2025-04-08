@@ -12,9 +12,19 @@
 
 #ifndef ENTRTOBSERVER_HPP
 # define ENTRTOBSERVER_HPP
+
+/**
+ * @brief This class is used as an interface/basic
+ *        for the Response class.
+ */
 class EntryObserver {
 public:
     virtual			~EntryObserver() {}
+
+    /**
+     * @brief `_onEntryChanged` method is implemented
+     *         in the Response class.
+     */
     virtual void	_onEntryChanged() = 0;
 };
 

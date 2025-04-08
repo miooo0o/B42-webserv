@@ -45,6 +45,7 @@ std::string	SimpleResponse::simpleResponse(const int errorCode) {
  * @brief Initializes the static map of HTTP error codes to their corresponding messages
  *        This method is called once to populate the error code dictionary
  */
+// TODO: from request / utils
 void	SimpleResponse::_initStatusMap() {
 	if (!_isErrorMapsInitialized) {
 		_errorStatusMaps[400] = "Bad Request";

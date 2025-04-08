@@ -13,13 +13,29 @@
  * automatic state updates when the queue changes.
  *
  * @param request The HTTP request associated with this response.
- * @param entries A pointer to the `Entries` queue for status management.
  */
-Response::Response(Request& request)
-	: _request(request), _manager(request), _headers(), _body() {
-	_serverMap = _request.getServerMap();
+Response::Response(Request* request)
+: _request(request), _manager(_request), _state(),
+  _serverMap(&_request->getServerMap()), _call_static(false) {
+	if (_request == NULL)
+		throw std::logic_error("Response has Request param, but Request is NULL");
+	_createResponse();
+}
+
+/**
+ * @brief Constructs a @static Response object
+ * @param statusCode
+ * // serverMap / request == NULL, _call_static true, _state init as ErrorState, can not change
+ */
+Response::Response(int statusCode)
+: _request(NULL), _manager(statusCode), _state(new ErrorState(NULL, _manager)),
+  _serverMap(NULL), _call_static(true) {
+	_createResponse();
+}
+
+bool	Response::_createResponse() {
 	_manager.addObserver(this);
-	this->_onEntryChanged();
+	this->Response::_onEntryChanged();
 }
 
 Response::~Response() {
@@ -31,7 +47,7 @@ Response::~Response() {
 // Public method
 ////////////////////////////////////////////////////////////////////////////////
 
-void		Response::addStatusCode(int newCode) {
+void	Response::addStatusCode(int newCode) {
 	StatusEntry& oldEntry = _manager.getStatusQueue().front();
 	if (_state && StatusEntry::same_class(oldEntry, newCode)) {
 		_manager.reuseEntry(newCode);
@@ -66,13 +82,13 @@ void	Response::_syncState() {
 		if (_handleFlowUpdate(target)) return;
 		if (!_manager.eval(_serverMap))
 			throw std::logic_error("Queue is not ready.");
-		_assignNewState(target.getClass());
+		if (!_call_static)
+			_assignNewState(target.getClass());
 	}
 	catch (std::exception& e) {
-		_handleUpdateException(e);
+		_handleUpdateException(e); // TODO: change to Error class
 	}
 }
-
 
 bool	Response::_handleFlowUpdate(StatusEntry& target) {
 	if (target.getFlow() == StatusEntry::FLOW_PENDING_REUSE) {

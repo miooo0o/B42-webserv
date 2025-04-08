@@ -102,7 +102,7 @@ std::ostream&	operator<<(std::ostream& os, const StatusEntry& entry) {
 	os << "  Exposed         : " << (entry.isExposed() ? "true" : "false") << "\n";
 	os << "  Map Reference   : " << toString(entry.getMapReference()) << "\n";
 	os << "  Error           : " << toString(entry.getError()) << "\n";
-	return os;
+	return (os);
 }
 
 
@@ -115,7 +115,7 @@ std::string toString(StatusEntry::e_classes e) {
 		case StatusEntry::SERVER_ERROR:   return "SERVER_ERROR";
 		case StatusEntry::_NOT_CLASSIFY:  return "_NOT_CLASSIFY";
 	}
-	return "UNKNOWN_CLASS";
+	return ("UNKNOWN_CLASS");
 }
 
 std::string toString(StatusEntry::e_range e) {
@@ -126,7 +126,7 @@ std::string toString(StatusEntry::e_range e) {
 		case StatusEntry::_OUT_OF_RANGE:     return "_OUT_OF_RANGE";
 		case StatusEntry::_NOT_STATUS_CODE:  return "_NOT_STATUS_CODE";
 	}
-	return "UNKNOWN_RANGE";
+	return ("UNKNOWN_RANGE");
 }
 
 std::string toString(StatusEntry::e_flow e) {
@@ -136,7 +136,7 @@ std::string toString(StatusEntry::e_flow e) {
 		case StatusEntry::FLOW_PENDING_REUSE:	return "FLOW_NEED_UPDATE";
 		case StatusEntry::FLOW_PROCESSED:		return "FLOW_PROCESSED";
 	}
-	return "UNKNOWN_FLOW";
+	return ("UNKNOWN_FLOW");
 }
 
 std::string toString(StatusEntry::e_reference e) {
@@ -145,7 +145,7 @@ std::string toString(StatusEntry::e_reference e) {
 		case StatusEntry::REF_SERVER_CONFIG:		return "REF_SERVER_CONFIG";
 		case StatusEntry::_REF_FALLBACK_INTERNAL:	return "_REF_FALLBACK_INTERNAL";
 	}
-	return "UNKNOWN_REF";
+	return ("UNKNOWN_REF");
 }
 
 std::string toString(StatusEntry::e_error e) {
@@ -153,5 +153,5 @@ std::string toString(StatusEntry::e_error e) {
 		case StatusEntry::NO_ERROR:			return "NO_ERROR";
 		case StatusEntry::ERROR_EVALUATION:	return "NO_ERROR";
 	}
-	return "UNKNOWN_REF";
+	return ("UNKNOWN_REF");
 }

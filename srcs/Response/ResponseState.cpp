@@ -11,7 +11,7 @@ bool	ResponseState::_isScenarioInitialized = false;
 // ResponseState
 ////////////////////////////////////////////////////////////////////////////////
 
-ResponseState::ResponseState(Request& request, StatusManager& entries)
+ResponseState::ResponseState(Request* request, StatusManager& entries)
 : _request(request), _manager(entries), _currentEntry(NULL) {}
 
 
@@ -19,7 +19,7 @@ ResponseState::ResponseState(Request& request, StatusManager& entries)
 // Informational
 ////////////////////////////////////////////////////////////////////////////////
 
-InformationalState::InformationalState(Request& request, StatusManager& manager)
+InformationalState::InformationalState(Request* request, StatusManager& manager)
 	: ResponseState(request, manager) {
 	if (_currentEntry == NULL)
 		throw std::logic_error("No current entry");
@@ -33,7 +33,7 @@ std::string	InformationalState::getHandledBody(std::map<int, std::string>& serve
 // Success
 ////////////////////////////////////////////////////////////////////////////////
 
-SuccessState::SuccessState(Request& request, StatusManager& entries)
+SuccessState::SuccessState(Request* request, StatusManager& entries)
 	: ResponseState(request, entries) {
 	if (_currentEntry == NULL)
 		throw std::logic_error("No current entry");
@@ -49,7 +49,7 @@ std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScena
 // Redirect
 ////////////////////////////////////////////////////////////////////////////////
 
-RedirectState::RedirectState(Request& request, StatusManager& entries)
+RedirectState::RedirectState(Request* request, StatusManager& entries)
 	: ResponseState(request, entries) {
 	if (_currentEntry == NULL)
 		throw std::logic_error("No current entry");
@@ -63,8 +63,9 @@ std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScen
 // Error
 ////////////////////////////////////////////////////////////////////////////////
 
-ErrorState::ErrorState(Request& request, StatusManager& entries)
+ErrorState::ErrorState(Request* request, StatusManager& entries)
 	: ResponseState(request, entries) {
+	_call_static = !_request;
 	if (_currentEntry == NULL)
 		throw std::logic_error("No current entry");
 }
@@ -185,6 +186,10 @@ std::string ResponseState::_generateStyles() const {
     return (ss.str());
 }
 
+/**
+ * virtual
+ * @return
+ */
 std::string ResponseState::_generateAdditionalStyles() const {
     return ("");
 }

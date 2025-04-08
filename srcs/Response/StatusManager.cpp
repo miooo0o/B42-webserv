@@ -8,8 +8,12 @@
 // StatusManager
 ////////////////////////////////////////////////////////////////////////////////
 
-StatusManager::StatusManager(const Request& request) {
+StatusManager::StatusManager(const Request* request) {
 	_initEntry(request);
+}
+
+StatusManager::StatusManager(int statusCode) {
+	_initEntry(statusCode);
 }
 
 StatusManager::StatusManager(const StatusManager& other) {
@@ -24,8 +28,7 @@ void	StatusManager::_notifyObservers() {
 	if (_observers.empty())
 		return ;
 	for (std::vector<EntryObserver*>::iterator it = _observers.begin();
-		 it != _observers.end(); ++it)
-	{
+		 it != _observers.end(); ++it) {
 		(*it)->_onEntryChanged();
 	}
 }
@@ -46,12 +49,19 @@ void	StatusManager::removeObserver(EntryObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void    StatusManager::_initEntry(const Request& reqest) {
+void    StatusManager::_initEntry(const Request* request) {
 	if (!_statusQueue.empty()) {
 		throw std::logic_error("Entries queue is not empty during initialization.");
 	}
-	int requestStatusCode = reqest.getCode();
+	int requestStatusCode = request->getCode();
 	_statusQueue.push(StatusEntry(requestStatusCode));
+}
+
+void    StatusManager::_initEntry(int statusCode) {
+	if (!_statusQueue.empty()) {
+		throw std::logic_error("Entries queue is not empty during initialization.");
+	}
+	_statusQueue.push(StatusEntry(statusCode));
 }
 
 void	StatusManager::push(StatusEntry status) {
@@ -87,7 +97,7 @@ bool StatusManager::ready() {
 }
 
 
-bool	StatusManager::eval(const std::map<int, std::string>& serverScenarios) {
+bool	StatusManager::eval(const std::map<int, std::string>* serverScenarios) {
 	if (!ready()) return (false);
 	_validateCodeRange();
 	_findCodeReference(serverScenarios);
@@ -110,18 +120,24 @@ bool	StatusManager::_isReadyToClassify(StatusEntry& entry) {
 
 void	StatusManager::_validateCodeRange() {
 	StatusEntry&	entry = _statusQueue.front();
+
 	if (!entry.isInRange()) {
 		entry.setRange(StatusEntry::_NOT_STATUS_CODE);
 	}
 	entry.setRange(StatusEntry::RANGE_PENDING);
 }
 
-void	StatusManager::_findCodeReference(const std::map<int, std::string>& serverSideMaps) {
+void	StatusManager::_findCodeReference(const std::map<int, std::string>* serverSideMaps) {
 	StatusEntry&	entry = _statusQueue.front();
+
 	if (entry.getRange() != StatusEntry::RANGE_PENDING)
 		return;
+	if (serverSideMaps == NULL) {
+		_validateWithMap(NULL, StatusEntry::REF_CALL_STATIC_RESPONSE);
+		return ;
+	}
 	if (_validateWithMap(serverSideMaps, StatusEntry::REF_SERVER_CONFIG) ||
-		_validateWithMap(ResponseState::getScenarios(), StatusEntry::REF_STATIC_MAP)) {
+		_validateWithMap(&ResponseState::getScenarios(), StatusEntry::REF_STATIC_MAP)) {
 		return;
 	}
 	_fallbackToInternalError(entry); // FIXME: status code check need @kevin
@@ -133,11 +149,11 @@ void	StatusManager::_fallbackToInternalError(StatusEntry& entry) {
 	entry.setRange(StatusEntry::RANGE_VALIDATED);
 }
 
-bool	StatusManager::_validateWithMap(const std::map<int, std::string>& refMap, StatusEntry::e_reference refType) {
+bool	StatusManager::_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_reference refType) {
 	StatusEntry&	entry = _statusQueue.front();
 	int				code = entry.getCode();
 
-	if (refMap.find(code) != refMap.end()) {
+	if (refMap->find(code) != refMap->end()) {
 		entry.setMapReference(refType);
 		entry.setRange(StatusEntry::RANGE_VALIDATED);
 		return (true);
@@ -147,7 +163,6 @@ bool	StatusManager::_validateWithMap(const std::map<int, std::string>& refMap, S
 
 void	StatusManager::_autoSetClasses(StatusEntry& entry) {
 		entry.setClass(static_cast<StatusEntry::e_classes>(_statusQueue.front().getCode() / 100));
-
 }
 
 StatusQueue&	StatusManager::getStatusQueue() {

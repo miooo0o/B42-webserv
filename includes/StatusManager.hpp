@@ -33,10 +33,12 @@ private:
 
 public:
 	/* Constructor */
-	StatusManager(const Request& request);
-	/* */
+	StatusManager(const Request* request);
+	StatusManager(int statusCode);
+
+	/* Copy */
     StatusManager(const StatusManager& other);
-	/* */
+	/* Destructor */
     ~StatusManager();
 
 	/* EntryObserver */
@@ -47,7 +49,7 @@ public:
 
 	/* Methods */
 	bool	ready();
-	bool	eval(const std::map<int, std::string>& serverScenarios);
+	bool	eval(const std::map<int, std::string>* serverScenarios);
 
 	void	replace(StatusEntry status);
 	void	resetEntryWith(StatusEntry& newEntry);
@@ -59,7 +61,8 @@ public:
 
 private:
 	/* Initialization */
-	void	_initEntry(const Request& request);
+	void	_initEntry(const Request* request);
+	void    _initEntry(int statusCode);
 
 	/* EntryObserver */
 	void	_notifyObservers();
@@ -67,9 +70,9 @@ private:
 
 	/* Validation methods */
     void	_validateCodeRange();
-	void	_findCodeReference(const std::map<int, std::string>& serverSideMaps);
+	void	_findCodeReference(const std::map<int, std::string>* serverSideMaps);
 	void	_fallbackToInternalError(StatusEntry& entry);
-	bool	_validateWithMap(const std::map<int, std::string>& refMap, StatusEntry::e_reference refType);
+	bool	_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_reference refType);
 	void	_autoSetClasses(StatusEntry& entry);
 	bool	_isReadyToClassify(StatusEntry& entry);
 
