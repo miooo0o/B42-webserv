@@ -21,7 +21,7 @@ jobs:
         run: make
       - name: Run Unit Tests
         run: |
-          ./tests/testPrograms/headerParsing/headerTest
-          ./tests/testPrograms/methodParsing/methodTest
-          ./tests/testPrograms/versionParsing/versionTest
-          ./tests/testPrograms/withConfig/configTest
+          ./tests/testPrograms/headerParsing/headerTest tests/test Config.conf
+          ./tests/testPrograms/methodParsing/methodTest tests/test Config.conf
+          ./tests/testPrograms/versionParsing/versionTest tests/test Config.conf
+          ./tests/testPrograms/withConfig/configTest tests/test Config.conf
