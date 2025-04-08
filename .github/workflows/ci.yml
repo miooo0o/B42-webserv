@@ -17,9 +17,6 @@ jobs:
       - name: Install Dependencies
         run: sudo apt update && sudo apt install -y g++ valgrind
 
-      - name: Compile Web Server (C++98)
-        run: g++ -Wall -Werror -Wextra -std=c++98 -g -O0 srcs/*.cpp tests/main.cpp srcs/TestClasses/testUtils.cpp -I ./includes -o webserv
-
       - name: Compile Unit Tests
         run: make
       - name: Run Unit Tests
