@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 00:00:21 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 18:04:06 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,7 @@ void parseStreamToStrVecStrMap(std::istringstream &iss, std::map<std::string, st
 		
 		if (pos == std::string::npos)
 			break;
-		key = line.substr(0, pos);
+		key = to_lower(line.substr(0, pos));
 		value = line.substr(pos + 1);
 
 		std::istringstream vec_stream(value);
@@ -105,7 +105,6 @@ void parseStreamToStrVecStrMap(std::istringstream &iss, std::map<std::string, st
 		}
 	}
 	result["mapLastLine"].push_back(line);
-	//printStrVecStrMap(result);
 }
 
 void parseStreamToStrStrMap(std::istringstream &iss, std::map<std::string, std::string> &result, char pair_delim, char kv_delim)

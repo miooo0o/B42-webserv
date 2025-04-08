@@ -6,9 +6,22 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 10:45:02 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/07 23:55:46 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 17:56:09 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+/* HEADER PARSING RULES */
+
+/* 
+	1. A server MUST NOT apply a request to the target resource until it receives the entire request header section
+
+	2. The following HEADERS are allowed to have multiple field lines
+	
+	3. The following HEADERS are NOT allowed to have multiple lines
+		Host
+
+*/
+
 
 /*
 	Header				Description														Example

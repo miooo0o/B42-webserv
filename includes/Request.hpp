@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/07 13:44:34 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 18:08:37 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,7 +171,6 @@ class	Request
 			static void		headersTransferEncoding( str_t val );
 			static void		headersHost( str_t val );
 			void			headersHostChecks( void ) const;
-			void			headersKeyToLower( void );
 				
 			/*	URI VALIDATION	*/
 			bool			validateScheme( void );

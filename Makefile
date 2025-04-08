@@ -9,8 +9,6 @@ INCLUDES	=	./
 
 OBJDIR 		= 	objs
 
-SRCDIR		=	../../..
-
 SRCS		=	srcs/Request.cpp \
 				srcs/Error.cpp \
 				srcs/utility_functions.cpp \
@@ -20,7 +18,7 @@ SRCS		=	srcs/Request.cpp \
 				damianServer/Config.cpp \
 				damianServer/Route.cpp \
 				damianServer/ConfigParser.cpp \
-				main.cpp
+				srcs/main.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 DEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRCS))
@@ -30,7 +28,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	@$(CPP) $(CPPFLAGS) $(OBJS) -I $(INCLUDES) -o $(NAME)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CPP) $(CPPFLAGS) -c -MMD -MP $< -o $@
 

@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 17:05:23 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 18:08:10 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,24 +276,13 @@ bool	Request::parseHeaders(str_t& str)
 
 	if (it->second.size() == 1 && it->second[0].compare("\r") == 0)
 	{
-		headersKeyToLower();
+		//headersKeyToLower();
 		_headers.erase("maplastline");
 		printStrVecStrMap(_headers);
 		return true;
 	}
 	else
 		return false;
-}
-
-void	Request::headersKeyToLower( void )
-{
-	std::map<std::string, std::vector< std::string> > lowered;	
-	for (std::map<std::string, std::vector< std::string> >::iterator it = _headers.begin(); it != _headers.end(); it++){
-		std::string lowerKey = to_lower(it->first);
-		lowered[lowerKey] = it->second;
-	}
-	_headers = lowered;
-	return ;
 }
 
 /*  BODY PARSING  */
