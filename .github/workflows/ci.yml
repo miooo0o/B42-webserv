@@ -19,9 +19,15 @@ jobs:
 
       - name: Compile Unit Tests
         run: make
-      - name: Run Unit Tests
-        run: |
-          ./tests/testPrograms/headerParsing/headerTest ./tests/testConfig.conf
-          ./tests/testPrograms/methodParsing/methodTest ./tests/testConfig.conf
-          ./tests/testPrograms/versionParsing/versionTest ./tests/testConfig.conf
-          ./tests/testPrograms/withConfig/configTest ./tests/testConfig.conf
+
+      -  name: header tests
+         run: ./tests/testPrograms/headerParsing/headerTest ./tests/testConfig.conf
+
+      - name: method tests
+        run: ./tests/testPrograms/methodParsing/methodTest ./tests/testConfig.conf
+
+      - name: header tests
+        run: ./tests/testPrograms/versionParsing/versionTest ./tests/testConfig.conf
+
+      - name: header tests
+        run:  ./tests/testPrograms/withConfig/configTest ./tests/testConfig.conf
