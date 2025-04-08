@@ -41,10 +41,10 @@ public:
 	 *
 	 */
 	enum e_flow {
-		FLOW_UNSET = 0,			// default / created
-		FLOW_READY,				// passed eval
-		FLOW_PENDING_REUSE,		// if update need
-		FLOW_PROCESSED,			// processed
+		FLOW_UNSET = 0,			/* default / created */
+		FLOW_READY,				/* passed eval */
+		FLOW_PENDING_REUSE,		/*  if update need */
+		FLOW_PROCESSED			/*  processed */
 	};
 
     /**
@@ -52,9 +52,10 @@ public:
      * @brief Indicates where the status code was found.
      */
     enum e_reference {
-        REF_STATIC_MAP,     /* Found in predefined static map */
-        REF_SERVER_CONFIG,  /* Found in server config */
-        _REF_FALLBACK_INTERNAL      /* if Maps search attempt fail multiful time */
+        REF_STATIC_MAP,				/* Found in predefined static map */
+        REF_SERVER_CONFIG,			/* Found in server config */
+    	REF_CALL_STATIC_RESPONSE,			/* if static response is called */
+        _REF_FALLBACK_INTERNAL      /* if Maps search attempt fail multi time */
     };
 
 	/**
@@ -66,7 +67,7 @@ public:
 	};
 private:
 	int         _code;          /* HTTP status code */
-	e_range		_range;      /* Validation status */
+	e_range		_range;			/* Validation status */
 	e_classes   _class;         /* Classification */
 	bool        _exposed;       /* Determines if status should be exposed as .html format */
 	e_reference	_scenariosMap;  /* Source of Map scenarios */

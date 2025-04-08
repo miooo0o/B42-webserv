@@ -30,16 +30,19 @@ class StatusEntry;
 
 class Response : public EntryObserver {
 private:
-	Request&							_request;
+	// TODO: change to pointer (new Request request())
+	Request*							_request; // _request(NULL) -> this condition meaning is "static"
 	StatusManager						_manager;
 	ResponseState*						_state;
-    std::map<int, std::string>			_serverMap;
+    std::map<int, std::string>*			_serverMap;
 
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
+	bool								_call_static;
 
 public:
-	Response(Request& request);		/* with params */
+	Response(Request* request);		/* with params */
+	Response(int statusCode);
 	~Response();
 
 	
@@ -48,15 +51,17 @@ public:
 	StatusManager	getStatusManager() const;
 
 private:
-	void		_onEntryChanged();
-	void		_syncState();
-	bool		_handleFlowUpdate(StatusEntry& target);
-	void		_handleStateReuse(StatusEntry& target);
-	void		_cleanState();
-	void		_assignNewState(StatusEntry::e_classes statusClass);
-	bool		_shouldReuseState(StatusEntry::e_classes statusClass) const;
-	void		_handleUpdateException(const std::exception& e);
-	void		_syncCurrentEntry();
+	bool			_createResponse();
+
+	void			_onEntryChanged();
+	void			_syncState();
+	bool			_handleFlowUpdate(StatusEntry& target);
+	void			_handleStateReuse(StatusEntry& target);
+	void			_cleanState();
+	void			_assignNewState(StatusEntry::e_classes statusClass);
+	bool			_shouldReuseState(StatusEntry::e_classes statusClass) const;
+	void			_handleUpdateException(const std::exception& e);
+	void			_syncCurrentEntry();
 };
 
 #endif 
