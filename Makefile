@@ -1,35 +1,46 @@
-TEST1	=	./tests/testPrograms/headerParsing/
-TEST2	=	./tests/testPrograms/methodParsing/
-TEST3	=	./tests/testPrograms/versionParsing/
-TEST4	=	./tests/testPrograms/withConfig/
+NAME 		=	webserv
 
-maketests:
-	$(MAKE) -C $(TEST1)
-	$(MAKE) -C $(TEST2)
-	$(MAKE) -C $(TEST3)
-	$(MAKE) -C $(TEST4)
- 
-headerTest:
-	$(MAKE) -C $(TEST1)
-	@echo "headerTest"
+CPP			=	g++
+#CPP			=	c++
+#CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g -O0
+CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g
 
-methodTest:
-	$(MAKE) -C $(TEST2)
-	@echo "methodTest"
+INCLUDES	=	./
 
-versionTest:
-	$(MAKE) -C $(TEST3)
-	@echo "versionTest"
+OBJDIR 		= 	objs
 
-configTest:
-	$(MAKE) -C $(TEST4)
-	@echo "configTest"
+SRCDIR		=	../../..
+
+SRCS		=	srcs/Request.cpp \
+				srcs/Error.cpp \
+				srcs/utility_functions.cpp \
+				srcs/Logs.cpp \
+				srcs/TestClasses/testUtils.cpp \
+				srcs/headers.cpp \
+				damianServer/Config.cpp \
+				damianServer/Route.cpp \
+				damianServer/ConfigParser.cpp \
+				main.cpp
+
+OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
+DEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRCS))
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	@$(CPP) $(CPPFLAGS) $(OBJS) -I $(INCLUDES) -o $(NAME)
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(@D)
+	$(CPP) $(CPPFLAGS) -c -MMD -MP $< -o $@
+
+-include $(DEPS)
+
+clean:
+	@rm -rf $(OBJDIR)
 
 fclean: clean
-	$(MAKE) fclean -C $(TEST1)
-	$(MAKE) fclean -C $(TEST2)
-	$(MAKE) fclean -C $(TEST3)
-	$(MAKE) fclean -C $(TEST4)
+	@rm -f $(NAME)
 
 re: fclean all
 .PHONY: all clean fclean re

@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 00:22:56 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/08 17:05:23 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,29 +141,34 @@ bool	Request::parseURI(std::istringstream& stream)
 UriStateMap_t	Request::uriStateMap( void )
 {
 	static	UriStateMap_t state_map;
-	static	int i;
 
-	if (i == 0)
+	if (state_map.empty())
 	{
-		state_map.insert(std::make_pair(std::make_pair(':', SCHEME), AUTH));
-		state_map.insert(std::make_pair(std::make_pair('/', SCHEME), PATH));
-		state_map.insert(std::make_pair(std::make_pair(':', AUTH), AUTH));
-		state_map.insert(std::make_pair(std::make_pair('@', AUTH), HOST));
-		state_map.insert(std::make_pair(std::make_pair('/', AUTH), PATH));
-		state_map.insert(std::make_pair(std::make_pair('?', AUTH), QUERY));
-		state_map.insert(std::make_pair(std::make_pair('#', AUTH), FRAG));
-		state_map.insert(std::make_pair(std::make_pair(':', HOST), PORT));
-		state_map.insert(std::make_pair(std::make_pair('/', HOST), PATH));
-		state_map.insert(std::make_pair(std::make_pair('?', HOST), PATH));
-		state_map.insert(std::make_pair(std::make_pair('#', HOST), PATH));
-		state_map.insert(std::make_pair(std::make_pair('/', PORT), PATH));
-		state_map.insert(std::make_pair(std::make_pair('?', PORT), QUERY));
-		state_map.insert(std::make_pair(std::make_pair('#', PORT), FRAG));
-		state_map.insert(std::make_pair(std::make_pair('/', PATH), PATH));
-		state_map.insert(std::make_pair(std::make_pair('?', PATH), QUERY));
-		state_map.insert(std::make_pair(std::make_pair('#', PATH), FRAG));
-		state_map.insert(std::make_pair(std::make_pair('#', QUERY), FRAG));
-		i++;
+		typedef std::pair<char, states> key;
+		typedef std::pair<key, states> entry;
+
+		static const entry entries[] = {
+			entry(key(':', SCHEME), AUTH),
+			entry(key('/', SCHEME), PATH),
+			entry(key(':', AUTH), AUTH),
+			entry(key('@', AUTH), HOST),
+			entry(key('/', AUTH), PATH),
+			entry(key('?', AUTH), QUERY),
+			entry(key('#', AUTH), FRAG),
+			entry(key(':', HOST), PORT),
+			entry(key('/', HOST), PATH),
+			entry(key('?', HOST), PATH),
+			entry(key('#', HOST), PATH),
+			entry(key('/', PORT), PATH),
+			entry(key('?', PORT), QUERY),
+			entry(key('#', PORT), FRAG),
+			entry(key('/', PATH), PATH),
+			entry(key('?', PATH), QUERY),
+			entry(key('#', PATH), FRAG),
+			entry(key('#', QUERY), FRAG)
+		};
+		for (size_t i = 0; i < sizeof(entries) / sizeof(entries[0]); ++i)
+			state_map.insert(entries[i]);
 	}
 	return state_map;
 }
@@ -213,7 +218,8 @@ void	Request::setURIPathType(size_t& i) {
 		if (_uri.str[i + 3] == ':')
 			_uri.uri_type = ABSOLUTE_FORM;
 	}
-	else if (_uri.uri_type != ABSOLUTE_FORM && _uri.path.empty() && !_uri.port.empty() && _uri.scheme.empty())
+	else if (_uri.uri_type != ABSOLUTE_FORM && _uri.path.empty()
+				&& !_uri.port.empty() && _uri.scheme.empty())
 		_uri.uri_type = AUTH_FORM;
 }
 

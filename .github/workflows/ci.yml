@@ -18,7 +18,7 @@ jobs:
         run: sudo apt update && sudo apt install -y g++ valgrind
 
       - name: Compile Unit Tests
-        run: make
+        run: make -f ./tests/tests.mk
 
       -  name: header tests
          run: ./tests/testPrograms/headerParsing/headerTest ./tests/testConfig.conf
