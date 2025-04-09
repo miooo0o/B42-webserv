@@ -4,12 +4,12 @@
 
 StatusEntry::StatusEntry()
 : _code(42), _range(RANGE_PENDING), _class(_NOT_CLASSIFY),
-  _exposed(false), _scenariosMap(REF_STATIC_MAP), _flow(FLOW_UNSET), _error(NO_ERROR) {
+  _exposed(false), _errorSource(SRC_ERROR_CLASS), _flow(FLOW_UNSET), _error(NO_ERROR) {
 }
 
 StatusEntry::StatusEntry(int code)
 : _code(code), _range(RANGE_PENDING), _class(_NOT_CLASSIFY),
-  _exposed(false), _scenariosMap(REF_STATIC_MAP), _flow(FLOW_UNSET), _error(NO_ERROR) {
+  _exposed(false), _errorSource(SRC_ERROR_CLASS), _flow(FLOW_UNSET), _error(NO_ERROR) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,8 +42,8 @@ StatusEntry::e_classes	StatusEntry::getClass() const {
 	return (_class);
 }
 
-StatusEntry::e_reference	StatusEntry::getMapReference() const {
-	return (_scenariosMap);
+StatusEntry::e_source	StatusEntry::getErrorSource() const {
+	return (_errorSource);
 }
 
 StatusEntry::e_flow	StatusEntry::getFlow() const {
@@ -72,8 +72,8 @@ void	StatusEntry::setExposed(const bool res) {
 	_exposed = res;
 }
 
-void	StatusEntry::setMapReference(const e_reference ref) {
-	_scenariosMap = ref;
+void	StatusEntry::setErrorSource(const e_source ref) {
+	_errorSource = ref;
 }
 
 void	StatusEntry::setFlow(StatusEntry::e_flow f) {
@@ -90,7 +90,7 @@ void	StatusEntry::setError(StatusEntry::e_error e) {
 std::string toString(StatusEntry::e_classes e);
 std::string toString(StatusEntry::e_range e);
 std::string toString(StatusEntry::e_flow e);
-std::string toString(StatusEntry::e_reference e);
+std::string toString(StatusEntry::e_source e);
 std::string toString(StatusEntry::e_error e);
 
 std::ostream&	operator<<(std::ostream& os, const StatusEntry& entry) {
@@ -100,7 +100,7 @@ std::ostream&	operator<<(std::ostream& os, const StatusEntry& entry) {
 	os << "  Validation      : " << toString(entry.getRange()) << "\n";
 	os << "  Flow            : " << toString(entry.getFlow()) << "\n";
 	os << "  Exposed         : " << (entry.isExposed() ? "true" : "false") << "\n";
-	os << "  Map Reference   : " << toString(entry.getMapReference()) << "\n";
+	os << "  Map Reference   : " << toString(entry.getErrorSource()) << "\n";
 	os << "  Error           : " << toString(entry.getError()) << "\n";
 	return (os);
 }
@@ -139,11 +139,11 @@ std::string toString(StatusEntry::e_flow e) {
 	return ("UNKNOWN_FLOW");
 }
 
-std::string toString(StatusEntry::e_reference e) {
+std::string toString(StatusEntry::e_source e) {
 	switch (e) {
-		case StatusEntry::REF_STATIC_MAP:   		return "REF_STATIC_MAP";
-		case StatusEntry::REF_SERVER_CONFIG:		return "REF_SERVER_CONFIG";
-		case StatusEntry::_REF_FALLBACK_INTERNAL:	return "_REF_FALLBACK_INTERNAL";
+		case StatusEntry::SRC_ERROR_CLASS:   		return "REF_STATIC_MAP";
+		case StatusEntry::SRC_SERVER_CONFIG:		return "REF_SERVER_CONFIG";
+		case StatusEntry::_SRC_FALLBACK_INTERNAL:	return "_REF_FALLBACK_INTERNAL";
 	}
 	return ("UNKNOWN_REF");
 }

@@ -6,27 +6,27 @@
 #include "StatusEntry.hpp"
 
 /**
- * @brief Constructs a Response object with a request and an entry queue.
- *
- * This constructor initializes the response with a reference to the request and the 
- * `Entries` object. It also registers the response as an observer to `Entries`, allowing 
- * automatic state updates when the queue changes.
- *
- * @param request The HTTP request associated with this response.
- */
+* @brief Constructs a regular Response object tied to a Request
+* @param request Pointer to the Request object (must not be NULL)
+* @throws std::logic_error if request is 'NULL`
+* @note For generic use. Request cannot be `NULL` as this is not a static response.
+*/
 Response::Response(Request* request)
 : _request(request), _manager(_request), _state(),
-  _serverMap(&_request->getServerMap()), _call_static(false) {
+  _serverMap(request && request->getConfig() ?
+  	&(request->getConfig()->getErrorPages()) : NULL),
+  _call_static(false) {
 	if (_request == NULL)
 		throw std::logic_error("Response has Request param, but Request is NULL");
 	_createResponse();
 }
 
 /**
- * @brief Constructs a @static Response object
- * @param statusCode
- * // serverMap / request == NULL, _call_static true, _state init as ErrorState, can not change
- */
+* @brief Constructs a static Response object
+* @param statusCode HTTP status code for the response
+* @note CAUTION: Only used for static responses. Sets request and serverMap to NULL,
+*       _call_static to true, and initializes with ErrorState that cannot be modified.
+*/
 Response::Response(int statusCode)
 : _request(NULL), _manager(statusCode), _state(new ErrorState(NULL, _manager)),
   _serverMap(NULL), _call_static(true) {

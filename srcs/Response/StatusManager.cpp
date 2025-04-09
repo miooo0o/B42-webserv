@@ -8,11 +8,13 @@
 // StatusManager
 ////////////////////////////////////////////////////////////////////////////////
 
-StatusManager::StatusManager(const Request* request) {
-	_initEntry(request);
+StatusManager::StatusManager(const Request* request)
+	: _request(request) {
+	_initEntry();
 }
 
-StatusManager::StatusManager(int statusCode) {
+StatusManager::StatusManager(int statusCode)
+	: _request(NULL) {
 	_initEntry(statusCode);
 }
 
@@ -49,11 +51,11 @@ void	StatusManager::removeObserver(EntryObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void    StatusManager::_initEntry(const Request* request) {
+void    StatusManager::_initEntry() {
 	if (!_statusQueue.empty()) {
 		throw std::logic_error("Entries queue is not empty during initialization.");
 	}
-	int requestStatusCode = request->getCode();
+	int requestStatusCode =  /* get error code from _request */ ;
 	_statusQueue.push(StatusEntry(requestStatusCode));
 }
 
@@ -86,7 +88,7 @@ void	StatusManager::reuseEntry(int newCode) {
 	_statusQueue.front().setRange(StatusEntry::RANGE_PENDING);
 	_statusQueue.front().setClass(StatusEntry::_NOT_CLASSIFY);
 	_statusQueue.front().setExposed(false);
-	_statusQueue.front().setMapReference(StatusEntry::REF_STATIC_MAP);
+	_statusQueue.front().setErrorSource(StatusEntry::SRC_ERROR_CLASS);
 	_statusQueue.front().setFlow(StatusEntry::FLOW_PENDING_REUSE);
 }
 
@@ -111,6 +113,7 @@ bool	StatusManager::eval(const std::map<int, std::string>* serverScenarios) {
 	entry.setError(StatusEntry::ERROR_EVALUATION);
 	return (false);
 }
+
 bool	StatusManager::_isReadyToClassify(StatusEntry& entry) {
 	return (entry.getRange() == StatusEntry::RANGE_VALIDATED &&
 			entry.getClass() == StatusEntry::_NOT_CLASSIFY &&
@@ -133,11 +136,11 @@ void	StatusManager::_findCodeReference(const std::map<int, std::string>* serverS
 	if (entry.getRange() != StatusEntry::RANGE_PENDING)
 		return;
 	if (serverSideMaps == NULL) {
-		_validateWithMap(NULL, StatusEntry::REF_CALL_STATIC_RESPONSE);
+		_validateWithMap(NULL, StatusEntry::SRC_STATIC_RESPONSE);
 		return ;
 	}
-	if (_validateWithMap(serverSideMaps, StatusEntry::REF_SERVER_CONFIG) ||
-		_validateWithMap(&ResponseState::getScenarios(), StatusEntry::REF_STATIC_MAP)) {
+	if (_validateWithMap(serverSideMaps, StatusEntry::SRC_SERVER_CONFIG) ||
+		_validateWithMap(&ResponseState::getScenarios(), StatusEntry::SRC_ERROR_CLASS)) {
 		return;
 	}
 	_fallbackToInternalError(entry); // FIXME: status code check need @kevin
@@ -145,16 +148,43 @@ void	StatusManager::_findCodeReference(const std::map<int, std::string>* serverS
 
 void	StatusManager::_fallbackToInternalError(StatusEntry& entry) {
 	entry.setCode(500);
-	entry.setMapReference(StatusEntry::_REF_FALLBACK_INTERNAL);
+	entry.setErrorSource(StatusEntry::_SRC_FALLBACK_INTERNAL);
 	entry.setRange(StatusEntry::RANGE_VALIDATED);
 }
 
-bool	StatusManager::_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_reference refType) {
+bool	StatusManager::_validateWithSources() {
+	StatusEntry&	entry = _statusQueue.front();
+	int				statusCode = entry.getCode();
+
+	if (!_request) {
+		if (_error.getErrorStr1(statusCode) == "None") {
+			return (false);
+		}
+		return (_returnSource(entry, StatusEntry::SRC_STATIC_RESPONSE));
+	}
+	const std::map<int, std::string> errorPagesMap = _request->getConfig()->getErrorPages();
+	if (errorPagesMap.find(statusCode) == errorPagesMap.end()) {
+		if (_error.getErrorStr1(statusCode) == "None") {
+			return (false);
+		}
+		return (_returnSource(entry, StatusEntry::SRC_ERROR_CLASS));
+	}
+	return (_returnSource(entry, StatusEntry::SRC_SERVER_CONFIG));
+}
+
+bool	StatusManager::_returnSource(StatusEntry& entry, StatusEntry::e_source src ) {
+	entry.setErrorSource(src);
+	entry.setRange(StatusEntry::RANGE_VALIDATED);
+	return (true);
+}
+
+
+bool	StatusManager::_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_source refType) {
 	StatusEntry&	entry = _statusQueue.front();
 	int				code = entry.getCode();
 
 	if (refMap->find(code) != refMap->end()) {
-		entry.setMapReference(refType);
+		entry.setErrorSource(refType);
 		entry.setRange(StatusEntry::RANGE_VALIDATED);
 		return (true);
 	}

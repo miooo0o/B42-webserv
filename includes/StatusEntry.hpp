@@ -48,14 +48,14 @@ public:
 	};
 
     /**
-     * @enum e_reference
+     * @enum e_source
      * @brief Indicates where the status code was found.
      */
-    enum e_reference {
-        REF_STATIC_MAP,				/* Found in predefined static map */
-        REF_SERVER_CONFIG,			/* Found in server config */
-    	REF_CALL_STATIC_RESPONSE,			/* if static response is called */
-        _REF_FALLBACK_INTERNAL      /* if Maps search attempt fail multi time */
+    enum e_source {
+        SRC_ERROR_CLASS,				/* Found in predefined static map */
+        SRC_SERVER_CONFIG,			/* Found in server config */
+    	SRC_STATIC_RESPONSE,			/* if static response is called */
+        _SRC_FALLBACK_INTERNAL      /* if Maps search attempt fail multi time */
     };
 
 	/**
@@ -70,7 +70,7 @@ private:
 	e_range		_range;			/* Validation status */
 	e_classes   _class;         /* Classification */
 	bool        _exposed;       /* Determines if status should be exposed as .html format */
-	e_reference	_scenariosMap;  /* Source of Map scenarios */
+	e_source	_errorSource;  /* Source of Map scenarios */
 	e_flow		_flow;			/* */
 	e_error		_error;
 
@@ -88,7 +88,7 @@ public:
     int			getCode() const;
     e_range		getRange() const;
     e_classes	getClass() const;
-	e_reference	getMapReference() const;
+	e_source	getErrorSource() const;
 	e_flow		getFlow() const;
 	e_error		getError() const;
 
@@ -97,7 +97,7 @@ public:
     void		setRange(e_range status);
     void		setClass(e_classes entryClass);
 	void		setExposed(bool res);
-	void		setMapReference(e_reference ref);
+	void		setErrorSource(e_source ref);
 	void		setFlow(e_flow f);
 	void		setError(e_error e);
 

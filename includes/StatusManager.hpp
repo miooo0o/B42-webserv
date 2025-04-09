@@ -19,17 +19,19 @@
 #include <iostream>
 
 /* related haders */
+#include "Error.hpp"
+
 #include "EntryObserver.hpp"
 #include "StatusQueue.hpp"
 
 class Request;
 
 class StatusManager {
-public:
-
 private:
+	const Request*				_request;
 	StatusQueue					_statusQueue;
 	std::vector<EntryObserver*>	_observers;
+	Error						_error;
 
 public:
 	/* Constructor */
@@ -61,7 +63,7 @@ public:
 
 private:
 	/* Initialization */
-	void	_initEntry(const Request* request);
+	void	_initEntry();
 	void    _initEntry(int statusCode);
 
 	/* EntryObserver */
@@ -72,7 +74,11 @@ private:
     void	_validateCodeRange();
 	void	_findCodeReference(const std::map<int, std::string>* serverSideMaps);
 	void	_fallbackToInternalError(StatusEntry& entry);
-	bool	_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_reference refType);
+
+	// TODO: delete this method, it will replace to _validateWithSources()
+	bool	_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_source refType);
+	bool	_validateWithSources();
+	bool	_returnSource(StatusEntry& entry, StatusEntry::e_source src );
 	void	_autoSetClasses(StatusEntry& entry);
 	bool	_isReadyToClassify(StatusEntry& entry);
 

@@ -34,7 +34,7 @@ private:
 	Request*							_request; // _request(NULL) -> this condition meaning is "static"
 	StatusManager						_manager;
 	ResponseState*						_state;
-    std::map<int, std::string>*			_serverMap;
+	const std::map<int, std::string>*	_serverMap;
 
 	std::map<std::string, std::string>  _headers;
 	std::string                         _body;
