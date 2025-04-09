@@ -37,7 +37,7 @@ public:
 	/* constructor */
 	ResponseState(Request* reqeust, StatusManager& entries);
 
-	// TODO: copy constructor, operator
+	// TODO(@mina): copy constructor, operator
 	virtual ~ResponseState() {}
 	
 	/* virtual  */

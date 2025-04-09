@@ -1,6 +1,8 @@
 #ifndef SIMPLERESPONSE_HPP
  #define SIMPLERESPONSE_HPP
 
+// TODO(@mina): !!! merge to Response (-ing)
+
 #include "ResponseState.hpp"
 class Response;
 

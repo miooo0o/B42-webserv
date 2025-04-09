@@ -30,7 +30,6 @@ class StatusEntry;
 
 class Response : public EntryObserver {
 private:
-	// TODO: change to pointer (new Request request())
 	Request*							_request; // _request(NULL) -> this condition meaning is "static"
 	StatusManager						_manager;
 	ResponseState*						_state;

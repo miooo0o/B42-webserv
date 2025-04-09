@@ -72,11 +72,12 @@ private:
 
 	/* Validation methods */
     void	_validateCodeRange();
-	void	_findCodeReference(const std::map<int, std::string>* serverSideMaps);
+	void	_findResponseSource();
 	void	_fallbackToInternalError(StatusEntry& entry);
 
-	// TODO: delete this method, it will replace to _validateWithSources()
+	// TODO(@mina): delete this method, it will replace to _validateWithSources() (-ing)
 	bool	_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_source refType);
+
 	bool	_validateWithSources();
 	bool	_returnSource(StatusEntry& entry, StatusEntry::e_source src );
 	void	_autoSetClasses(StatusEntry& entry);

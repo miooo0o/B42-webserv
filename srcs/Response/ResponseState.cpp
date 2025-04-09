@@ -105,7 +105,7 @@ void			ResponseState::setCurrentEntry(StatusEntry* entry) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Static methods -- Scenarios, TODO: can be change depend on Request
+// Static methods -- Scenarios, TODO(@mina): can be change/depend on Request (-ing)
 ////////////////////////////////////////////////////////////////////////////////
 
 std::map<int, std::string>& ResponseState::getScenarios() {
@@ -144,7 +144,7 @@ void	ResponseState::_initDefaultScenario() {
 // ResponseState, HTML generate methods
 ////////////////////////////////////////////////////////////////////////////////
 
-/* TODO: not decide template design yet. can be change.
+/* TODO(@mina): not decide template design yet. can be change. -> @kev
  * @note: css, html
  */
 

@@ -29,7 +29,6 @@ SimpleResponse::~SimpleResponse() {
 // static methods
 ////////////////////////////////////////////////////////////////////////////////
 
-// TODO: question: do we need a static method which has server config as a reference?
 
 /**
  * @brief Static. Creates a simple HTTP error response as a string.
@@ -45,7 +44,6 @@ std::string	SimpleResponse::simpleResponse(const int errorCode) {
  * @brief Initializes the static map of HTTP error codes to their corresponding messages
  *        This method is called once to populate the error code dictionary
  */
-// TODO: from request / utils
 void	SimpleResponse::_initStatusMap() {
 	if (!_isErrorMapsInitialized) {
 		_errorStatusMaps[400] = "Bad Request";
@@ -105,7 +103,6 @@ void	SimpleResponse::_createResponse() {
 	_headers["Connection"] = "close";
 	_createBody();
 
-	// FIXME: refactor need, Utils?
 	std::stringstream	ss;
 	ss << _body.length();
 

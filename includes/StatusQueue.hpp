@@ -13,7 +13,7 @@ class StatusEntry;
 class StatusQueue {
 private:
 	std::deque<StatusEntry>	_statusQueue;
-	std::deque<StatusEntry>	_log; // TODO: gonna move on Logger.cpp
+	std::deque<StatusEntry>	_log; // TODO(@mina): move to Logger.cpp? -> @kev
 
 public:
 	StatusQueue();

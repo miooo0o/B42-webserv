@@ -83,7 +83,8 @@ class	Request
 			bool			routeSupportsMethod();
 
 			/* GETTERS */
-			Config*			getConfig( void ) const { return (_config); } // FIXME: I need to access Config :)
+
+			Config*			getConfig( void ) const { return (_config); } // FIXME(@mina): !!! I need to access Config -> @kev
 			str_t			enumToURIType() const;
 			str_t			getURIType() const;
 			str_t			getMethodType() const;

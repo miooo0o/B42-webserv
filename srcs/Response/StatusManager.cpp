@@ -130,24 +130,19 @@ void	StatusManager::_validateCodeRange() {
 	entry.setRange(StatusEntry::RANGE_PENDING);
 }
 
-void	StatusManager::_findCodeReference(const std::map<int, std::string>* serverSideMaps) {
+void	StatusManager::_findResponseSource() {
 	StatusEntry&	entry = _statusQueue.front();
+	// static int		fallback = 0;
 
-	if (entry.getRange() != StatusEntry::RANGE_PENDING)
-		return;
-	if (serverSideMaps == NULL) {
-		_validateWithMap(NULL, StatusEntry::SRC_STATIC_RESPONSE);
-		return ;
+	if (entry.getRange() == StatusEntry::RANGE_PENDING) {
+		if (_validateWithSources())
+			return ;
 	}
-	if (_validateWithMap(serverSideMaps, StatusEntry::SRC_SERVER_CONFIG) ||
-		_validateWithMap(&ResponseState::getScenarios(), StatusEntry::SRC_ERROR_CLASS)) {
-		return;
-	}
-	_fallbackToInternalError(entry); // FIXME: status code check need @kevin
+	_fallbackToInternalError(entry);	// FIXME(@mina): check fall back logic
 }
 
 void	StatusManager::_fallbackToInternalError(StatusEntry& entry) {
-	entry.setCode(500);
+	entry.setCode(500);						// TODO(@mina): status code 500 or ? -> @kev
 	entry.setErrorSource(StatusEntry::_SRC_FALLBACK_INTERNAL);
 	entry.setRange(StatusEntry::RANGE_VALIDATED);
 }
@@ -156,12 +151,23 @@ bool	StatusManager::_validateWithSources() {
 	StatusEntry&	entry = _statusQueue.front();
 	int				statusCode = entry.getCode();
 
+	/**
+	 *	FIXME(@mina): should talk to kev to see where I should refer to the Error class. -> @kev
+	 *	 can be from...
+	 *		- Config / Router : side
+	 *		- Request
+	 *		- StatusManager
+	 */
+
+	Error			error = _error;
+
 	if (!_request) {
 		if (_error.getErrorStr1(statusCode) == "None") {
 			return (false);
 		}
 		return (_returnSource(entry, StatusEntry::SRC_STATIC_RESPONSE));
 	}
+
 	const std::map<int, std::string> errorPagesMap = _request->getConfig()->getErrorPages();
 	if (errorPagesMap.find(statusCode) == errorPagesMap.end()) {
 		if (_error.getErrorStr1(statusCode) == "None") {
@@ -177,7 +183,6 @@ bool	StatusManager::_returnSource(StatusEntry& entry, StatusEntry::e_source src 
 	entry.setRange(StatusEntry::RANGE_VALIDATED);
 	return (true);
 }
-
 
 bool	StatusManager::_validateWithMap(const std::map<int, std::string>* refMap, StatusEntry::e_source refType) {
 	StatusEntry&	entry = _statusQueue.front();

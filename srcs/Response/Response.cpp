@@ -86,7 +86,7 @@ void	Response::_syncState() {
 			_assignNewState(target.getClass());
 	}
 	catch (std::exception& e) {
-		_handleUpdateException(e); // TODO: change to Error class
+		_handleUpdateException(e); // TODO(@mina): handle exception with Error class? -> @kev
 	}
 }
 
