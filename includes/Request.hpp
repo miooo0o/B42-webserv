@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:57:35 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 18:08:37 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/10 11:25:50 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,9 +99,10 @@ class	Request
 			str_t			getURIpass() const;
 			str_t			getVersionString() const;
 			str_t			getVersionType() const;
-			int				getResponseCode();
+			int				getResponseCode() const;
 			std::ostream&	getError(std::ostream& os);
 			void			printErrors(std::ostream& os) const;
+			std::map<int, std::string>	getServerErrorPages();
 				
 			/* TESTING */			
 			std::map<std::string, std::vector< std::string> > getRequestHeaders();

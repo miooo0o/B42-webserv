@@ -13,8 +13,13 @@ SRCS		=	srcs/Request.cpp \
 				srcs/Error.cpp \
 				srcs/utility_functions.cpp \
 				srcs/Logs.cpp \
-				srcs/TestClasses/testUtils.cpp \
 				srcs/headers.cpp \
+				srcs/Response/Response.cpp \
+				srcs/Response/ResponseState.cpp \
+				srcs/Response/StatusEntry.cpp \
+				srcs/Response/StatusManager.cpp \
+				srcs/Response/StatusQueue.cpp \
+				srcs/TestClasses/testUtils.cpp \
 				damianServer/Config.cpp \
 				damianServer/Route.cpp \
 				damianServer/ConfigParser.cpp \

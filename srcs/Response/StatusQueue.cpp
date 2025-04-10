@@ -1,6 +1,12 @@
+/* 
 #include "StatusQueue.hpp"
 #include "StatusManager.hpp"
 #include "StatusEntry.hpp"
+*/
+
+#include "../../includes/StatusQueue.hpp"
+#include "../../includes/StatusManager.hpp"
+#include "../../includes/StatusEntry.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +71,7 @@ void	StatusQueue::recordToLog() {
 }
 
 void StatusQueue::enforceLogLimit(std::size_t maxSize) {
+	(void)maxSize; // KM_CHANGE
 	static int warningCount = 0;
 	while (_log.size() > MAX_LOG_QUEUE_SIZE) {
 		_log.pop_front();

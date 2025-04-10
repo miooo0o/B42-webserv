@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/08 23:07:26 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/10 08:56:40 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/10 10:25:29 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,7 @@ int main(){
 
 	std::string str = "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: curl/7.68.0\r\n\r\n";
 
-	parseToMap(mapStrStr, str, MAPSTRSTR);
+	parseToMap(mapStrVec, str, MAPSTRVEC);
 
 	for (std::map<std::string, std::string>::iterator it = mapStrStr.begin(); it != mapStrStr.end(); it++){
 		std::cout << it->first << " : " << it->second << std::endl;

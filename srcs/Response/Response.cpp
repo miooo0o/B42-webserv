@@ -1,9 +1,19 @@
+/* 
 #include "Response.hpp"
 #include "StatusQueue.hpp"
 #include "Request.hpp"
 #include "StatusManager.hpp"
 #include "ResponseState.hpp"
 #include "StatusEntry.hpp"
+*/
+
+#include "../../includes/Response.hpp"
+#include "../../includes/StatusQueue.hpp"
+#include "../../includes/Request.hpp"
+#include "../../includes/StatusManager.hpp"
+#include "../../includes/ResponseState.hpp"
+#include "../../includes/StatusEntry.hpp"
+
 
 /**
  * @brief Constructs a Response object with a request and an entry queue.
@@ -16,8 +26,8 @@
  * @param entries A pointer to the `Entries` queue for status management.
  */
 Response::Response(Request& request)
-	: _request(request), _manager(request), _headers(), _body() {
-	_serverMap = _request.getServerMap();
+	: _request(request), _manager(request), _state(0), _headers(), _body() {// KM_CHANGE - KEEP
+	_serverMap = _request.getServerErrorPages();// KM_CHANGE - KEEP FOR NOW
 	_manager.addObserver(this);
 	this->_onEntryChanged();
 }

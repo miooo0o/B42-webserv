@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/09 11:57:56 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/10 11:08:25 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -611,7 +611,8 @@ str_t	Request::getURIpath() 		const	{ return _uri.path; }
 str_t	Request::getURIquery() 		const	{ return _uri.query; }
 str_t	Request::getURIfrag() 		const	{ return _uri.frag; }
 str_t	Request::getVersionString() const	{ return _version; }
-int		Request::getResponseCode()			{ return _error.getLastResponseCode(); }
+int		Request::getResponseCode()	const	{ return _error.getLastResponseCode(); }
+std::map<int, std::string>	Request::getServerErrorPages(){return _config->getErrorPages();}
 
 std::ostream& Request::getError(std::ostream& os){
 	os << _error << std::endl;

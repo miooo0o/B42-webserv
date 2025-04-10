@@ -14,7 +14,6 @@
 # define ERROR_HPP
 
 #include "./core_def.hpp"
-#include "./TestClasses/testUtils.hpp"
 #include "./utility_functions.hpp"
 #include "./Logs.hpp"
 
@@ -91,7 +90,7 @@
 #define CODE510 "Not Extended"
 #define CODE511 "Network Authentication Required"
 
-#define NO_ERROR			"No error"
+#define NO_ERRORS			"No error"
 #define HEAD_CONT_UNS		"415 Headers : Content-Type : Unsupported media type"
 #define HEAD_END			"400 Headers: Incorrect character sequence at end of headers"
 #define HEAD_OMI_CONT		"415 Headers : Content-Type : Omitted"
@@ -197,12 +196,12 @@ class	Error {
 	bool			addErrorFlag(uint64_t error);
 	
 	/* GETTERS */	
-	std::string		getErrorNum(int pos);
+	std::string		getErrorNum(int pos) const;
 	std::string		getErrorStr1(int pos);
 	std::ostream&	getErrorInfo(int pos, std::ostream& os);
 	std::ostream&	getErrorStream(std::ostream& os);
-	int				getLastResponseCode();
-	int				getPosition(uint64_t num);
+	int				getLastResponseCode() const;
+	int				getPosition(uint64_t num) const ;
 	void			logError();
 	//void			printErrors(std::ostream& os) const;
 	//std::string&	getErrorStr2(std::ostream& os);

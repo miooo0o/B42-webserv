@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 16:04:15 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 00:31:56 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/10 11:09:59 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ Error& Error::operator=( const Error& other ) {
 
 void	Error::flagStringsInit()
 {
-	_flagStrings.push_back(NO_ERROR);
+	_flagStrings.push_back(NO_ERRORS);
 	_flagStrings.push_back(HEAD_CONT_UNS);
 	_flagStrings.push_back(HEAD_END);
 	_flagStrings.push_back(HEAD_OMI_CONT);
@@ -114,12 +114,12 @@ std::ostream& Error::getErrorInfo(int pos, std::ostream& os){
 	return os;
 }
 
-std::string		Error::getErrorNum(int pos){
+std::string		Error::getErrorNum(int pos) const{
 	std::string errorNum = _flagStrings[pos].substr(0,4);
 	return errorNum;
 }
 
-int Error::getPosition(uint64_t num){
+int Error::getPosition(uint64_t num) const {
 	int	pos = 0;
 	
 	if (num == 0)
@@ -149,11 +149,11 @@ std::ostream&	Error::getErrorStream(std::ostream& os){
 	return os;
 }
 
-int	Error::getLastResponseCode(){
+int	Error::getLastResponseCode() const {
 	if (_lastError == 0)
 		return 200;
 
-	int pos = getPosition(_lastError);
+	int pos = getPosition(_lastError );
 	std::string errNum = getErrorNum(pos);
 	return str_to_int(errNum);
 }
