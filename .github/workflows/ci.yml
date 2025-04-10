@@ -1,0 +1,33 @@
+name: C++98 Web Server CI
+
+on:
+  push:
+    branches: [ kev ]
+  pull_request:
+    branches: [ kev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: sudo apt update && sudo apt install -y g++ valgrind
+
+      - name: Compile Unit Tests
+        run: make -f ./tests/tests.mk
+
+      -  name: header tests
+         run: ./tests/testPrograms/headerParsing/headerTest ./tests/testConfig.conf
+
+      - name: method tests
+        run: ./tests/testPrograms/methodParsing/methodTest ./tests/testConfig.conf
+
+      - name: header tests
+        run: ./tests/testPrograms/versionParsing/versionTest ./tests/testConfig.conf
+
+      - name: header tests
+        run:  ./tests/testPrograms/withConfig/configTest ./tests/testConfig.conf

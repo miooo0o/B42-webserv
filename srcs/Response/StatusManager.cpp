@@ -1,8 +1,16 @@
+/* 
 #include "StatusQueue.hpp"
 #include "StatusManager.hpp"
 #include "Request.hpp"
 #include "ResponseState.hpp"
 #include "StatusEntry.hpp"
+ */
+
+#include "../../includes/StatusQueue.hpp"
+#include "../../includes/StatusManager.hpp"
+#include "../../includes/Request.hpp"
+#include "../../includes/ResponseState.hpp"
+#include "../../includes/StatusEntry.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 // StatusManager
@@ -46,11 +54,11 @@ void	StatusManager::removeObserver(EntryObserver* observer) {
 ////////////////////////////////////////////////////////////////////////////////
 
 
-void    StatusManager::_initEntry(const Request& reqest) {
+void    StatusManager::_initEntry(const Request& request) {
 	if (!_statusQueue.empty()) {
 		throw std::logic_error("Entries queue is not empty during initialization.");
 	}
-	int requestStatusCode = reqest.getCode();
+	int requestStatusCode = request.getResponseCode();
 	_statusQueue.push(StatusEntry(requestStatusCode));
 }
 

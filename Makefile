@@ -1,0 +1,49 @@
+NAME 		=	webserv
+
+CPP			=	g++
+#CPP			=	c++
+#CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g -O0
+CPPFLAGS	=	-Wall -Werror -Wextra -std=c++98 -g
+
+INCLUDES	=	./
+
+OBJDIR 		= 	objs
+
+SRCS		=	srcs/Request.cpp \
+				srcs/Error.cpp \
+				srcs/utility_functions.cpp \
+				srcs/Logs.cpp \
+				srcs/headers.cpp \
+				srcs/Response/Response.cpp \
+				srcs/Response/ResponseState.cpp \
+				srcs/Response/StatusEntry.cpp \
+				srcs/Response/StatusManager.cpp \
+				srcs/Response/StatusQueue.cpp \
+				srcs/TestClasses/testUtils.cpp \
+				damianServer/Config.cpp \
+				damianServer/Route.cpp \
+				damianServer/ConfigParser.cpp \
+				srcs/main.cpp
+
+OBJS = $(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
+DEPS = $(patsubst %.cpp, $(OBJDIR)/%.d, $(SRCS))
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+	@$(CPP) $(CPPFLAGS) $(OBJS) -I $(INCLUDES) -o $(NAME)
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CPP) $(CPPFLAGS) -c -MMD -MP $< -o $@
+
+-include $(DEPS)
+
+clean:
+	@rm -rf $(OBJDIR)
+
+fclean: clean
+	@rm -f $(NAME)
+
+re: fclean all
+.PHONY: all clean fclean re

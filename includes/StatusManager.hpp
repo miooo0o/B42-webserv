@@ -17,6 +17,7 @@
 #include <deque>
 #include <map>
 #include <iostream>
+#include <vector>
 
 /* related haders */
 #include "EntryObserver.hpp"

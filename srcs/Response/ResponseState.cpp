@@ -1,8 +1,12 @@
+/* 
 #include "ResponseState.hpp"
-
-#include <StatusManager.hpp>
-
+#include "StatusManager.hpp"
 #include "Request.hpp"
+*/
+
+#include "../../includes/ResponseState.hpp"
+#include "../../includes/StatusManager.hpp"
+#include "../../includes/Request.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -14,7 +18,7 @@ bool	ResponseState::_isScenarioInitialized = false;
 /* Constructor */
 
 ResponseState::ResponseState(Request& request, StatusManager& entries)
-: _request(request), _manager(entries) {
+: _manager(entries), _request(request) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +71,7 @@ InformationalState::InformationalState(Request& request, StatusManager& manager)
 }
 
 std::string	InformationalState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	(void)serverScenarios;
 	return ("");
 }
 
@@ -79,7 +84,7 @@ SuccessState::SuccessState(Request& request, StatusManager& entries)
 }
 
 std::string	SuccessState::getHandledBody(std::map<int, std::string>& serverScenarios) {
-
+	(void)serverScenarios;// KM_CHANGE
 	return ("");
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +96,7 @@ RedirectState::RedirectState(Request& request, StatusManager& entries)
 }
 
 std::string	RedirectState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	(void)serverScenarios;// KM_CHANGE
 	return ("");
 }
 
@@ -103,6 +109,7 @@ ErrorState::ErrorState(Request& request, StatusManager& entries)
 }
 
 std::string	ErrorState::getHandledBody(std::map<int, std::string>& serverScenarios) {
+	(void)serverScenarios;// KM_CHANGE
 	// int statusCode = _entries.getCode();
 	// if (_entries.getMapRef() == Entry::_500_NOT_FOUND) {
 	// 	/* force: return error string (not template) */

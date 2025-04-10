@@ -1,0 +1,29 @@
+/* 	/info.html
+	/images
+	/images/images.html
+	.py */
+
+	PATH TRANSLATION TO FILESYSTEM
+	==============================
+
+	std::pair<std::string, std::string> = _uri.path.split()
+	if _uri.path == location
+	{
+		while (iterate through routes){
+			if (_uri.path == location && path_type == directory)
+				return config->route->default_file;
+			else if ()
+		}
+		filepath = root + location;
+	}	 
+
+	std::pair<std::string, std::string>& Request::split(){
+		
+		if ()
+		size_t	pos = _uri.path.rfind('/');
+		if (pos == std::string::npos)
+			return std::make_pair<std::string, std::string>(_uri.path, "");
+		std::string key = _uri.path.substring(0, pos - 1);
+		std::string value = _uri.path.substring(pos);
+
+	}

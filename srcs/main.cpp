@@ -1,17 +1,24 @@
-#include "Request.hpp"
-#include "Response.hpp"
-#include "StatusManager.hpp"
+#include "../damianServer/Config.hpp"
+#include "../damianServer/ConfigParser.hpp"
+#include "../includes/Request.hpp"
+#include "../includes/Response.hpp"
+#include "../includes/StatusManager.hpp"
 
 #include <stdlib.h>
 
 int main(int ac, char**av) {
-    if (ac != 2)
-        return (1);
-    
+
     try {
         /* default */
-        int test_code = std::atoi(av[1]);
-        Request         request(test_code);
+		if (ac != 2) {
+			std::cerr << "Usage: " << av[0] << " <config_file>" << std::endl;
+			return 1;
+		}
+		ConfigParser cp(av[1]);
+		Config* config = cp.parseServerblocks();
+	
+		std::string	str = "GET https://user@example.com/path HTTP/1.1\r\n";
+		Request		request(str, config);
 
         Response        response(request);
 
