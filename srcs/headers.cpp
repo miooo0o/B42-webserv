@@ -6,7 +6,7 @@
 /*   By: kmooney <kmooney@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/01 10:45:02 by kmooney           #+#    #+#             */
-/*   Updated: 2025/04/08 17:56:09 by kmooney          ###   ########.fr       */
+/*   Updated: 2025/04/10 08:43:48 by kmooney          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,32 +22,71 @@
 
 */
 
-
 /*
-	Header				Description														Example
-	======				============													========
-	Host				Specifies the target hostname (required in HTTP/1.1).			Host: example.com
-	User-Agent			Identifies the client software making the request.				User-Agent: Mozilla/5.0
-	Accept				Informs the server about content types the client can process.	Accept: text/html, application/json
-	Accept-Encoding		Specifies encoding the client supports (e.g., compression).		Accept-Encoding: gzip, deflate
-	Accept-Language		Preferred language for the response.							Accept-Language: en-US,en;q=0.5
-	Connection			Determines if the connection should be kept open.				Connection: keep-alive
-	Content-Type		Indicates the media type of the request body (e.g., for POST).	Content-Type: application/x-www-form-urlencoded
-	Content-Length		Specifies the size of the request body in bytes.				Content-Length: 34
-	Authorization		Used for authentication with the server.						Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=
-	Cookie				Sends stored cookies to the server.								Cookie: session_id=abc123
-	Referer				Specifies the URL of the referring page.						Referer: https://google.com
-	If-Modified-Since	Requests a resource only if it has changed since a given date.	If-Modified-Since: Wed, 21 Oct 2023 07:28:00 GMT
-	If-None-Match		Used with ETags to request a resource only if it has changed.	If-None-Match: "etag123"
 
 	Special Headers for Specific Methods
-
+	=====================================
 	POST / PUT require Content-Type and Content-Length.
-
 	DELETE may require authentication (Authorization header).
-
 	HEAD is like GET but expects no response body.
-*/
+	
+	Request	Headers			Purpose
+	===============			=======
+	Accept					What content types the client can handle.
+	Accept-Charset			Preferred character encodings (e.g., utf-8).
+	Accept-Encoding			Compression the client can handle (gzip, deflate).
+	Authorization			If you want to support auth (optional).
+	Connection				Usually keep-alive or close. You should handle both.
+	Cookie					If you're supporting session management.
+	Content-Length			Required for POST/PUT (unless chunked). Indicates body length.
+	Content-Type			Tells you the body format, e.g., multipart/form-data, application/json, etc.
+	Expect					For handling things like 100-continue. May show up in POSTs.
+	Host					Required in HTTP/1.1. Identifies the target host.
+	If-Modified-Since		Requests a resource only if it has changed since a given date.	If-Modified-Since: Wed, 21 Oct 2023 07:28:00 GMT
+	If-None-Match			Used with ETags to request a resource only if it has changed.	If-None-Match: "etag123"
+	Referer					Specifies the URL of the referring page.		Referer: https://google.com
+	Transfer-Encoding		Often chunked if Content-Length isn't provided. Must handle chunked parsing.
+	User-Agent				Info about the client. Optional but common.
+
+	Response Headers		Purpose
+	================		=======
+	Allow					Lists allowed methods (GET, POST, DELETE…) – useful for 405 Method Not Allowed.
+	Connection				Keep-alive or close, as per request.
+	Content-Disposition		If sending file downloads (e.g., attachments).
+	Content-Length			Size of the response body (unless chunked).
+	Content-Type			MIME type of the response body. Use charset=utf-8 for Unicode.
+	Date					Current date and time in RFC 1123 format.
+	Location				Used with 3xx responses for redirects.
+	Server					Identifies your server. Optional but common.
+	Set-Cookie				If you're managing sessions or state.
+	Transfer-Encoding		Use chunked if streaming or no Content-Length.
+	
+	Cache-Control			All for caching.
+	Expires
+	ETag
+	Optional
+	
+	For Unicode Support
+	======================
+	Use Content-Type: text/html; charset=utf-8 (or json/xml with utf-8).
+
+    Ensure your server reads and writes data as UTF-8.
+    Percent-decode request URIs and parameters correctly using UTF-8.
+
+	CGI-Specific Headers
+	====================
+	When invoking CGI scripts, you must map HTTP headers into environment variables:
+
+	Header										CGI Environment
+	======										===============
+	Content-Type								CONTENT_TYPE
+	Content-Length								CONTENT_LENGTH
+	QUERY_STRING								from URI (GET params)
+	REQUEST_METHOD								e.g., GET, POST
+	SCRIPT_NAME, PATH_INFO, PATH_TRANSLATED		Script paths
+	REMOTE_ADDR, HTTP_USER_AGENT, etc.			Many request headers prefixed with HTTP_
+
+	*/
 
 #include "../includes/Request.hpp"
 
