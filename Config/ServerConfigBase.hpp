@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class Location;
 class MimeMap;
@@ -63,7 +64,10 @@ private:
 	std::string						_root;					// [REQUIRED] fallback via default config
 	std::string						_serverName;			// [OPTIONAL] duplicates allowed (Validator may warn)
 
+
+	// ============================================================================================================
 	// [Location Level] Overridden by Location block if present
+	// ============================================================================================================
 	std::vector<std::string> 		_indexFiles;			// [OPTIONAL] fallback to default (e.g. index.html)
 	size_t							_client_max_header_size;// [OPTIONAL] max limit; fallback or clamp in Validator
 	size_t							_client_max_body_size;	// [OPTIONAL] same as above
@@ -79,7 +83,10 @@ private:
 	MimeMap 						_mimeMap;				// [OPTIONAL] if empty, fallback to defaultMimeMap
 	std::string						_default_type;			// [OPTIONAL] if empty, fallback to default: application/octet-stream;
 
-	// [Server Level] Overrides Location-level settings.
+
+	// ============================================================================================================
+	// [Server-Level] These override Location-level settings.
+	// ============================================================================================================
 	bool							_keepAlive;				// [OPTIONAL] default: true
 	size_t							_keepAliveTimeout;		// [OPTIONAL] default: 10s
 	bool							_cgi_support;			// [OPTIONAL] if CGI is enabled (default: false)
@@ -88,7 +95,7 @@ private:
 
 public:
 	explicit ServerConfigBase(const ServerConfigFallbacks& fallbacks);
-	~ServerConfigBase();
+	~ServerConfigBase() {}
 
 	// Getter
 	const ListenAddress&				getListenAddress() const;

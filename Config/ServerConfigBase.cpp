@@ -18,9 +18,20 @@ ServerConfigBase::ServerConfigBase(const ServerConfigFallbacks& fallbacks)
 	  _cgi_path(fallbacks.cgi_path),
 	  _default_type(fallbacks.default_type),
 	  _mimeMap(ServerConfigFallbacks::defaultMap),
+	  
 	  // default constructed, must be set via Parser
 	  _serverName(""),
 	  _listenAddress(),
 	  _redirectInfo()
 {
 }
+
+
+	// ============================================================================================================
+	// [Getter]
+	// ============================================================================================================
+
+
+	// ============================================================================================================
+	// [Setter]
+	// ============================================================================================================

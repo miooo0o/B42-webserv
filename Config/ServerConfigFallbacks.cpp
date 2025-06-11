@@ -4,6 +4,10 @@
 // init static map, MimeMap
 MimeMap ServerConfigFallbacks::defaultMap("default");
 
+// ============================================================================================================
+// [public] apply/build profile
+// ============================================================================================================
+
 void FallbackInjector::applyProfile(ServerConfigFallbacks& f, const std::string& profile) {
 	for (int i = 0; handlers[i].name; ++i) {
 		if (profile == handlers[i].name) {
@@ -21,6 +25,11 @@ ServerConfigFallbacks FallbackInjector::buildWithProfile(const std::string& prof
 	applyProfile(f, profile);
 	return f;
 }
+
+
+// ============================================================================================================
+// [private] injector type
+// ============================================================================================================
 
 const FallbackInjector::ProfileHandler FallbackInjector::handlers[] = {
 	{ "default", FallbackInjector::inject_default },
