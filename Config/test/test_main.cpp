@@ -1,3 +1,10 @@
-//
-// Created by Mina Kim on 06.06.25.
-//
+int main () {
+
+	ServerConfigFallbacks fallback = FallbackInjector::buildWithProfile("default");
+	ServerConfigBase config(fallback);
+
+	ConfigParser parser;
+	parser.overrideWithParsedValues(config, tokens);
+	ServerConfigBase config.override(parser.parseAndBuild(configFallbacks, tokens));
+
+}

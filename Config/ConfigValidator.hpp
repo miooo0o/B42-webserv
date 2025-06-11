@@ -2,8 +2,8 @@
 // Created by Mina Kim on 06.06.25.
 //
 
-#ifndef CONFIGVALIDATOR_H
-#define CONFIGVALIDATOR_H
+#ifndef CONFIGVALIDATOR_HPP
+#define CONFIGVALIDATOR_HPP
 
 
 
@@ -13,4 +13,4 @@ class ConfigValidator {
 
 
 
-#endif //CONFIGVALIDATOR_H
+#endif //CONFIGVALIDATOR_HPP

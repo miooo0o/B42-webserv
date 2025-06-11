@@ -15,10 +15,22 @@ include_directories(${CMAKE_SOURCE_DIR}/damianServer)
 file(GLOB MAIN_SRC "${CMAKE_SOURCE_DIR}/srcs/main.cpp")
 file(GLOB RESPONSE_SRCS "${CMAKE_SOURCE_DIR}/srcs/Response/*.cpp")
 set(SOURCES ${MAIN_SRC} ${RESPONSE_SRCS}
-        srcs/Error.cpp
-        damianServer/Config.cpp
-        damianServer/ConfigParser.cpp
-        damianServer/Route.cpp)
+        Config/ServerConfig.cpp
+        Config/ServerConfig.hpp
+        Config/ConfigValidator.cpp
+        Config/ConfigValidator.hpp
+        Config/ConfigParser.cpp
+        Config/ConfigParser.hpp
+        Config/MimeMap.cpp
+        Config/MimeMap.hpp
+        Config/Location.cpp
+        Config/Location.hpp
+        Config/test/test_main.cpp
+        Config/ServerConfigFallbacks.hpp
+        Config/ServerConfigFallbacks.cpp
+        Config/ServerConfigBase.cpp
+        Config/ServerConfigBase.hpp
+)
 
 add_executable(webserv ${SOURCES})
 
