@@ -1,10 +1,11 @@
 #ifndef CONFIGPARSER_HPP
 #define CONFIGPARSER_HPP
 
-#include <istream>
 #include <iostream>
+#include <istream>
 #include <vector>
-class ServerConfig;
+
+#include "ServerConfigBase.hpp"
 
 /*
 Config
@@ -27,30 +28,76 @@ LocationBlock
  ├── autoindex				(optional)
 */
 
-class ConfigParser {
-private:
-	std::istream&							_input;
-	std::ostream*	_log;
-	int				_status;
-public:
-	ConfigParser(std::istream& input)
-		: _input(input), _log(NULL), _status(-1) {};
+struct ConfigTokens {
+	std::string					keyword;	// "server", "listen", "return", etc.
+	std::vector<std::string>	args;		// tokens AFTER keyword
+	bool						isBlock;    // true if this is a block (has '{')
 
-	std::vector<ServerConfig>	parse();
-	
-	// getter
-	std::ostream&				getLog() { return _log}
-	int							getStatus() { return _status }
-
-private:
-	void						removeComment();
-	void						splitServerBlocks();
-	std::vector<std::istream>	toEachServerBlock();
-	std::vector<std::istream>	toEachLocationBlock();
-	
-	void	logging(std::string& msg);
+	bool isBlockStart() const { return isBlock; }
+	std::string toString() const;
 };
 
-std::ostream& operator<<(std::ostream& os, const ConfigParser& parser);
+struct ParseResult {
+	ServerConfigBase	base;
+	std::string			leftover;
+
+	ParseResult() : leftover("") {}
+	ParseResult(const ServerConfigBase & base, const std::string& leftover)
+		: base(base), leftover(leftover) {}
+
+	bool	hasStash() { return !leftover.empty(); }
+	void	clear() { base.clear(); leftover.clear(); }
+};
+
+class ConfigParser {
+	enum Status {
+		SET_NON = -1,
+		FAILED = 0,
+		SUCCESS = 1
+	};
+private:
+	std::istream&		_input;
+	std::ostream*		_log;\
+public:
+	ConfigParser(std::istream& input);
+	std::vector<ServerConfigBase>	parse();
+	
+	// Getter
+	std::ostream&				getLog() const { return *_log; }
+
+private:
+
+	ConfigTokens	tokenizer(std::string& line);
+	// parse server block
+	ParseResult	parseServerBlock(std::string &line, ConfigTokens& block);
+	void		parseBlockHeaderLine(std::string &currentLine, ConfigTokens& block);
+
+	char		readUntilBlockOpensOrSemicolon(std::string& currentLine);
+	ParseResult	parseLineAsServerBlock(std::string& line);
+	void mergeLeftover(std::string &line, const std::string &leftover);
+
+	// utils
+	void	removeCommentAndTrim(std::string &line);
+	void	trim(std::string& line);
+	ConfigTokens	extractKeywordFromLine(std::string &line);
+
+
+public:
+	void	logging(const std::string& msg) const;
+	void    server_logging(int index, const std::string& msg) const;
+	void    location_logging(int index, const std::string& msg) const;
+
+	class FatalConfigException : public std::runtime_error {
+	public:
+		explicit FatalConfigException(const std::string& msg)
+			: std::runtime_error("Fatal Error: " + msg) {}
+	};
+
+	class ServerBlockSkipException : public std::runtime_error {
+	public:
+		explicit ServerBlockSkipException(const std::string& msg)
+			: std::runtime_error("Skip ServerBlock: " + msg) {}
+	};
+};
 
 #endif //CONFIGPARSER_HPP

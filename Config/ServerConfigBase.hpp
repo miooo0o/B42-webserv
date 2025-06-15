@@ -96,6 +96,8 @@ private:
 public:
 	explicit ServerConfigBase(const ServerConfigFallbacks& fallbacks);
 	~ServerConfigBase() {}
+	// Clear()
+	void								clear(); // clear to default value
 
 	// Getter
 	const ListenAddress&				getListenAddress() const;
