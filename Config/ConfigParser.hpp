@@ -38,23 +38,19 @@ struct ConfigTokens {
 };
 
 struct ParseResult {
-	ServerConfigBase	base;
-	std::string			leftover;
+	std::string					type;
+	std::vector<ParseResult>	children;
+	std::vector<ConfigTokens>	directives;
+	std::string					leftover;
 
-	ParseResult() : leftover("") {}
-	ParseResult(const ServerConfigBase & base, const std::string& leftover)
-		: base(base), leftover(leftover) {}
+	explicit ParseResult(const std::string& type): type(type) {}
 
-	bool	hasStash() { return !leftover.empty(); }
-	void	clear() { base.clear(); leftover.clear(); }
+
+	bool	hasLeftover() const { return !leftover.empty(); }
+	void	clear() { leftover.clear(); }
 };
 
 class ConfigParser {
-	enum Status {
-		SET_NON = -1,
-		FAILED = 0,
-		SUCCESS = 1
-	};
 private:
 	std::istream&		_input;
 	std::ostream*		_log;\
@@ -63,23 +59,32 @@ public:
 	std::vector<ServerConfigBase>	parse();
 	
 	// Getter
-	std::ostream&				getLog() const { return *_log; }
+	std::ostream&					getLog() const { return *_log; }
 
 private:
 
 	ConfigTokens	tokenizer(std::string& line);
-	// parse server block
-	ParseResult	parseServerBlock(std::string &line, ConfigTokens& block);
-	void		parseBlockHeaderLine(std::string &currentLine, ConfigTokens& block);
+	void			extractArgs(std::vector<std::string>& words, ConfigTokens& tokens);
 
-	char		readUntilBlockOpensOrSemicolon(std::string& currentLine);
-	ParseResult	parseLineAsServerBlock(std::string& line);
-	void mergeLeftover(std::string &line, const std::string &leftover);
+
+	// parse server block
+	ParseResult		parseBlockOrThrow(std::string& line, const std::string& blockKeyword);
+	ParseResult		buildServerConfig(const std::vector<ConfigTokens>& directives,
+										 const std::vector<ConfigTokens>& locations, std::string& line);
+
+	char			readUntilBlockOpensOrSemicolon(std::string& line);
+	char			chooseCloserSymbol(const std::string& line);
+	ParseResult		parseLineAsServerBlockOrThrow(std::string& line);
+	void			mergeLeftover(std::string &line, const std::string &leftover);
 
 	// utils
-	void	removeCommentAndTrim(std::string &line);
+	std::string	cleanedLineFrom(std::string& line);
+	void		cleanLine(std::string& line);
+
+
 	void	trim(std::string& line);
 	ConfigTokens	extractKeywordFromLine(std::string &line);
+	bool			startsWith(const std::string& line, const std::string& target);
 
 
 public:

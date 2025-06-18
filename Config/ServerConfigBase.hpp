@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "ConfigParser.hpp"
+
 class Location;
 class MimeMap;
 class ConfigInit;
@@ -80,7 +82,7 @@ private:
 	std::map<int, std::string>		_errorPageMap;			// [OPTIONAL] if empty, fallback or ignore if not found
 	std::vector<std::string>		_allowMethods;			// [OPTIONAL] if empty, fallback to default: GET
 	std::map<std::string, Location>	_locationMap;			// [OPTIONAL] if empty, fallback to server-level config
-	MimeMap 						_mimeMap;				// [OPTIONAL] if empty, fallback to defaultMimeMap
+	// MimeMap 						_mimeMap;				// [OPTIONAL] if empty, fallback to defaultMimeMap
 	std::string						_default_type;			// [OPTIONAL] if empty, fallback to default: application/octet-stream;
 
 
@@ -95,8 +97,11 @@ private:
 
 public:
 	explicit ServerConfigBase(const ServerConfigFallbacks& fallbacks);
+	explicit ServerConfigBase(const ParseResult& result);
+
 	~ServerConfigBase() {}
-	// Clear()
+	void	overrideWith(const ParseResult& result);
+	void	overrideWith(const ParseResult& result, ServerConfigBase& config);
 	void								clear(); // clear to default value
 
 	// Getter

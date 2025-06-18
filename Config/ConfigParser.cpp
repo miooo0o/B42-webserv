@@ -10,7 +10,7 @@
 // ============================================================================================================
 
 ConfigParser::ConfigParser(std::istream& input)
-	: _input(input), _log(NULL) {};
+	: _input(input), _log(NULL) { parse(); };
 
 
 std::vector<ServerConfigBase> ConfigParser::parse() {
@@ -20,13 +20,13 @@ std::vector<ServerConfigBase> ConfigParser::parse() {
 	static int	serverBlockCounter = 1;
 	while (std::getline(_input, line)) {
 		mergeLeftover(line, leftover);
-		removeCommentAndTrim(line);
+		cleanLine(line);
 		if (line.empty()) continue;
 
 		try {
 			server_logging(serverBlockCounter, "Parsing process start");
-			ParseResult result = parseLineAsServerBlock(line);
-			configBases.push_back(result.base);
+			ParseResult result = parseLineAsServerBlockOrThrow(line);
+			configBases.push_back(ServerConfigBase(result));
 			leftover = result.leftover;
 			server_logging(serverBlockCounter++, "Successfully parsed block");
 		} catch (const ServerBlockSkipException& e) {
@@ -54,26 +54,39 @@ void ConfigParser::mergeLeftover(std::string& line, const std::string& leftover)
 	}
 }
 
-ParseResult ConfigParser::parseLineAsServerBlock(std::string& line) {
-	ConfigTokens tokens = tokenizer(line);
-	if (tokens.keyword != "server")
-		throw FatalConfigException("Unexpected content outside of server block");
+ParseResult ConfigParser::parseLineAsServerBlockOrThrow(std::string& line) {
+	const ConfigTokens token = tokenizer(line);
+	if (token.keyword != "server")
+		throw FatalConfigException("Expected server block");
+	if (!token.isBlock)
+		throw FatalConfigException("Expected server block with '{'");
 
-	parseServerBlock(line, tokens);
-	return ParseResult { ServerConfigBase(tokens), leftover };
+	return parseBlockOrThrow(line, "server");
 }
 
-void	ConfigParser::parseServerBlock(std::string& line, ConfigTokens& block) {
-	while (getline(_input, line)) {
-		removeCommentAndTrim(line);
-		if (line == "}")
-			return ;
-		if (startsWith(line, "location")) {
-			parseLocationBlock(line);
+ParseResult ConfigParser::parseBlockOrThrow(std::string& line, const std::string& blockKeyword) {
+	ParseResult result(blockKeyword);
+	while (std::getline(_input, line)) {
+		cleanLine(line);
+		if (line == "}") { /* todo: trim line; */ break; }
+		ConfigTokens token = tokenizer(line);
+		if (token.keyword == "location") {
+			ParseResult inner = parseBlockOrThrow(line, "location");
+			inner.directives.insert(inner.directives.begin(), token);
+			result.children.push_back(inner);
 		} else {
-			parseDirective(line);
+			result.directives.push_back(token);
 		}
 	}
+	return result;
+}
+
+ParseResult	ConfigParser::buildParseResult(ParseResult& result, std::string& line) {
+	// trim line utill '}', if something left after '}', save '}'after to line.
+	if (!line.empty()) { result.leftover = line; }
+	if ()
+
+	return result;
 }
 
 ConfigTokens ConfigParser::tokenizer(std::string& line) {
@@ -84,6 +97,12 @@ ConfigTokens ConfigParser::tokenizer(std::string& line) {
 	if (symbol_pos == std::string::npos)
 		throw FatalConfigException("Line must end with '{' or ';'");
 
+	// todo: edge case, #으로 comment out이 섞여있을 경우
+	std::string	before_comment_out = line;
+	line.clear();
+	while (before_comment_out.find('#') != std::string::npos) {
+		line += cleanedLineFrom(before_comment_out);
+	}
 	std::string beforeSymbol = line.substr(0, symbol_pos);
 	if (symbol_pos + 1 < line.size()) {
 		const std::string afterSymbol = line.substr(symbol_pos + 1);
@@ -97,44 +116,38 @@ ConfigTokens ConfigParser::tokenizer(std::string& line) {
 		throw FatalConfigException("Missing keyword");
 
 	tokens.keyword = words[0];
-
-	// todo: refactor -> small function
-	std::vector<std::string>::iterator it = words.begin();
-	++it;
-	for (; it != words.end(); ++it)
-		tokens.args.push_back(*it);
-
+	extractArgs(words, tokens);
 	tokens.isBlock = (symbol == '{');
 
 	return tokens;
 }
 
+void	ConfigParser::extractArgs(std::vector<std::string>& words, ConfigTokens& tokens) {
+	std::vector<std::string>::iterator it = words.begin();
+	++it;
+	for (; it != words.end(); ++it)
+		tokens.args.push_back(*it);
+}
 
 
+/* edge case
+ *	keyword correct-input; unexpected token left here
+ *
+ */
 char	ConfigParser::readUntilBlockOpensOrSemicolon(std::string& line) {
 	std::string	buffer;
 	char		found = '\0';
 
 	while (true) {
-		removeCommentAndTrim(line);
+		cleanLine(line);
 		if (!line.empty()) {
-			if (!buffer.empty())
+			if (!buffer.empty() && buffer.back() == '\n')
 				buffer += " ";
 			buffer += line;
-
-			const size_t bracePos = line.find('{');
-			const size_t semiPos = line.find(';');
-
-			if (bracePos != std::string::npos || semiPos != std::string::npos) {
-				if (bracePos != std::string::npos &&
-					(semiPos == std::string::npos || bracePos < semiPos)) {
-					found = '{';
-					} else {
-						found = ';';
-					}
-				break;
-			}
 		}
+		found = chooseCloserSymbol(line);
+		if (found != '\0')
+			break;
 		if (!std::getline(_input, line))
 			throw FatalConfigException("Unexpected EOF while looking for '{' or ';'");
 	}
@@ -142,15 +155,62 @@ char	ConfigParser::readUntilBlockOpensOrSemicolon(std::string& line) {
 	return found;
 }
 
-void    ConfigParser::removeCommentAndTrim(std::string& line) {
+char ConfigParser::chooseCloserSymbol(const std::string& line) {
+	const size_t bracePos = line.find('{');
+	const size_t semiPos = line.find(';');
+
+	if (bracePos != std::string::npos &&
+		(semiPos == std::string::npos || bracePos < semiPos))
+		return '{';
+	if (semiPos != std::string::npos)
+		return ';';
+	return '\0';
+}
+
+std::string ConfigParser::cleanedLineFrom(std::string& line) {
+	const size_t commentPos = line.find('#');
+	if (commentPos == std::string::npos) {
+		std::string trimmed = line;
+		trim(trimmed);
+		line.clear();
+		return trimmed;
+	}
+
+	std::string before = line.substr(0, commentPos);
+	std::string after = line.substr(commentPos + 1);
+	trim(before);
+
+	const size_t newlinePos = after.find('\n'); {}
+	if (newlinePos != std::string::npos) {
+		after = after.substr(newlinePos + 1);
+		trim(after);
+	}
+	else
+		after.clear();
+	line = after;
+	return before;
+}
+
+void    ConfigParser::cleanLine(std::string& line) {
 	const size_t	commentPos = line.find('#');
 	if (commentPos != std::string::npos)
 		line = line.substr(0, commentPos);
 	trim(line);
 }
 
+
+// todo: from here
 void	ConfigParser::trim(std::string& line) {
-	// todo: implement
+	if (line.empty())
+		return ;
+}
+
+bool ConfigParser::startsWith(const std::string& line, const std::string& target) {
+	std::istringstream	iss(line);
+	std::string			keyword;
+	iss >> keyword;
+	trim(keyword);
+	return (keyword == target);
 }
 
 ConfigTokens ConfigParser::extractKeywordFromLine(std::string& line) {
@@ -170,6 +230,7 @@ ConfigTokens ConfigParser::extractKeywordFromLine(std::string& line) {
 	return tokens;
 }
 
+
 // logging (optional)
 void    ConfigParser::logging(const std::string& msg) const {
 	static int index = 0;
@@ -183,37 +244,3 @@ void    ConfigParser::server_logging(const int index, const std::string& msg) co
 void    ConfigParser::location_logging(const int index, const std::string& msg) const {
 	*_log << "[server " << index << "]"<< msg << '\n';
 }
-
-
-/*
-
-// std::string	extractBlockHeaderAndInline(const std::string& line, ConfigTokens& block);
-// void		validateBraceTokens(const ConfigTokens& block);
-
-std::string	ConfigParser::extractBlockHeaderAndInline(const std::string& line, Block& block) {
-	const size_t bracePos = line.find('{');
-	if (bracePos == std::string::npos)
-		throw FatalConfigException("Missing '{' in block header");
-
-	const size_t braceCount = static_cast<size_t>(std::count(line.begin(), line.end(), '{'));
-	if (braceCount != 1)
-		throw FatalConfigException("Too many '{' in block declaration");
-
-	std::string beforeBrace = line.substr(block.token_last_index_pos, bracePos - block.token_last_index_pos);
-	std::string afterBrace = line.substr(bracePos + 1);
-
-	removeCommentAndTrim(beforeBrace);
-	removeCommentAndTrim(afterBrace);
-	block.path = beforeBrace;
-	block.leftover = afterBrace;
-	return afterBrace;
-}
-
-void ConfigParser::validateBraceTokens(const Block& block) {
-	if (block.token == "server" && !block.valid())
-		throw FatalConfigException("Unexpected tokens before '{' in server block");
-	if (block.token == "location" && !block.valid())
-		throw FatalConfigException("Unexpected tokens before '{' in location block");
-}
-*/
-
