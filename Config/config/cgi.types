@@ -1,0 +1,5 @@
+# profile: cgi
+
+application/x-perl          pl
+application/x-php           php
+application/x-python        py
