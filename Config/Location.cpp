@@ -1,21 +1,23 @@
 #include "Location.hpp"
-#include "ServerConfigFallbacks.hpp"
-Location::Location() {
-	const ServerConfigFallbacks	fallbacks;
-	_indexFiles = fallbacks.indexFiles;
-	_client_max_header_size = fallbacks.client_max_header_size;
-	_client_max_body_size = fallbacks.client_max_body_size;
-	_autoindex = fallbacks.autoindex;
-	_cgi_path = fallbacks.cgi_path;
-	_allowMethods = fallbacks.allowMethods;
-	_default_type =	fallbacks.default_type;
+#include "ConfigUnit.hpp"
 
+Location::Location()
+	: ConfigUnit() {}
+
+Location::Location(const ConfigUnit *parent)
+	: ConfigUnit(parent) {
+	Location::applyInheritedValuesFrom(*parent);
 }
 
-Location	Location::applyFallbackFrom(const ServerConfigFallbacks& fallbacks) {
+Location::~Location() {}
 
+void	Location::applyInheritedValuesFrom(const ConfigUnit& parent) {
+	ConfigUnit::applyInheritedValuesFrom(parent);
+
+	const Location* parent_unit = dynamic_cast<const Location*>(&parent);
+	if (parent_unit) {
+		if (!hasOverride(HAS_URI))		_uri = parent_unit->getUri();
+		if (!hasOverride(HAS_REDIRECT))	_redirect = parent_unit->getRedirect();
+	}
 }
 
-Location	Location::overrideWith(const ServerConfigFallbacks& fallbacks) {
-
-}

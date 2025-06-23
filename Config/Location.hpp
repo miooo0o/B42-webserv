@@ -1,37 +1,34 @@
 #ifndef LOCATION_HPP
- #define LOCATION_HPP
+#define LOCATION_HPP
 
-#include <map>
-#include <string>
-#include <vector>
+#include "ConfigCommon.hpp"
+#include "ConfigUnit.hpp"
 
-#include "ConfigParser.hpp"
+struct RedirectInfo {
+	bool        enabled;
+	int         code;
+	std::string destination;
 
-
-class Location {
-private:
-	std::vector<std::string> 		_indexFiles;			// [OPTIONAL] fallback to default (e.g. index.html)
-	size_t							_client_max_header_size;// [OPTIONAL] max limit; fallback or clamp in Validator
-	size_t							_client_max_body_size;	// [OPTIONAL] same as above
-
-	bool							_autoindex;				// [OPTIONAL] default: false
-
-	std::string						_cgi_path;				// [OPTIONAL] if CGI is enabled (default: "")
-	RedirectInfo					_redirectInfo;			// [OPTIONAL] if return code present
-
-	std::map<int, std::string>		_errorPageMap;			// [OPTIONAL] if empty, fallback or ignore if not found
-	std::vector<std::string>		_allowMethods;			// [OPTIONAL] if empty, fallback to default: GET
-	std::map<std::string, Location>	_locationMap;			// [OPTIONAL] if empty, fallback to server-level config
-	// MimeMap 						_mimeMap;				// [OPTIONAL] if empty, fallback to defaultMimeMap
-	std::string						_default_type;			// [OPTIONAL] if empty, fallback to default: application/octet-stream;
-
-public:
-	explicit Location();
-
-	static Location applyFallbackFrom(const ServerConfigFallbacks& fallbacks);
-	static Location	overrideWith(const ServerConfigFallbacks& fallbacks);
+	RedirectInfo() : enabled(false), code(ConfigDefaults::REDIRECT_CODE), destination("") {}
 };
 
+class Location : public ConfigUnit {
+private:
+	std::string		_uri;
+	RedirectInfo	_redirect;
+
+public:
+	Location();
+	Location(const ConfigUnit *parent);
+	virtual ~Location();
+
+	virtual void applyInheritedValuesFrom(const ConfigUnit& parent);	// overrride
 
 
-#endif //LOCATION_HPP
+	CONFIG_OVERRIDE_ACCESSOR(uri, Uri, std::string, HAS_URI, Location)
+	CONFIG_OVERRIDE_ACCESSOR(redirect, Redirect, RedirectInfo, HAS_REDIRECT, Location)
+
+
+};
+
+#endif // LOCATION_HPP
