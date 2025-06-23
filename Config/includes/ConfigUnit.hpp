@@ -8,7 +8,7 @@
 #include "ConfigCommon.hpp"
 #include "MimeType.hpp"
 
-class MimeType;
+class MimeRegistry;
 
 class ConfigUnit {
 protected:
@@ -22,8 +22,8 @@ protected:
 	bool						_autoindex;					// If true, enable directory listing
 	bool						_cgi_support;				// if CGI is enabled
 	std::string					_cgi_path;					// CGI execution path
-	std::string					_defaultType;
-	MimeType*					_mimeType;
+	std::string					_defaultType;				// default: ConfigDefaults::DEFAULT_TYPE, "application/octet-stream"
+	MimeRegistry*				_mimeType;					// default: ConfigDefaults::MIMETYPE_MAP
 
 	/**
 	 * @brief ConfigOverrideFlag

@@ -29,16 +29,16 @@ typedef std::map<std::string, Location>	LocationsMap;
 
 class ServerConfig : public ConfigUnit {
 private:
-	ListenAddress					_listen;				// [REQUIRED]
-	std::vector<std::string>		_serverNames;
-	LocationsMap					_locations;
-	ErrorPagesMap					_errorPages;
+	ListenAddress					_listen;				// required
+
+	std::vector<std::string>		_serverNames;			// optional
+	LocationsMap					_locations;				// todo: new
+	ErrorPagesMap					_errorPages;			// todo: static
 
 	bool							_chunkedSupport;		// default: true
-	bool							_serverTokens;			// show version info in header (default: false)
+	bool							_serverTokens;			// default: false
 	bool							_keepAlive;				// default: true
 	size_t							_keepAliveTimeout;		// default: 10s
-
 
 public:
 	ServerConfig();

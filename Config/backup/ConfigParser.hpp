@@ -53,7 +53,7 @@ struct ParseResult {
 class ConfigParser {
 private:
 	std::istream&		_input;
-	std::ostream*		_log;\
+	std::ostream*		_log;
 public:
 	ConfigParser(std::istream& input);
 	std::vector<ServerConfigBase>	parse();
@@ -82,7 +82,7 @@ private:
 	void		cleanLine(std::string& line);
 
 
-	void	trim(std::string& line);
+	void			trim(std::string& line);
 	ConfigTokens	extractKeywordFromLine(std::string &line);
 	bool			startsWith(const std::string& line, const std::string& target);
 

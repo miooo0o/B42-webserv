@@ -23,7 +23,7 @@ enum ConfigOverrideFlag {
 	HAS_CGI_SUPPORT           = 1 << 6,
 	HAS_CGI_PATH              = 1 << 7,
 	HAS_DEFAULT_TYPE          = 1 << 8,
-	HAS_MIME_TYPE              = 1 << 9,
+	HAS_MIME_TYPE             = 1 << 9,
 	HAS_URI                   = 1 << 10,
 	HAS_REDIRECT			  = 1 << 11,
 	HAS_LISTEN			      = 1 << 12,
@@ -81,6 +81,8 @@ struct ConfigDefaults {
 	static const char*		LISTEN_HOST;
 	static const uint16_t	LISTEN_PORT;
 
+	static const std::map<std::string, std::string>	MIMETYPE_MAP;
+
 };
 
 
@@ -130,5 +132,21 @@ std::vector<std::string> ConfigDefaults::getDefaultIndexFiles() {
 	return files;
 }
 
+// Primitive value: mime types
+const std::map<std::string, std::string>	ConfigDefaults::MIMETYPE_MAP = initMimeTypeMap();
+
+std::map<std::string, std::string> ConfigDefaults::initMimeTypeMap() {
+	std::map<std::string, std::string> m;
+	m["html"]	= "text/html";
+	m["css"]	= "text/css";
+	m["js"]		= "application/javascript";
+	m["json"]	= "application/json";
+	m["png"]	= "image/png";
+	m["jpg"]	= "image/jpeg";
+	m["jpeg"]	= "image/jpeg";
+	m["gif"]	= "image/gif";
+	m["txt"]	= "text/plain";
+	return m;
+}
 
 #endif //CONFIGCOMMON_HPP
